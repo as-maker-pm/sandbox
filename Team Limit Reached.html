@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Team — Seat limit reached · Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+  :root {
+    --side-bg:#f4f4f5; --canvas:#fff; --bg:#fff; --ink:#15171a; --ink-2:#4a4f57;
+    --muted:#8a9099; --muted-2:#b6bcc4; --line:#e8e8ea; --line-2:#ededef;
+    --hover:#ebebed; --active:#e0e0e3; --field:#fff; --field-bg:#fafafa;
+    --brand:#ef3a3a; --brand-tint:#fde8e8; --brand-tint-2:#fbe7e7;
+    --ok:#1f8a5b; --ok-tint:#e7f4ee; --warn:#c97c0d; --warn-tint:#fdf2e0;
+    --info:#2f6feb; --info-tint:#e6efff;
+    --t-fast:140ms cubic-bezier(.2,.7,.2,1); --t-med:220ms cubic-bezier(.2,.7,.2,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#e8e8ea}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input{font:inherit;color:inherit}
+  button{background:none;border:0;cursor:pointer;padding:0}
+  a{text-decoration:none;color:inherit}
+
+  /* ============ MINI APP CHROME — shared across artboards ============ */
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100%;background:var(--canvas)}
+  .side{border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}
+  .logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted)}
+  .nav{flex:1;padding:4px 8px 8px;overflow:hidden}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  .top{background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}
+  .crumb a{color:var(--muted)}
+  .crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap;cursor:pointer}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}
+  .btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+  .btn-primary:hover{background:#2a2d33}
+  .btn-brand{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-brand:hover{background:#d62f2f}
+  .btn-lg{height:42px;padding:0 18px;font-size:13.5px;border-radius:10px}
+  .btn-disabled{opacity:.55;cursor:not-allowed;background:var(--canvas);color:var(--ink-2);border-color:var(--line);position:relative}
+  .btn-disabled:hover{background:var(--canvas)}
+
+  .page{padding:24px 28px 60px}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+  .page-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);margin-bottom:4px}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .page-sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+  .page-sub b.warn{color:var(--brand);font-weight:600}
+  .head-actions{display:flex;gap:8px;align-items:center}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .kpi{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas);position:relative;overflow:hidden}
+  .kpi-label{font-size:11.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .kpi-label .dot{width:8px;height:8px;border-radius:99px}
+  .kpi-val{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .kpi-val .of{font-size:14px;color:var(--muted);font-weight:500}
+  .kpi-trend{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
+  .kpi-trend.warn{color:var(--brand)}
+  .kpi.is-limit{border-color:color-mix(in srgb,var(--brand) 35%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 4%,var(--canvas)),var(--canvas))}
+  .kpi .seat-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--line-2)}
+  .kpi .seat-bar > i{display:block;height:100%;background:var(--brand)}
+
+  .tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .tab{height:36px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;display:flex;align-items:center;gap:6px}
+  .tab.is-on{color:var(--ink)}
+  .tab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+  .tab .count{font-size:11px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2)}
+  .tab.is-on .count{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+  .search{position:relative;flex:1;min-width:240px;max-width:380px}
+  .search input{width:100%;height:34px;padding:0 12px 0 32px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .chip-select{height:34px;padding:0 10px;border:1px solid var(--line);background:var(--canvas);border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+  .chip-select .v{color:var(--ink);font-weight:600}
+  .filterbar .spacer{flex:1}
+
+  .table-wrap{border:1px solid var(--line);border-radius:12px;background:var(--canvas);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:12px 18px;border-bottom:1px solid var(--line)}
+  tbody td{padding:14px 18px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}
+  .user-cell{display:flex;align-items:center;gap:12px}
+  .uav{width:32px;height:32px;border-radius:999px;color:#fff;display:grid;place-items:center;font-weight:700;font-size:11px;flex:0 0 32px}
+  .uname{font-weight:600;color:var(--ink);font-size:13px;line-height:1.2}
+  .uemail{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .role{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:600}
+  .role .rd{width:6px;height:6px;border-radius:99px}
+  .role-owner{background:#3a1818;color:#fff}
+  .role-owner .rd{background:var(--brand)}
+  .role-admin{background:var(--brand-tint);color:var(--brand)}
+  .role-admin .rd{background:var(--brand)}
+  .role-fleet{background:var(--info-tint);color:var(--info)}
+  .role-fleet .rd{background:var(--info)}
+  .role-disp{background:#fff3e6;color:#b56b00}
+  .role-disp .rd{background:#b56b00}
+  .role-view{background:var(--field-bg);color:var(--ink-2);border:1px solid var(--line)}
+  .role-view .rd{background:var(--muted)}
+  .last{font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .last small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+
+  /* ============ A — BLOCKING MODAL ============ */
+  .shade{position:absolute;inset:0;background:rgba(15,18,22,.42);backdrop-filter:blur(3px);display:grid;place-items:center;padding:40px 20px;z-index:10}
+  .limit-modal{background:var(--canvas);border-radius:16px;width:520px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);position:relative;overflow:hidden}
+  .modal-x{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:99px;display:grid;place-items:center;color:var(--muted);z-index:2}
+  .modal-x:hover{background:var(--hover);color:var(--ink)}
+
+  .lm-head{padding:28px 28px 18px;text-align:center;border-bottom:1px solid var(--line-2);position:relative}
+  .lm-glyph{width:60px;height:60px;border-radius:16px;background:var(--brand-tint);color:var(--brand);display:grid;place-items:center;margin:0 auto 14px;position:relative}
+  .lm-glyph::after{content:"";position:absolute;inset:-6px;border-radius:20px;border:1px solid var(--brand-tint);opacity:.6}
+  .lm-glyph svg{width:26px;height:26px}
+  .lm-title{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px}
+  .lm-sub{color:var(--muted);font-size:13px;margin:0;line-height:1.5}
+  .lm-sub b{color:var(--ink);font-weight:600}
+
+  .lm-meter{padding:18px 28px;background:var(--field-bg);border-bottom:1px solid var(--line-2)}
+  .meter-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+  .meter-head .lhs{font-size:12px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+  .meter-head .plan-pill{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--canvas);border:1px solid var(--line);padding:2px 8px;border-radius:99px}
+  .meter-head .rhs{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .meter-head .rhs b{color:var(--brand);font-weight:700;font-size:13.5px}
+  .meter-bar{height:8px;border-radius:99px;background:var(--canvas);overflow:hidden;border:1px solid var(--line-2);position:relative}
+  .meter-bar > i{display:block;height:100%;width:100%;background:repeating-linear-gradient(45deg,var(--brand) 0,var(--brand) 6px,#d62f2f 6px,#d62f2f 12px);border-radius:99px;animation:slide-stripe 1.6s linear infinite}
+  @keyframes slide-stripe{0%{background-position:0 0}100%{background-position:24px 0}}
+  .meter-dots{display:flex;gap:3px;margin-top:10px}
+  .meter-dots .seat{flex:1;height:5px;border-radius:99px;background:var(--brand)}
+  .meter-dots .seat.empty{background:var(--line)}
+
+  .lm-options{padding:20px 28px}
+  .lm-opt-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);margin-bottom:10px}
+  .lm-opt{display:flex;gap:14px;align-items:flex-start;padding:14px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;text-align:left;width:100%;cursor:pointer;transition:all var(--t-fast);background:var(--canvas)}
+  .lm-opt:hover{border-color:var(--ink);background:var(--field-bg)}
+  .lm-opt.is-primary{border-color:var(--ink);background:var(--ink);color:#fff}
+  .lm-opt.is-primary:hover{background:#2a2d33;border-color:#2a2d33}
+  .lm-opt-ico{width:36px;height:36px;border-radius:9px;background:var(--field-bg);color:var(--ink-2);display:grid;place-items:center;flex:0 0 36px}
+  .lm-opt.is-primary .lm-opt-ico{background:rgba(255,255,255,.12);color:#fff}
+  .lm-opt-body{flex:1;min-width:0}
+  .lm-opt-name{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .lm-opt-name .price{margin-left:auto;font-size:12px;font-weight:600;opacity:.85}
+  .lm-opt-name .price small{opacity:.75;font-weight:500}
+  .lm-opt-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .lm-opt.is-primary .lm-opt-desc{color:rgba(255,255,255,.7)}
+  .lm-opt-arrow{align-self:center;color:var(--muted-2)}
+  .lm-opt.is-primary .lm-opt-arrow{color:rgba(255,255,255,.7)}
+
+  .lm-foot{padding:14px 28px 20px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;justify-content:center;border-top:1px solid var(--line-2)}
+  .lm-foot a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+
+  /* ============ B — INLINE BANNER STATE ============ */
+  .seat-banner{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 18px;border:1px solid color-mix(in srgb,var(--brand) 24%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 5%,var(--canvas)),var(--canvas));border-radius:12px;margin-bottom:16px}
+  .sb-ico{width:42px;height:42px;border-radius:11px;background:var(--brand);color:#fff;display:grid;place-items:center;position:relative;flex-shrink:0}
+  .sb-ico::after{content:"";position:absolute;inset:-3px;border-radius:14px;border:1px solid var(--brand-tint);opacity:.7}
+  .sb-body{min-width:0}
+  .sb-eye{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:3px}
+  .sb-title{font-size:14.5px;font-weight:700;letter-spacing:-.005em;margin:0 0 3px}
+  .sb-desc{font-size:12.5px;color:var(--muted);margin:0;line-height:1.5}
+  .sb-desc b{color:var(--ink);font-weight:600}
+  .sb-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+  .sb-meter{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-right:4px}
+  .sb-meter b{color:var(--brand);font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .sb-meter b small{color:var(--muted);font-weight:500;font-size:11px;margin-left:1px}
+  .sb-meter .bar{width:120px;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+  .sb-meter .bar i{display:block;height:100%;width:100%;background:var(--brand)}
+
+  /* Invite button disabled in this state */
+  .btn-locked{position:relative;background:var(--field-bg);color:var(--muted);border-color:var(--line);cursor:not-allowed}
+  .btn-locked:hover{background:var(--field-bg)}
+  .btn-locked .lk-pad{width:14px;height:14px;display:inline-grid;place-items:center;color:var(--muted)}
+
+  /* Tooltip near the locked invite button */
+  .lock-tip{position:absolute;top:calc(100% + 8px);right:0;background:var(--ink);color:var(--canvas);padding:10px 12px;border-radius:8px;font-size:11.5px;font-weight:500;line-height:1.45;width:240px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:5;text-align:left}
+  .lock-tip::before{content:"";position:absolute;top:-5px;right:24px;width:10px;height:10px;background:var(--ink);transform:rotate(45deg)}
+  .lock-tip b{color:#fff}
+  .lock-tip a{color:#fff;text-decoration:underline;font-weight:600;display:inline-flex;align-items:center;gap:3px}
+
+  /* Greyed row to suggest the user can remove a member */
+  .row-suggest{position:relative}
+  .row-suggest::after{content:"Remove to free a seat";position:absolute;top:50%;right:18px;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-tint);padding:4px 10px;border-radius:99px;opacity:0;transition:opacity var(--t-fast)}
+  .row-suggest:hover::after{opacity:1}
+
+  /* ============ C — FULL PLAN-UPGRADE TAKEOVER ============ */
+  .takeover{display:grid;grid-template-columns:480px 1fr;gap:32px;padding:40px 32px;background:linear-gradient(180deg,var(--field-bg),var(--canvas) 70%);min-height:calc(100% - 56px)}
+  .to-left{padding-top:30px}
+  .to-eye{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);background:var(--brand-tint);padding:5px 10px;border-radius:99px;margin-bottom:18px}
+  .to-eye .pulse{width:6px;height:6px;border-radius:99px;background:var(--brand);position:relative}
+  .to-eye .pulse::after{content:"";position:absolute;inset:-2px;border-radius:99px;background:var(--brand);opacity:.35;animation:pulse-ring 1.6s ease-out infinite}
+  @keyframes pulse-ring{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.5);opacity:0}}
+  .to-h1{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:0 0 14px}
+  .to-h1 .accent{color:var(--brand)}
+  .to-lede{font-size:14.5px;color:var(--ink-2);line-height:1.55;margin:0 0 24px;max-width:420px}
+  .to-lede b{color:var(--ink);font-weight:600}
+
+  .to-meter{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas);margin-bottom:22px}
+  .to-meter-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .to-meter-head .lbl{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .to-meter-head .val{font-size:13px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+  .seat-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}
+  .seat-grid .seat{aspect-ratio:1;border-radius:4px;background:var(--brand)}
+  .seat-grid .seat.empty{background:var(--line)}
+  .to-meter-foot{font-size:11.5px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:6px}
+  .to-meter-foot svg{color:var(--brand);flex-shrink:0}
+
+  .to-cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .to-cta-row .ghost-link{color:var(--ink-2);font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:4px;padding:0 6px;height:42px}
+  .to-cta-row .ghost-link:hover{color:var(--ink)}
+
+  .to-trust{margin-top:24px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .to-trust .item{display:inline-flex;align-items:center;gap:5px}
+  .to-trust svg{color:var(--ok)}
+
+  /* Plan cards */
+  .plans{display:flex;flex-direction:column;gap:12px;padding-top:8px}
+  .plan{border:1px solid var(--line);border-radius:14px;background:var(--canvas);padding:20px 22px;position:relative;transition:all var(--t-fast)}
+  .plan.is-current{background:var(--field-bg);border-style:dashed}
+  .plan.is-rec{border-color:var(--ink);box-shadow:0 12px 32px rgba(15,18,22,.08)}
+  .plan.is-rec::before{content:"Recommended";position:absolute;top:-10px;left:22px;background:var(--brand);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:99px}
+  .plan-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px}
+  .plan-meta{min-width:0;flex:1}
+  .plan-name{font-size:16px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .plan-name .tag{font-size:10.5px;font-weight:700;background:var(--field-bg);color:var(--ink-2);padding:2px 7px;border-radius:99px;border:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
+  .plan-name .tag.cur{background:#fff;color:var(--muted)}
+  .plan-seats{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .plan-price{text-align:right;flex-shrink:0}
+  .plan-price .num{font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .plan-price .num .cur{font-size:14px;font-weight:600;color:var(--muted);margin-right:2px}
+  .plan-price .per{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .plan-feats{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2)}
+  .plan-feat{font-size:12px;color:var(--ink-2);display:flex;align-items:flex-start;gap:6px}
+  .plan-feat svg{color:var(--ok);flex-shrink:0;margin-top:2px}
+  .plan-feat.miss{color:var(--muted)}
+  .plan-feat.miss svg{color:var(--muted-2)}
+  .plan-feat b{color:var(--ink);font-weight:600}
+  .plan-action{margin-top:16px}
+  .plan-action .btn{width:100%;justify-content:center;height:40px;font-size:13px}
+
+  .plan.is-enterprise{background:#1a1d21;color:#fff;border-color:#1a1d21}
+  .plan.is-enterprise .plan-name{color:#fff}
+  .plan.is-enterprise .plan-name .tag{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.1)}
+  .plan.is-enterprise .plan-seats{color:rgba(255,255,255,.6)}
+  .plan.is-enterprise .plan-price .num{color:#fff}
+  .plan.is-enterprise .plan-price .per,.plan.is-enterprise .plan-price .num .cur{color:rgba(255,255,255,.6)}
+  .plan.is-enterprise .plan-feats{border-top-color:rgba(255,255,255,.1)}
+  .plan.is-enterprise .plan-feat{color:rgba(255,255,255,.85)}
+  .plan.is-enterprise .plan-feat svg{color:#4cc38a}
+  .plan.is-enterprise .plan-feat b{color:#fff}
+  .plan.is-enterprise .btn{background:#fff;color:#15171a;border-color:#fff}
+  .plan.is-enterprise .btn:hover{background:#e8e8ea}
+
+</style>
+</head>
+<body>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+
+<!-- ============ SHARED MARKUP HELPERS ============ -->
+<template id="tpl-sidebar">
+  <aside class="side">
+    <div class="side-top">
+      <div class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </div>
+      <div class="top-buttons">
+        <button class="toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg></button>
+        <button class="toggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <div class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></div>
+        <div class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></div>
+        <div class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <div class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></div>
+        <div class="nav-item is-active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="label">Team</span></div>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <div class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></div>
+    </div>
+  </aside>
+</template>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const {useState, useEffect} = React;
+
+// ====== Shared sub-components ======
+const Sidebar = () => (
+  <aside className="side">
+    <div className="side-top">
+      <div className="logo">
+        <svg className="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span className="logo-word">Fleetly</span>
+      </div>
+      <div className="top-buttons">
+        <button className="toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg></button>
+        <button className="toggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <nav className="nav">
+      <div className="nav-section">
+        <div className="nav-item"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span className="label">Dashboard</span></div>
+      </div>
+      <div className="nav-section">
+        <div className="nav-section-label">Fleet</div>
+        <div className="nav-item"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span className="label">Vehicles</span></div>
+        <div className="nav-item"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span className="label">Bookings</span></div>
+        <div className="nav-item"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span className="label">Calendar</span></div>
+      </div>
+      <div className="nav-section">
+        <div className="nav-section-label">People</div>
+        <div className="nav-item"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span className="label">Customers</span></div>
+        <div className="nav-item is-active"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span className="label">Team</span></div>
+      </div>
+    </nav>
+    <div className="side-foot">
+      <div className="nav-item"><svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/></svg><span className="label">Settings</span></div>
+    </div>
+  </aside>
+);
+
+const TopBar = () => (
+  <header className="top">
+    <div className="crumbs">
+      <span className="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+      <svg className="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 6 15 12 9 18" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <span className="crumb"><a href="#">Workspace</a></span>
+      <svg className="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 6 15 12 9 18" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <span className="crumb-cur">Team</span>
+    </div>
+    <div className="top-actions">
+      <button className="btn btn-ghost">Export CSV</button>
+      <button className="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+      <div className="avatar">JD</div>
+    </div>
+  </header>
+);
+
+// 20 sample members — fully booked
+const USERS = [
+  {name:'Jordan Drake',email:'jordan@fleetly.co',role:'owner',roleLabel:'Owner',last:'Active now',lastSub:'',hue:0},
+  {name:'Maya Singh',email:'maya@fleetly.co',role:'admin',roleLabel:'Admin',last:'12 min ago',lastSub:'New York',hue:280},
+  {name:'Ava Lambert',email:'ava@fleetly.co',role:'fleet',roleLabel:'Fleet Manager',last:'1 hr ago',lastSub:'Brooklyn',hue:200},
+  {name:'Diego Ortiz',email:'diego@fleetly.co',role:'fleet',roleLabel:'Fleet Manager',last:'Yesterday',lastSub:'14:32',hue:30},
+  {name:'Lena Park',email:'lena@fleetly.co',role:'disp',roleLabel:'Dispatcher',last:'4 min ago',lastSub:'Manhattan',hue:330},
+  {name:'Tomás Reyes',email:'tomas@fleetly.co',role:'disp',roleLabel:'Dispatcher',last:'2 hrs ago',lastSub:'Brooklyn',hue:140},
+];
+
+const initials = n => n.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();
+
+// ====== A — BLOCKING MODAL ======
+const ArtboardA = () => (
+  <div className="app" style={{height:'100%',position:'relative'}}>
+    <Sidebar />
+    <div style={{display:'flex',flexDirection:'column',minWidth:0}}>
+      <TopBar />
+      <div className="page">
+        <div className="page-head">
+          <div>
+            <div className="page-eyebrow">People</div>
+            <h1 className="page-title">Team &amp; Roles</h1>
+            <p className="page-sub"><b className="warn">20 of 20 seats used</b> · You've reached your plan's limit.</p>
+          </div>
+          <div className="head-actions">
+            <button className="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>Roles &amp; permissions</button>
+            <button className="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Invite user
+            </button>
+          </div>
+        </div>
+
+        <div className="kpis">
+          <div className="kpi is-limit">
+            <div className="kpi-label"><span className="dot" style={{background:'var(--brand)'}}></span>Seats used</div>
+            <div className="kpi-val">20<span className="of"> / 20</span></div>
+            <div className="kpi-trend warn">Limit reached</div>
+            <div className="seat-bar"><i style={{width:'100%'}}></i></div>
+          </div>
+          <div className="kpi">
+            <div className="kpi-label"><span className="dot" style={{background:'var(--warn)'}}></span>Pending invites</div>
+            <div className="kpi-val">3</div>
+            <div className="kpi-trend">Counted toward seats</div>
+          </div>
+          <div className="kpi">
+            <div className="kpi-label"><span className="dot" style={{background:'var(--ok)'}}></span>Active members</div>
+            <div className="kpi-val">17</div>
+            <div className="kpi-trend">Across 3 locations</div>
+          </div>
+          <div className="kpi">
+            <div className="kpi-label"><span className="dot" style={{background:'var(--info)'}}></span>2FA enabled</div>
+            <div className="kpi-val">18<span className="of"> / 20</span></div>
+            <div className="kpi-trend">2 still unverified</div>
+          </div>
+        </div>
+
+        <div className="tabs">
+          <button className="tab is-on">All <span className="count">20</span></button>
+          <button className="tab">Active <span className="count">17</span></button>
+          <button className="tab">Pending <span className="count">3</span></button>
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Member</th><th>Role</th><th>Location</th><th>Last active</th></tr></thead>
+            <tbody>
+              {USERS.map(u=>(
+                <tr key={u.email}>
+                  <td><div className="user-cell"><div className="uav" style={{background:`oklch(0.62 0.14 ${u.hue})`}}>{initials(u.name)}</div><div><div className="uname">{u.name}</div><div className="uemail">{u.email}</div></div></div></td>
+                  <td><span className={`role role-${u.role}`}><span className="rd"></span>{u.roleLabel}</span></td>
+                  <td><span style={{fontSize:12.5,color:'var(--ink-2)'}}>{u.lastSub || 'All locations'}</span></td>
+                  <td><div className="last">{u.last}</div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {/* ===== BLOCKING MODAL ===== */}
+    <div className="shade">
+      <div className="limit-modal">
+        <button className="modal-x"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+
+        <div className="lm-head">
+          <div className="lm-glyph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <rect x="15" y="11" width="7" height="6" rx="1.5"/>
+              <path d="M16.5 11V9.5a2 2 0 0 1 4 0V11"/>
+            </svg>
+          </div>
+          <h2 className="lm-title">You've reached your seat limit</h2>
+          <p className="lm-sub">Your <b>Team plan</b> includes 20 seats and they're all in use.<br/>To add <b>Avery Chen</b>, free up a seat or move to a plan with more.</p>
+        </div>
+
+        <div className="lm-meter">
+          <div className="meter-head">
+            <div className="lhs"><span className="plan-pill">Team plan</span> Seat usage</div>
+            <div className="rhs"><b>20</b> / 20 seats</div>
+          </div>
+          <div className="meter-bar"><i></i></div>
+          <div className="meter-dots">
+            {Array.from({length:20}).map((_,i)=>(<span key={i} className="seat"></span>))}
+          </div>
+        </div>
+
+        <div className="lm-options">
+          <div className="lm-opt-label">Choose how to proceed</div>
+
+          <button className="lm-opt is-primary">
+            <div className="lm-opt-ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12l3-6 3 6"/><path d="M5 6v12"/><path d="M14 6h4a3 3 0 0 1 0 6h-4z"/><path d="M14 12h4a3 3 0 0 1 0 6h-4z"/><path d="M14 6v12"/></svg>
+            </div>
+            <div className="lm-opt-body">
+              <div className="lm-opt-name">Upgrade to Growth <span className="price">$129<small>/mo</small></span></div>
+              <div className="lm-opt-desc">50 seats · SSO · audit logs · priority support. Prorated today.</div>
+            </div>
+            <svg className="lm-opt-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+
+          <button className="lm-opt">
+            <div className="lm-opt-ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <div className="lm-opt-body">
+              <div className="lm-opt-name">Add 1 seat to current plan <span className="price">+$12<small>/mo</small></span></div>
+              <div className="lm-opt-desc">Stay on Team plan and pay per extra seat. Cancel anytime.</div>
+            </div>
+            <svg className="lm-opt-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+
+          <button className="lm-opt">
+            <div className="lm-opt-ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            </div>
+            <div className="lm-opt-body">
+              <div className="lm-opt-name">Remove a member instead</div>
+              <div className="lm-opt-desc">Suspend or remove someone — their seat opens immediately.</div>
+            </div>
+            <svg className="lm-opt-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+        </div>
+
+        <div className="lm-foot">
+          <span>Need more than 50 seats?</span>
+          <a href="#">Talk to sales →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ====== B — INLINE BANNER STATE ======
+const ArtboardB = () => (
+  <div className="app" style={{height:'100%'}}>
+    <Sidebar />
+    <div style={{display:'flex',flexDirection:'column',minWidth:0}}>
+      <TopBar />
+      <div className="page">
+        <div className="page-head">
+          <div>
+            <div className="page-eyebrow">People</div>
+            <h1 className="page-title">Team &amp; Roles</h1>
+            <p className="page-sub">Manage workspace members, what they can do, and where they operate.</p>
+          </div>
+          <div className="head-actions" style={{position:'relative'}}>
+            <button className="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>Roles &amp; permissions</button>
+            <button className="btn btn-locked">
+              <span className="lk-pad"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              Invite user
+            </button>
+            <div className="lock-tip">
+              <b>Seat limit reached</b><br/>
+              You're using all 20 seats on your Team plan. <a href="#">Add seats →</a>
+            </div>
+          </div>
+        </div>
+
+        {/* SEAT-LIMIT BANNER */}
+        <div className="seat-banner">
+          <div className="sb-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M19 8v4M19 16h.01"/>
+            </svg>
+          </div>
+          <div className="sb-body">
+            <div className="sb-eye">Seat limit reached · Team plan</div>
+            <h3 className="sb-title">You're at <b>20 of 20 seats</b>. New invites are paused.</h3>
+            <p className="sb-desc">Free up a seat by removing or suspending a member, add seats to your current plan ($12/seat/mo), or move to <b>Growth</b> for 50 seats included.</p>
+          </div>
+          <div className="sb-actions">
+            <div className="sb-meter">
+              <b>20<small>/20</small></b>
+              <div className="bar"><i></i></div>
+              <span>Plan limit</span>
+            </div>
+            <button className="btn">Add seats</button>
+            <button className="btn btn-brand">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 3 18 9"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upgrade plan
+            </button>
+          </div>
+        </div>
+
+        <div className="tabs">
+          <button className="tab is-on">All <span className="count">20</span></button>
+          <button className="tab">Active <span className="count">17</span></button>
+          <button className="tab">Pending <span className="count">3</span></button>
+          <button className="tab">Suspended <span className="count">0</span></button>
+        </div>
+
+        <div className="filterbar">
+          <div className="search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+            <input placeholder="Search name, email, role…" />
+          </div>
+          <button className="chip-select">Role: <span className="v">All</span></button>
+          <button className="chip-select">Location: <span className="v">All</span></button>
+          <div className="spacer"></div>
+          <button className="chip-select"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>Sort: Last active</button>
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Member</th><th>Role</th><th>Location</th><th>Last active</th><th></th></tr></thead>
+            <tbody>
+              {USERS.map((u,i)=>(
+                <tr key={u.email} className={i>=4 ? 'row-suggest':''}>
+                  <td><div className="user-cell"><div className="uav" style={{background:`oklch(0.62 0.14 ${u.hue})`}}>{initials(u.name)}</div><div><div className="uname">{u.name}</div><div className="uemail">{u.email}</div></div></div></td>
+                  <td><span className={`role role-${u.role}`}><span className="rd"></span>{u.roleLabel}</span></td>
+                  <td><span style={{fontSize:12.5,color:'var(--ink-2)'}}>{u.lastSub || 'All locations'}</span></td>
+                  <td><div className="last">{u.last}{u.lastSub && i<4 ? <small>{u.lastSub}</small> : null}</div></td>
+                  <td style={{textAlign:'right',width:80}}></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ====== C — FULL PLAN-UPGRADE TAKEOVER ======
+const ArtboardC = () => (
+  <div className="app" style={{height:'100%'}}>
+    <Sidebar />
+    <div style={{display:'flex',flexDirection:'column',minWidth:0}}>
+      <TopBar />
+      <div className="takeover">
+        <div className="to-left">
+          <div className="to-eye"><span className="pulse"></span> Seat limit reached</div>
+          <h1 className="to-h1">Your team's <span className="accent">growing fast.</span> Let's make room.</h1>
+          <p className="to-lede">You've used all <b>20 seats</b> on your Team plan, and there's a pending invite for <b>Avery Chen</b> waiting. Pick a plan that fits — you'll only pay for what's left of the month.</p>
+
+          <div className="to-meter">
+            <div className="to-meter-head">
+              <span className="lbl">Current usage · Team plan</span>
+              <span className="val">20 / 20</span>
+            </div>
+            <div className="seat-grid">
+              {Array.from({length:20}).map((_,i)=>(<span key={i} className="seat"></span>))}
+            </div>
+            <div className="to-meter-foot">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".8" fill="currentColor"/></svg>
+              <span><b style={{color:'var(--ink)',fontWeight:600}}>Avery Chen</b> · invitation paused · queued 2 days ago</span>
+            </div>
+          </div>
+
+          <div className="to-trust">
+            <span className="item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Prorated billing</span>
+            <span className="item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Cancel or downgrade anytime</span>
+            <span className="item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Effective immediately</span>
+          </div>
+        </div>
+
+        <div className="plans">
+          <div className="plan is-current">
+            <div className="plan-head">
+              <div className="plan-meta">
+                <div className="plan-name">Team <span className="tag cur">Current</span></div>
+                <div className="plan-seats">20 seats · 3 locations · standard support</div>
+              </div>
+              <div className="plan-price">
+                <div className="num"><span className="cur">$</span>49</div>
+                <div className="per">per month</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="plan is-rec">
+            <div className="plan-head">
+              <div className="plan-meta">
+                <div className="plan-name">Growth <span className="tag">Most popular</span></div>
+                <div className="plan-seats">50 seats · unlimited locations</div>
+              </div>
+              <div className="plan-price">
+                <div className="num"><span className="cur">$</span>129</div>
+                <div className="per">per month · billed annually</div>
+              </div>
+            </div>
+            <div className="plan-feats">
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span><b>+30 seats</b> over today</span></div>
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Custom roles &amp; permissions</span></div>
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>SSO &amp; SAML</span></div>
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Audit logs &amp; SCIM</span></div>
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Priority support</span></div>
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>API access</span></div>
+            </div>
+            <div className="plan-action">
+              <button className="btn btn-primary">
+                Upgrade to Growth — invite Avery
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="plan is-enterprise">
+            <div className="plan-head">
+              <div className="plan-meta">
+                <div className="plan-name">Enterprise <span className="tag">Custom</span></div>
+                <div className="plan-seats">Unlimited seats · dedicated CSM · uptime SLA</div>
+              </div>
+              <div className="plan-price">
+                <div className="num">Talk to us</div>
+                <div className="per">starts at $499/mo</div>
+              </div>
+            </div>
+            <div className="plan-feats">
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Everything in Growth</span></div>
+              <div className="plan-feat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Custom contract &amp; DPA</span></div>
+            </div>
+            <div className="plan-action">
+              <button className="btn">Contact sales</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ====== Mount canvas ======
+const App = () => (
+  <DesignCanvas title="Team — Seat limit reached" subtitle="3 directions for the moment a workspace hits its seat cap">
+    <DCSection id="modal" title="A · Blocking modal" subtitle="They click Invite → modal explains the limit and offers three paths. Smallest change, clearest moment.">
+      <DCArtboard id="a-modal" label="Invite blocked — limit modal" width={1400} height={1080}>
+        <ArtboardA />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="banner" title="B · Inline page state" subtitle="The team page itself shifts: red banner up top, Invite button locked with a tooltip, hover-hints to free a seat.">
+      <DCArtboard id="b-banner" label="Team page · seat-limit banner" width={1400} height={1080}>
+        <ArtboardB />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="takeover" title="C · Plan-upgrade takeover" subtitle="Full-page state when they hit Invite. Marketing-style — emphasizes growth and gives a real comparison.">
+      <DCArtboard id="c-takeover" label="Team — upgrade to add seats" width={1400} height={1080}>
+        <ArtboardC />
+      </DCArtboard>
+    </DCSection>
+  </DesignCanvas>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

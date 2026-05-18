@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Edit · SFO Long-term Lot C — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--map-bg:#eef0f2;--map-land:#f7f8f9;--map-water:#dce5ef;--map-line:#e2e6ea;--map-road:#fff;--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d;--map-bg:#15171a;--map-land:#1a1d22;--map-water:#0f1216;--map-line:#23262b;--map-road:#2a2e34}
+  *{box-sizing:border-box}html,body{margin:0;padding:0;scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* App shell */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* Topbar */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb a{color:var(--muted)}.crumb a:hover{color:var(--ink)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-danger{color:var(--brand);border-color:color-mix(in srgb,var(--brand) 28%,var(--line))}
+  .btn-danger:hover{background:var(--brand-tint-2)}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* Work layout */
+  .work{display:grid;grid-template-columns:264px 1fr;min-height:calc(100vh - 56px)}
+  .rail{border-right:1px solid var(--line);background:var(--canvas);padding:24px 18px 20px;display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px)}
+  .rail-head{display:flex;gap:12px;align-items:center;padding:0 4px 18px;border-bottom:1px solid var(--line-2);margin-bottom:14px}
+  .rail-pin{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;color:#fff;flex-shrink:0;font-weight:800;font-size:14px;background:var(--info)}
+  .rail-titles{min-width:0;flex:1}
+  .rail-titles .t1{font-size:13.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rail-titles .t2{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .rail-titles .t2 .tag{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:99px;background:var(--info-tint);color:var(--info)}
+
+  .secnav{display:flex;flex-direction:column;gap:1px;flex:1;overflow-y:auto;margin:0 -18px;padding:0 14px}
+  .sn-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 8px;border-radius:7px;color:var(--muted);font-size:13px;font-weight:500;transition:all var(--t-fast);position:relative}
+  .sn-item:hover{color:var(--ink);background:var(--hover)}
+  .sn-item.is-on{color:var(--ink);background:var(--bg);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .sn-item.is-on{background:var(--active);box-shadow:none}
+  .sn-item .ico{width:14px;height:14px;color:var(--muted-2)}
+  .sn-item:hover .ico,.sn-item.is-on .ico{color:var(--ink)}
+  .sn-item .dirty{margin-left:auto;width:7px;height:7px;border-radius:99px;background:var(--brand);opacity:0;transition:opacity var(--t-fast)}
+  .sn-item.is-dirty .dirty{opacity:1}
+
+  .rail-foot{padding-top:14px;border-top:1px solid var(--line-2);margin-top:8px}
+  .rail-foot .back-link{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:7px;color:var(--muted);font-size:12.5px;font-weight:500}
+  .rail-foot .back-link:hover{color:var(--ink);background:var(--hover)}
+  .rail-foot .back-link svg{width:13px;height:13px}
+
+  /* Pane */
+  .pane{padding:32px 44px 140px;max-width:900px;margin:0 auto;width:100%}
+  .section{margin-bottom:28px;scroll-margin-top:72px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;gap:14px}
+  .sec-title{font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .sec-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2)}
+  .sec-actions{display:flex;gap:6px;align-items:center}
+  .card{background:var(--canvas);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+
+  /* Fields */
+  .field{margin-bottom:18px;display:block}
+  .field:last-child{margin-bottom:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+  .field-row.cols-4{grid-template-columns:repeat(4,1fr)}
+  .field-row > .field{margin-bottom:18px}
+  .field-row:last-child > .field{margin-bottom:0}
+  .label{display:flex;align-items:baseline;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .label .opt{font-weight:500;color:var(--muted);font-size:11.5px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .hint.ok{color:var(--ok)}.hint.warn{color:var(--warn)}.hint.info{color:var(--info)}
+  .input,.select,.textarea{width:100%;height:38px;padding:0 12px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13.5px;transition:all var(--t-fast);outline:none}
+  .input:hover,.select:hover,.textarea:hover{border-color:var(--muted-2)}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  [data-theme="dark"] .input:focus,[data-theme="dark"] .select:focus,[data-theme="dark"] .textarea:focus{border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .textarea{height:auto;padding:10px 12px;min-height:80px;resize:vertical;line-height:1.5;font-family:inherit}
+  .select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .ipair{position:relative}
+  .ipair .input{padding-left:30px}
+  .ipair .pre{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:500;pointer-events:none}
+  .ipair .suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none}
+  .ipair.has-suf .input{padding-right:60px}
+
+  /* Type picker (radio cards) */
+  .type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .type-card{border:1px solid var(--line);border-radius:10px;padding:12px 10px;cursor:pointer;transition:all var(--t-fast);text-align:left;background:var(--canvas);display:flex;flex-direction:column;gap:6px;min-width:0}
+  .type-card:hover{border-color:var(--muted-2)}
+  .type-card.is-on{border-color:var(--ink);background:var(--field-bg);box-shadow:0 0 0 1px var(--ink) inset}
+  [data-theme="dark"] .type-card.is-on{background:var(--hover)}
+  .type-card .ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#fff}
+  .type-card .ico.t-hub{background:var(--ink)}
+  .type-card .ico.t-airport{background:var(--info)}
+  .type-card .ico.t-curbside{background:var(--warn)}
+  .type-card .ico.t-delivery{background:var(--turo)}
+  .type-card .ico.t-meeting{background:var(--muted)}
+  .type-card .nm{font-size:12.5px;font-weight:700}
+  .type-card .ds{font-size:10.5px;color:var(--muted);line-height:1.3}
+
+  /* Map preview */
+  .map-preview{height:220px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--map-bg);position:relative;margin-top:8px}
+  .map-preview svg{width:100%;height:100%;display:block}
+  .map-preview .hint-pill{position:absolute;left:10px;bottom:10px;background:color-mix(in srgb, var(--canvas) 92%, transparent);border:1px solid var(--line);border-radius:99px;padding:5px 10px;font-size:11px;color:var(--ink-2);font-weight:600;backdrop-filter:blur(8px);display:inline-flex;align-items:center;gap:6px}
+
+  /* Hours editor */
+  .hours-row{display:grid;grid-template-columns:90px auto 1fr;gap:14px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line-2)}
+  .hours-row:last-child{border-bottom:0}
+  .hours-row .day{font-size:13px;font-weight:600}
+  .hours-row .closed-text{font-size:12px;color:var(--muted);font-style:italic}
+  .hours-times{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+  .hours-times .input{height:32px;font-size:12.5px;text-align:center}
+  .hours-times .dash{color:var(--muted-2);font-weight:600}
+  .switch{width:34px;height:20px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);flex-shrink:0}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch.is-on{background:var(--ink)}.switch.is-on::after{transform:translateX(14px)}
+
+  /* Surfaces toggle row */
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;transition:all var(--t-fast)}
+  .toggle-row:last-child{margin-bottom:0}
+  .toggle-row:hover{border-color:var(--muted-2)}
+  .toggle-row.is-on{background:var(--field-bg);border-color:var(--ink-2)}
+  [data-theme="dark"] .toggle-row.is-on{background:var(--hover)}
+  .tr-meta{display:flex;align-items:center;gap:12px;min-width:0}
+  .tr-ico{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--field-bg);color:var(--ink-2);flex-shrink:0}
+  .toggle-row.is-on .tr-ico{background:var(--ink);color:var(--canvas)}
+  .toggle-row.fleet.is-on .tr-ico{background:var(--brand);color:#fff}
+  .toggle-row.cust.is-on .tr-ico{background:var(--info);color:#fff}
+  .tr-name{font-size:13.5px;font-weight:700}
+  .tr-desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Vehicles assigned list */
+  .veh-list{display:flex;flex-direction:column;gap:6px}
+  .veh-row{display:grid;grid-template-columns:48px 1fr auto auto;gap:12px;align-items:center;padding:8px 10px 8px 8px;border:1px solid var(--line);border-radius:10px}
+  .veh-row .vt{width:48px;height:36px;border-radius:6px;background-size:cover;background-position:center;background-color:var(--field-bg)}
+  .veh-row .vn{font-size:13px;font-weight:600}
+  .veh-row .vp{font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+  .veh-row .vstat{font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+  .veh-row .vstat .dot{width:7px;height:7px;border-radius:99px;background:var(--ok)}
+  .veh-row .vstat.trip .dot{background:var(--info)}
+  .veh-row .vrm{width:28px;height:28px;border-radius:6px;color:var(--muted)}
+  .veh-row .vrm:hover{background:var(--brand-tint);color:var(--brand)}
+  .veh-add{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:8px;border:1px dashed var(--line);color:var(--muted);font-size:12.5px;font-weight:600;margin-top:6px;transition:all var(--t-fast)}
+  .veh-add:hover{color:var(--ink);border-color:var(--ink-2)}
+
+  /* Photos */
+  .photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .photo-cell{aspect-ratio:4/3;border-radius:10px;border:1px dashed var(--line);background:var(--field-bg);display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center;cursor:pointer;transition:all var(--t-fast);position:relative;overflow:hidden}
+  .photo-cell:hover{border-color:var(--ink-2);color:var(--ink)}
+  .photo-cell.is-set{border-style:solid;border-color:var(--line)}
+  .photo-cell.is-set .ph-img{position:absolute;inset:0;background-size:cover;background-position:center}
+  .photo-cell .ph-cover{position:absolute;bottom:6px;left:6px;background:rgba(15,18,22,.72);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;z-index:2}
+
+  /* Status banner */
+  .status-strip{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;margin-bottom:18px;background:var(--ok-tint);border:1px solid color-mix(in srgb, var(--ok) 24%, var(--line))}
+  .status-strip.warn{background:var(--warn-tint);border-color:color-mix(in srgb, var(--warn) 28%, var(--line))}
+  .status-strip .sdot{width:8px;height:8px;border-radius:99px;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent);flex-shrink:0}
+  .status-strip.warn .sdot{background:var(--warn);box-shadow:0 0 0 4px color-mix(in srgb, var(--warn) 20%, transparent)}
+  .status-strip .stext{flex:1;font-size:13px;color:var(--ink)}
+  .status-strip .stext b{font-weight:700}
+  .status-strip .sub{font-size:11.5px;color:var(--ink-2);margin-top:1px}
+
+  /* Danger zone */
+  .danger{border-color:color-mix(in srgb,var(--brand) 24%,var(--line));background:color-mix(in srgb,var(--brand) 2.5%,var(--canvas))}
+  [data-theme="dark"] .danger{background:color-mix(in srgb,var(--brand) 6%,var(--canvas))}
+  .danger-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid color-mix(in srgb,var(--brand) 14%,var(--line))}
+  .danger-row:first-of-type{border-top:0}
+  .danger-row .dr-meta .name{font-size:13.5px;font-weight:700}
+  .danger-row .dr-meta .desc{font-size:12px;color:var(--muted);margin-top:2px}
+
+  /* Save bar */
+  .savebar{position:fixed;left:var(--side-w,232px);right:0;bottom:0;background:color-mix(in srgb,var(--canvas) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 44px;display:flex;justify-content:space-between;align-items:center;z-index:5;transition:left var(--t-slow),transform var(--t-med),opacity var(--t-med);transform:translateY(100%);opacity:0;pointer-events:none}
+  .savebar.is-show{transform:translateY(0);opacity:1;pointer-events:auto}
+  .app[data-collapsed="true"] .savebar{left:56px}
+  .savebar .meta{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .savebar .meta .dot{width:8px;height:8px;border-radius:99px;background:var(--brand);animation:pulse 1.6s ease-in-out infinite}
+  .savebar .meta b{color:var(--ink);font-weight:600}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .savebar .actions{display:flex;gap:8px}
+
+  /* ZIP chips (delivery zone) */
+  .chips-input{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--field);min-height:38px;align-items:center}
+  .chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 4px 0 10px;background:var(--field-bg);border:1px solid var(--line);border-radius:99px;font-size:12px;font-weight:600;color:var(--ink-2)}
+  .chip .x{width:18px;height:18px;border-radius:99px;display:grid;place-items:center;color:var(--muted)}
+  .chip .x:hover{background:var(--hover);color:var(--ink)}
+  .chips-input input{border:0;background:transparent;outline:none;font-size:12.5px;min-width:80px;height:22px}
+
+  @media (max-width:1080px){
+    .work{grid-template-columns:1fr}
+    .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+    .pane{padding:24px 20px 140px}
+    .savebar{left:0 !important;padding:12px 20px}
+    .photo-grid{grid-template-columns:repeat(3,1fr)}
+    .type-grid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+        <a href="Locations.html" class="nav-item is-active is-open">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+          <span class="label">Locations</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Locations.html" class="sub-item">All locations</a>
+          <a href="Location Details.html" class="sub-item is-active">SFO Lot C</a>
+          <a href="Add Location.html" class="sub-item">Add location</a>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Fleet</span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Locations.html">Locations</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">SFO · Long-term Lot C</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost" onclick="history.back()">Back</button>
+        <a href="Locations.html" class="btn">View on map</a>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="work">
+
+      <!-- ============ RAIL ============ -->
+      <aside class="rail">
+        <div class="rail-head">
+          <div class="rail-pin">1</div>
+          <div class="rail-titles">
+            <div class="t1">SFO · Long-term Lot C</div>
+            <div class="t2"><span class="tag">Airport</span><span>· 124 trips · 30d</span></div>
+          </div>
+        </div>
+
+        <nav class="secnav" id="secnav">
+          <a href="#sec-basics" class="sn-item is-on" data-sec="basics">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".8" fill="currentColor"/></svg>
+            Basics <span class="dirty"></span>
+          </a>
+          <a href="#sec-address" class="sn-item" data-sec="address">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+            Address &amp; map <span class="dirty"></span>
+          </a>
+          <a href="#sec-hours" class="sn-item" data-sec="hours">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+            Hours of operation <span class="dirty"></span>
+          </a>
+          <a href="#sec-fees" class="sn-item" data-sec="fees">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6H9.5a3 3 0 0 0 0 6h5a3 3 0 1 1 0 6H6"/></svg>
+            Pickup &amp; dropoff <span class="dirty"></span>
+          </a>
+          <a href="#sec-vehicles" class="sn-item" data-sec="vehicles">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5h18v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg>
+            Vehicles parked here <span class="dirty"></span>
+          </a>
+          <a href="#sec-customer" class="sn-item" data-sec="customer">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
+            Customer-facing <span class="dirty"></span>
+          </a>
+          <a href="#sec-surfaces" class="sn-item" data-sec="surfaces">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+            Surfaces &amp; visibility <span class="dirty"></span>
+          </a>
+          <a href="#sec-danger" class="sn-item" data-sec="danger">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".9" fill="currentColor"/></svg>
+            Danger zone
+          </a>
+        </nav>
+
+        <div class="rail-foot">
+          <a href="Locations.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            All locations
+          </a>
+        </div>
+      </aside>
+
+      <!-- ============ PANE ============ -->
+      <div class="pane">
+
+        <!-- Status banner -->
+        <div class="status-strip">
+          <span class="sdot"></span>
+          <div class="stext">
+            <b>Active</b> on customer site and fleet ops · Last booking pickup 2 hr ago
+            <div class="sub">6 vehicles currently parked here · 124 trips routed in the last 30 days</div>
+          </div>
+          <button class="btn btn-sm">Pause location</button>
+        </div>
+
+        <!-- ============ BASICS ============ -->
+        <section class="section" id="sec-basics" data-sec="basics">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Basics</div>
+              <h2 class="sec-title">Location identity</h2>
+              <div class="sec-sub">How this location is named, classified, and surfaced to your team.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field">
+              <label class="label">Location type</label>
+              <div class="type-grid">
+                <button type="button" class="type-card" data-type="hub" onclick="window.__pickType('hub')">
+                  <div class="ico t-hub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></div>
+                  <div class="nm">Hub</div><div class="ds">Your own lot or garage</div>
+                </button>
+                <button type="button" class="type-card is-on" data-type="airport" onclick="window.__pickType('airport')">
+                  <div class="ico t-airport"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.5L13 11V4.5a1.5 1.5 0 0 0-3 0V11l-9 5.5v2l9-3v5l-2 1v1.5l3.5-1 3.5 1v-1.5l-2-1v-5l9 3z" fill="currentColor"/></svg></div>
+                  <div class="nm">Airport</div><div class="ds">Curb meetup at terminal</div>
+                </button>
+                <button type="button" class="type-card" data-type="curbside" onclick="window.__pickType('curbside')">
+                  <div class="ico t-curbside"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-2.8 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.8-1.4 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0-1.5-2.8H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-2.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 2.8-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.8 1.4 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0 1.5 2.8H21a2 2 0 1 1 0 4h-.1z"/></svg></div>
+                  <div class="nm">Curbside</div><div class="ds">Public street meeting</div>
+                </button>
+                <button type="button" class="type-card" data-type="delivery" onclick="window.__pickType('delivery')">
+                  <div class="ico t-delivery"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="10" rx="1.5"/><polyline points="16 10 20 10 22 13 22 17 16 17"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg></div>
+                  <div class="nm">Delivery zone</div><div class="ds">Drive to customer</div>
+                </button>
+                <button type="button" class="type-card" data-type="meeting" onclick="window.__pickType('meeting')">
+                  <div class="ico t-meeting"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c.6-3 3-5 6-5s5.4 2 6 5"/></svg></div>
+                  <div class="nm">Meeting point</div><div class="ds">Coordinated handoff</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="nm">Public name</label>
+                <input id="nm" class="input" value="SFO · Long-term Lot C" />
+                <div class="hint">Customers see this when they pick a pickup point.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="code">Internal code <span class="opt">optional</span></label>
+                <input id="code" class="input" value="SFO-LTC" style="font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em" />
+                <div class="hint">Used in calendar tags and bookings exports.</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="region">Region</label>
+              <select id="region" class="input">
+                <option selected>Bay Area</option>
+                <option>Sacramento</option>
+                <option>Los Angeles</option>
+                <option>San Diego</option>
+                <option>+ New region…</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ ADDRESS & MAP ============ -->
+        <section class="section" id="sec-address" data-sec="address">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Address</div>
+              <h2 class="sec-title">Address &amp; map pin</h2>
+              <div class="sec-sub">Drag the pin to adjust the exact pickup point — customers route to this spot.</div>
+            </div>
+            <div class="sec-actions">
+              <button class="btn btn-sm">Use my current location</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field">
+              <label class="label" for="addr1">Street address</label>
+              <input id="addr1" class="input" value="780 N McDonnell Rd" />
+            </div>
+            <div class="field-row cols-3">
+              <div class="field">
+                <label class="label" for="city">City</label>
+                <input id="city" class="input" value="San Francisco" />
+              </div>
+              <div class="field">
+                <label class="label" for="state">State</label>
+                <select id="state" class="input"><option>CA</option><option>OR</option><option>WA</option><option>NV</option><option>AZ</option></select>
+              </div>
+              <div class="field">
+                <label class="label" for="zip">ZIP</label>
+                <input id="zip" class="input" value="94128" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="label" for="suite">Suite / Lot / Bay <span class="opt">optional</span></label>
+              <input id="suite" class="input" placeholder="e.g. Lot C, Row 4" value="Lot C, Row 4, Stalls 41–46" />
+            </div>
+
+            <!-- Map preview -->
+            <div class="map-preview">
+              <svg viewBox="0 0 800 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <rect width="800" height="240" fill="var(--map-bg)"/>
+                <path d="M0 0 H260 L240 80 L210 160 L200 240 H0 Z" fill="var(--map-water)"/>
+                <path d="M800 0 H700 L680 80 L700 160 L720 240 H800 Z" fill="var(--map-water)"/>
+                <path d="M260 0 H700 L680 80 L700 160 L720 240 H200 L210 160 L240 80 Z" fill="var(--map-land)"/>
+                <g opacity=".5">
+                  <defs><pattern id="dp2" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.8" fill="var(--map-line)"/></pattern></defs>
+                  <rect width="800" height="240" fill="url(#dp2)"/>
+                </g>
+                <g stroke="var(--map-road)" stroke-width="6" fill="none" stroke-linecap="round"><path d="M260 30 Q420 100 480 240"/><path d="M260 110 L680 110"/><path d="M260 170 L680 170"/></g>
+                <g stroke="var(--map-line)" stroke-width="1.5" fill="none" stroke-linecap="round"><path d="M260 30 Q420 100 480 240"/><path d="M260 110 L680 110"/><path d="M260 170 L680 170"/></g>
+                <!-- terminal block -->
+                <rect x="430" y="80" width="80" height="14" rx="2" fill="var(--ink-2)" opacity=".15"/>
+                <text x="470" y="76" font-family="Inter" font-size="9" font-weight="600" fill="var(--muted)" text-anchor="middle">TERMINAL 2</text>
+                <!-- pin -->
+                <g transform="translate(420,140)">
+                  <ellipse cx="0" cy="8" rx="10" ry="3" fill="rgba(15,18,22,.18)"/>
+                  <path d="M0,-22 C8,-22 13,-16 13,-10 C13,-2 0,12 0,12 C0,12 -13,-2 -13,-10 C-13,-16 -8,-22 0,-22 Z" fill="var(--info)" stroke="#fff" stroke-width="2"/>
+                  <circle cx="0" cy="-11" r="4" fill="#fff"/>
+                </g>
+              </svg>
+              <div class="hint-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/></svg>Drag pin to refine</div>
+            </div>
+            <div class="field-row" style="margin-top:14px">
+              <div class="field">
+                <label class="label" for="lat">Latitude</label>
+                <input id="lat" class="input" value="37.6213" style="font-family:ui-monospace,monospace" />
+              </div>
+              <div class="field">
+                <label class="label" for="lng">Longitude</label>
+                <input id="lng" class="input" value="-122.3790" style="font-family:ui-monospace,monospace" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ HOURS ============ -->
+        <section class="section" id="sec-hours" data-sec="hours">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Hours</div>
+              <h2 class="sec-title">Hours of operation</h2>
+              <div class="sec-sub">When customers can pick up or drop off here. After-hours bookings can be allowed for an extra fee below.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toggle-row is-on" id="alwaysOpenRow" onclick="window.__toggleAlwaysOpen(this)">
+              <div class="tr-meta">
+                <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+                <div><div class="tr-name">Open 24 / 7</div><div class="tr-desc">Customers can pick up and drop off any hour — recommended for airport lots.</div></div>
+              </div>
+              <span class="switch is-on"></span>
+            </div>
+
+            <div id="hoursList" style="margin-top:14px;opacity:.5;pointer-events:none">
+              <!-- Will be populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ FEES ============ -->
+        <section class="section" id="sec-fees" data-sec="fees">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Fees</div>
+              <h2 class="sec-title">Pickup &amp; dropoff fees</h2>
+              <div class="sec-sub">Set per-trip fees and what's included. Customers see these line-itemed at checkout.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field-row cols-3">
+              <div class="field">
+                <label class="label" for="pfee">Pickup fee</label>
+                <div class="ipair"><span class="pre">$</span><input id="pfee" class="input" value="25" /></div>
+                <div class="hint">Charged once per trip.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="dfee">Dropoff fee</label>
+                <div class="ipair"><span class="pre">$</span><input id="dfee" class="input" value="0" /></div>
+                <div class="hint ok">No charge — return is free.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="afee">After-hours fee <span class="opt">10pm–6am</span></label>
+                <div class="ipair"><span class="pre">$</span><input id="afee" class="input" value="35" /></div>
+                <div class="hint warn">Stacks on top of pickup fee.</div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:6px">
+              <label class="label" for="prep">Buffer between bookings</label>
+              <div class="ipair has-suf" style="max-width:200px"><input id="prep" class="input" value="60" /><span class="suf">minutes</span></div>
+              <div class="hint">Reserved between checkout and next pickup to clean and inspect.</div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="instr">Driver instructions</label>
+              <textarea id="instr" class="textarea" rows="3">Enter the long-term lot from N McDonnell Rd. Take ticket at gate — Fleetly covers parking. Drop keys in Stall 41 lockbox if office is closed.</textarea>
+              <div class="hint">Internal — shown to your team in the calendar and bookings.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ VEHICLES ============ -->
+        <section class="section" id="sec-vehicles" data-sec="vehicles">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Vehicles</div>
+              <h2 class="sec-title">Vehicles parked here</h2>
+              <div class="sec-sub">Default pickup point for these vehicles. Customers may still book others if cross-location is enabled.</div>
+            </div>
+            <div class="sec-actions">
+              <span style="font-size:12px;color:var(--muted)">6 of 14 fleet</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="veh-list" id="vehList">
+              <div class="veh-row">
+                <div class="vt" style="background-image:url('https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=200&q=80')"></div>
+                <div><div class="vn">Tesla Model 3 LR</div><div class="vp">7HZX-432</div></div>
+                <div class="vstat"><span class="dot"></span>Available</div>
+                <button class="vrm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+              </div>
+              <div class="veh-row">
+                <div class="vt" style="background-image:url('https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=200&q=80')"></div>
+                <div><div class="vn">Tesla Model Y</div><div class="vp">9PWN-554</div></div>
+                <div class="vstat trip"><span class="dot"></span>On trip</div>
+                <button class="vrm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+              </div>
+              <div class="veh-row">
+                <div class="vt" style="background-image:url('https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=200&q=80')"></div>
+                <div><div class="vn">Audi A4 Quattro</div><div class="vp">4RGH-651</div></div>
+                <div class="vstat"><span class="dot"></span>Available</div>
+                <button class="vrm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+              </div>
+              <div class="veh-row">
+                <div class="vt" style="background-image:url('https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=200&q=80')"></div>
+                <div><div class="vn">Ford F-150 Lightning</div><div class="vp">5VCT-770</div></div>
+                <div class="vstat"><span class="dot"></span>Available</div>
+                <button class="vrm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+              </div>
+              <div class="veh-row">
+                <div class="vt" style="background-image:url('https://images.unsplash.com/photo-1549921296-3a6b5b6c7d31?w=200&q=80')"></div>
+                <div><div class="vn">BMW M340i</div><div class="vp">2QRT-901</div></div>
+                <div class="vstat trip"><span class="dot"></span>On trip</div>
+                <button class="vrm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+              </div>
+              <div class="veh-row">
+                <div class="vt" style="background-image:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&q=80')"></div>
+                <div><div class="vn">Honda Civic Si</div><div class="vp">3FYP-088</div></div>
+                <div class="vstat" style="color:var(--warn)"><span class="dot" style="background:var(--warn)"></span>Maintenance</div>
+                <button class="vrm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+              </div>
+            </div>
+            <button class="veh-add"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Assign vehicle to this location</button>
+          </div>
+        </section>
+
+        <!-- ============ CUSTOMER FACING ============ -->
+        <section class="section" id="sec-customer" data-sec="customer">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Customer-facing</div>
+              <h2 class="sec-title">What customers see</h2>
+              <div class="sec-sub">Description, photos and how-to-find-us notes shown on the booking flow.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field">
+              <label class="label" for="cdesc">Customer description</label>
+              <textarea id="cdesc" class="textarea" rows="3">Covered, secure lot 4 minutes from Terminal 2 via the free AirTrain shuttle. 24/7 attendant. Look for the red Fleetly sign at Stall 41.</textarea>
+              <div class="hint">First 140 chars show in the booking summary.</div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="howto">How to find us</label>
+              <textarea id="howto" class="textarea" rows="4">1. Exit baggage claim at any terminal.
+2. Take the free SFO AirTrain (Red Line) to "Rental Car Center" — 7 min.
+3. Walk to Lot C — 2 min, follow blue Fleetly signs.
+4. Text the dispatch number on your booking confirmation when you arrive.</textarea>
+              <div class="hint">Plain text or numbered steps work best. Shown on the receipt and 24 hrs before pickup.</div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="phone">Pickup phone</label>
+                <input id="phone" class="input" value="+1 (415) 555-0142" style="font-family:ui-monospace,monospace" />
+                <div class="hint">Shown to the customer 24h before pickup.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="contact">On-site contact <span class="opt">optional</span></label>
+                <input id="contact" class="input" value="Tomás Rivera — Lot manager" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Location photos <span class="opt">up to 6</span></label>
+              <div class="photo-grid">
+                <div class="photo-cell is-set"><div class="ph-img" style="background-image:url('https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400&q=80')"></div><span class="ph-cover">Cover</span></div>
+                <div class="photo-cell is-set"><div class="ph-img" style="background-image:url('https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=400&q=80')"></div></div>
+                <div class="photo-cell is-set"><div class="ph-img" style="background-image:url('https://images.unsplash.com/photo-1545179605-1296651e9d43?w=400&q=80')"></div></div>
+                <div class="photo-cell"><div style="display:grid;place-items:center;gap:4px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add photo</div></div>
+              </div>
+              <div class="hint">JPG / PNG · min 1200 × 800 · drag the cover photo to reorder.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ SURFACES ============ -->
+        <section class="section" id="sec-surfaces" data-sec="surfaces">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Visibility</div>
+              <h2 class="sec-title">Where this location shows up</h2>
+              <div class="sec-sub">Control the customer site, fleet ops, and external listings independently.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toggle-row cust is-on" onclick="window.__toggleSurf(this)">
+              <div class="tr-meta">
+                <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg></div>
+                <div><div class="tr-name">Show on customer booking site</div><div class="tr-desc">Customers can select this as pickup or dropoff during checkout.</div></div>
+              </div>
+              <span class="switch is-on"></span>
+            </div>
+
+            <div class="toggle-row fleet is-on" onclick="window.__toggleSurf(this)">
+              <div class="tr-meta">
+                <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5h18v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg></div>
+                <div><div class="tr-name">Available in fleet ops</div><div class="tr-desc">Team can park vehicles here, assign in calendar, and route returns.</div></div>
+              </div>
+              <span class="switch is-on"></span>
+            </div>
+
+            <div class="toggle-row" onclick="window.__toggleSurf(this)">
+              <div class="tr-meta">
+                <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><polyline points="8 12 11 15 16 9"/></svg></div>
+                <div><div class="tr-name">Sync to Turo listings</div><div class="tr-desc">Mirror this location as a Turo handoff option for compatible vehicles.</div></div>
+              </div>
+              <span class="switch"></span>
+            </div>
+
+            <div class="field-row" style="margin-top:16px">
+              <div class="field">
+                <label class="label" for="minlead">Customer lead time</label>
+                <div class="ipair has-suf" style="max-width:220px"><input id="minlead" class="input" value="2" /><span class="suf">hours</span></div>
+                <div class="hint">Minimum notice required before a pickup can be booked here.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="returnto">Allow returns from other locations</label>
+                <select id="returnto" class="input">
+                  <option selected>Yes — one-way allowed</option>
+                  <option>No — must return here</option>
+                  <option>Only from listed hubs</option>
+                </select>
+                <div class="hint">One-way trips charge a $25 routing fee unless waived per booking.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ DANGER ZONE ============ -->
+        <section class="section" id="sec-danger" data-sec="danger">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow" style="color:var(--brand)">Danger zone</div>
+              <h2 class="sec-title">Pause or delete</h2>
+              <div class="sec-sub">Pausing hides this location from new bookings but keeps existing trips routed here.</div>
+            </div>
+          </div>
+          <div class="card danger">
+            <div class="danger-row">
+              <div class="dr-meta">
+                <div class="name">Pause this location</div>
+                <div class="desc">Stops new bookings. Current bookings keep their pickup here. 6 vehicles need to be reassigned.</div>
+              </div>
+              <button class="btn btn-danger">Pause</button>
+            </div>
+            <div class="danger-row">
+              <div class="dr-meta">
+                <div class="name">Duplicate to new location</div>
+                <div class="desc">Copies settings — useful for adding a second hub in the same region.</div>
+              </div>
+              <button class="btn">Duplicate</button>
+            </div>
+            <div class="danger-row">
+              <div class="dr-meta">
+                <div class="name">Delete location</div>
+                <div class="desc">Permanent. Can only be done after all vehicles are reassigned and no upcoming bookings reference this location.</div>
+              </div>
+              <button class="btn btn-danger" disabled title="6 vehicles assigned · 14 upcoming bookings">Delete…</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SAVE BAR ============ -->
+  <div class="savebar" id="savebar">
+    <div class="meta"><span class="dot"></span><b>3 unsaved changes</b> · in Basics, Address, Fees</div>
+    <div class="actions">
+      <button class="btn" onclick="window.__discard()">Discard</button>
+      <button class="btn btn-primary" onclick="window.__save()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const app=document.getElementById('app');
+  const btnTheme=document.getElementById('btnTheme');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  btnTheme.addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+  document.getElementById('btnExpand').addEventListener('click',()=>{app.dataset.collapsed='false';localStorage.setItem('side-collapsed','0');});
+
+  // Type picker
+  window.__pickType=function(t){
+    document.querySelectorAll('.type-card').forEach(c=>c.classList.toggle('is-on',c.dataset.type===t));
+    // Update rail head pin color
+    const pin=document.querySelector('.rail-pin');
+    const tag=document.querySelector('.rail-titles .tag');
+    const map={hub:['var(--ink)','Hub','color:var(--ink);background:var(--field-bg)'],airport:['var(--info)','Airport','color:var(--info);background:var(--info-tint)'],curbside:['var(--warn)','Curbside','color:var(--warn);background:var(--warn-tint)'],delivery:['var(--turo)','Delivery zone','color:var(--turo);background:var(--turo-tint)'],meeting:['var(--muted)','Meeting point','color:var(--muted);background:var(--field-bg)']};
+    pin.style.background=map[t][0];
+    tag.textContent=map[t][1];
+    tag.style.cssText=map[t][2]+';font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:99px';
+    markDirty('basics');
+  };
+
+  // 24/7 toggle
+  window.__toggleAlwaysOpen=function(row){
+    const sw=row.querySelector('.switch');
+    sw.classList.toggle('is-on');
+    row.classList.toggle('is-on');
+    const list=document.getElementById('hoursList');
+    const on=sw.classList.contains('is-on');
+    list.style.opacity=on?'.5':'1';
+    list.style.pointerEvents=on?'none':'auto';
+    markDirty('hours');
+  };
+
+  // Surface toggles
+  window.__toggleSurf=function(row){
+    const sw=row.querySelector('.switch');
+    sw.classList.toggle('is-on');
+    row.classList.toggle('is-on');
+    markDirty('surfaces');
+  };
+
+  // Build hours list
+  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  document.getElementById('hoursList').innerHTML=days.map((d,i)=>`
+    <div class="hours-row">
+      <div class="day">${d}</div>
+      <span class="switch is-on" onclick="this.classList.toggle('is-on');this.nextElementSibling.style.opacity=this.classList.contains('is-on')?'1':'.4';this.nextElementSibling.style.pointerEvents=this.classList.contains('is-on')?'auto':'none'"></span>
+      <div class="hours-times">
+        <input class="input" value="${i<5?'7:00 AM':'8:00 AM'}" />
+        <span class="dash">–</span>
+        <input class="input" value="${i<5?'9:00 PM':'7:00 PM'}" />
+      </div>
+    </div>
+  `).join('');
+
+  // Dirty state -> save bar + rail dots
+  const dirty=new Set(['basics','address','fees']); // pre-seed for demo
+  function markDirty(sec){dirty.add(sec);refresh();}
+  function refresh(){
+    document.querySelectorAll('.sn-item').forEach(it=>{
+      it.classList.toggle('is-dirty',dirty.has(it.dataset.sec));
+    });
+    const bar=document.getElementById('savebar');
+    if(dirty.size){
+      bar.classList.add('is-show');
+      bar.querySelector('.meta b').textContent=`${dirty.size} unsaved change${dirty.size===1?'':'s'}`;
+      const names=[...dirty].map(s=>({basics:'Basics',address:'Address',hours:'Hours',fees:'Fees',vehicles:'Vehicles',customer:'Customer',surfaces:'Surfaces'})[s]);
+      bar.querySelector('.meta').lastChild.textContent=' · in '+names.join(', ');
+    } else bar.classList.remove('is-show');
+  }
+  refresh();
+
+  // Hook inputs
+  document.querySelectorAll('.pane input, .pane select, .pane textarea').forEach(el=>{
+    el.addEventListener('input',()=>{
+      const sec=el.closest('.section');if(sec)markDirty(sec.dataset.sec);
+    });
+  });
+
+  window.__save=function(){
+    dirty.clear();refresh();
+    // tiny toast
+    const t=document.createElement('div');
+    t.textContent='✓ Saved';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--canvas);padding:8px 16px;border-radius:99px;font-size:12.5px;font-weight:600;z-index:99;box-shadow:0 6px 18px rgba(15,18,22,.18)';
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),1600);
+  };
+  window.__discard=function(){
+    dirty.clear();refresh();
+  };
+
+  // Section scrollspy
+  const sections=[...document.querySelectorAll('.section')];
+  const items=document.querySelectorAll('.sn-item');
+  document.addEventListener('scroll',()=>{
+    const y=window.scrollY+120;
+    let cur=sections[0].id;
+    sections.forEach(s=>{if(s.offsetTop<=y)cur=s.id;});
+    items.forEach(it=>it.classList.toggle('is-on',it.getAttribute('href')==='#'+cur));
+  });
+})();
+</script>
+</body>
+</html>

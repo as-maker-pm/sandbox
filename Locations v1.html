@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Locations — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--map-bg:#eef0f2;--map-land:#f7f8f9;--map-water:#dce5ef;--map-line:#e2e6ea;--map-road:#fff;--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d;--map-bg:#15171a;--map-land:#1a1d22;--map-water:#0f1216;--map-line:#23262b;--map-road:#2a2e34}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* ===== App shell (matches existing Fleetly pages) ===== */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* ===== Topbar ===== */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}
+  .crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* ===== Page ===== */
+  .page{padding:24px 28px 80px;max-width:1640px;margin:0 auto}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .page-sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+  .head-actions{display:flex;gap:8px}
+
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  .kpi{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas);position:relative;overflow:hidden}
+  .kpi-label{font-size:11.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .kpi-label svg{width:13px;height:13px;color:var(--muted-2)}
+  .kpi-val{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .kpi-val .un{font-size:13px;color:var(--muted);font-weight:500;margin-left:1px}
+  .kpi-trend{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px;display:inline-flex;align-items:center;gap:4px}
+  .kpi-trend.up{color:var(--ok)}.kpi-trend.dn{color:var(--brand)}
+  .kpi .spark{position:absolute;right:14px;bottom:12px;width:74px;height:24px}
+
+  /* Tabs */
+  .tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+  .tab{height:36px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:color var(--t-fast)}
+  .tab:hover{color:var(--ink)}
+  .tab.is-on{color:var(--ink)}
+  .tab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+  .tab .count{font-size:11px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2)}
+  .tab.is-on .count{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+  .tab .swatch{width:8px;height:8px;border-radius:99px}
+
+  /* Filter bar */
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+  .search{position:relative;flex:1;min-width:240px;max-width:380px}
+  .search input{width:100%;height:34px;padding:0 12px 0 32px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;transition:all var(--t-fast)}
+  .search input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .chip-select{height:34px;padding:0 10px;border:1px solid var(--line);background:var(--canvas);border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:all var(--t-fast)}
+  .chip-select:hover{background:var(--hover)}.chip-select .v{color:var(--ink);font-weight:600}
+  .filterbar .spacer{flex:1}
+  .seg{display:inline-flex;padding:3px;background:var(--field-bg);border:1px solid var(--line);border-radius:9px;gap:2px}
+  .seg button{height:26px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px;transition:all var(--t-fast)}
+  .seg button svg{width:12px;height:12px}
+  .seg button.is-on{background:var(--canvas);color:var(--ink);box-shadow:0 1px 2px rgba(15,18,22,.06)}
+  [data-theme="dark"] .seg button.is-on{background:var(--active)}
+
+  /* ===== Split: list + map ===== */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:calc(100vh - 320px);min-height:560px}
+  .split.list-only{grid-template-columns:1fr}
+  .split.list-only .mapwrap{display:none}
+  .split.map-only{grid-template-columns:1fr}
+  .split.map-only .listcol{display:none}
+
+  /* ===== List column ===== */
+  .listcol{border:1px solid var(--line);border-radius:14px;background:var(--canvas);overflow:hidden;display:flex;flex-direction:column}
+  .listcol-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line-2);background:var(--field-bg)}
+  .listcol-head .lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .listcol-head .lbl b{color:var(--ink);font-weight:700}
+  .listcol-head .sort{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted-2);font-weight:500}
+  .listcol-head .sort b{color:var(--ink);font-weight:600}
+
+  .lrows{flex:1;overflow-y:auto}
+  .lrow{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--line-2);cursor:pointer;transition:all var(--t-fast);position:relative}
+  .lrow:last-child{border-bottom:0}
+  .lrow:hover{background:var(--field-bg)}
+  .lrow.is-on{background:color-mix(in srgb, var(--info) 5%, var(--canvas))}
+  [data-theme="dark"] .lrow.is-on{background:color-mix(in srgb, var(--info) 18%, var(--canvas))}
+  .lrow.is-on::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--info)}
+
+  .lpin{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:0 0 36px;position:relative}
+  .lpin .num{font-size:12.5px;font-weight:800;letter-spacing:.02em;line-height:1}
+  .lpin .ico{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:6px;background:var(--canvas);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2)}
+  .lpin .ico svg{width:10px;height:10px}
+  .lpin.t-hub{background:var(--ink)}
+  .lpin.t-airport{background:var(--info)}
+  .lpin.t-curbside{background:var(--warn)}
+  .lpin.t-delivery{background:var(--turo)}
+  .lpin.t-meeting{background:var(--muted)}
+
+  .lmain{min-width:0}
+  .ltitle{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .ltype{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px}
+  .ltype.t-hub{background:var(--field-bg);color:var(--ink);border:1px solid var(--line)}
+  .ltype.t-airport{background:var(--info-tint);color:var(--info)}
+  .ltype.t-curbside{background:var(--warn-tint);color:var(--warn)}
+  .ltype.t-delivery{background:var(--turo-tint);color:var(--turo)}
+  .ltype.t-meeting{background:var(--field-bg);color:var(--muted)}
+  .laddr{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:4px}
+  .laddr svg{width:11px;height:11px;flex-shrink:0}
+  .lmeta{display:flex;gap:14px;margin-top:8px;font-size:11.5px;color:var(--muted-2);flex-wrap:wrap}
+  .lmeta .m{display:inline-flex;align-items:center;gap:5px}
+  .lmeta .m svg{width:11px;height:11px;color:var(--muted-2)}
+  .lmeta .m b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+  .lmeta .m.open b{color:var(--ok)}
+  .lmeta .m.closed b{color:var(--brand)}
+  .lmeta .m.warn b{color:var(--warn)}
+
+  .lside{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+  .surf-chips{display:inline-flex;gap:4px}
+  .surf{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:5px;border:1px solid transparent}
+  .surf.fleet{background:var(--brand-tint-2);color:var(--brand)}
+  .surf.cust{background:var(--info-tint);color:var(--info)}
+  .surf.off{background:var(--field-bg);color:var(--muted);border-color:var(--line-2)}
+  .lfee{font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .lfee .un{font-size:11px;color:var(--muted);font-weight:500;margin-left:2px}
+  .lfee.free{color:var(--ok);font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--ok-tint);padding:2px 7px;border-radius:99px}
+
+  /* ===== Map column ===== */
+  .mapwrap{border:1px solid var(--line);border-radius:14px;background:var(--map-bg);overflow:hidden;position:relative}
+  .mapsvg{width:100%;height:100%;display:block}
+  .map-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
+  .mc-btn{width:32px;height:32px;border-radius:8px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.08);color:var(--ink-2);display:grid;place-items:center;transition:all var(--t-fast)}
+  .mc-btn:hover{background:var(--hover);color:var(--ink)}
+  .map-legend{position:absolute;left:12px;bottom:12px;background:color-mix(in srgb, var(--canvas) 92%, transparent);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;backdrop-filter:blur(8px);z-index:3}
+  .legend-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);font-weight:500}
+  .legend-row .dot{width:10px;height:10px;border-radius:99px}
+
+  /* Map pins */
+  .mpin{cursor:pointer;transition:transform var(--t-fast)}
+  .mpin:hover{transform:scale(1.1)}
+  .mpin.is-on .pin-body{stroke:var(--info);stroke-width:2.5}
+  .pin-shadow{fill:rgba(15,18,22,.18);filter:blur(2px)}
+  .pin-body{stroke:rgba(255,255,255,.85);stroke-width:1.5}
+  .pin-label{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none;letter-spacing:.02em}
+
+  /* Pin popover */
+  .mpop{position:absolute;background:var(--canvas);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:260px;box-shadow:0 12px 28px rgba(15,18,22,.14);z-index:5;transform:translate(-50%, calc(-100% - 14px));pointer-events:auto}
+  .mpop::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%) rotate(45deg);width:12px;height:12px;background:var(--canvas);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .mpop-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .mpop-title{font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+  .mpop-addr{font-size:11.5px;color:var(--muted);line-height:1.4}
+  .mpop-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:11.5px}
+  .mpop-row .k{color:var(--muted)}
+  .mpop-row .v{color:var(--ink);font-weight:600}
+  .mpop-foot{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line-2)}
+  .mpop-foot .btn{flex:1;height:28px;font-size:11.5px;padding:0 10px}
+
+  /* ===== Misc ===== */
+  .empty-hint{color:var(--muted);font-size:12px;padding:24px;text-align:center}
+
+  @media (max-width:1100px){
+    .split{grid-template-columns:1fr;height:auto;min-height:0}
+    .mapwrap{height:340px}
+    .lrows{max-height:600px}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg>
+          <span class="label">Vehicles</span>
+        </a>
+        <a href="Bookings.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg>
+          <span class="label">Bookings</span>
+        </a>
+        <a href="Calendar.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          <span class="label">Calendar</span>
+        </a>
+        <a href="Locations.html" class="nav-item is-active">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+          <span class="label">Locations</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Fleet</span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">Locations</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <!-- Page head -->
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Locations</h1>
+          <p class="page-sub">Where customers pick up and drop off — your hubs, partner airports, delivery zones, and meeting points.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+          <a href="Add Location.html" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add location
+          </a>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>Active locations</div>
+          <div class="kpi-val">9<span class="un"> / 11 total</span></div>
+          <div class="kpi-trend up">+2 added this quarter</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Trips routed · 30d</div>
+          <div class="kpi-val">412</div>
+          <div class="kpi-trend up">+18% vs prior</div>
+          <svg class="spark" viewBox="0 0 74 24" fill="none"><polyline points="0,18 10,15 20,16 30,12 40,13 50,8 60,10 74,4" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6H9.5a3 3 0 0 0 0 6h5a3 3 0 1 1 0 6H6"/></svg>Avg pickup fee</div>
+          <div class="kpi-val">$24<span class="un"> per trip</span></div>
+          <div class="kpi-trend">$0–$95 range</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg>Vehicles parked</div>
+          <div class="kpi-val">14<span class="un"> across hubs</span></div>
+          <div class="kpi-trend">SFO Lot C: 6 · Mission HQ: 5</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="tabs">
+        <button class="tab is-on" data-type="all">All <span class="count">11</span></button>
+        <button class="tab" data-type="hub"><span class="swatch" style="background:var(--ink)"></span>Hubs <span class="count">3</span></button>
+        <button class="tab" data-type="airport"><span class="swatch" style="background:var(--info)"></span>Airports <span class="count">2</span></button>
+        <button class="tab" data-type="curbside"><span class="swatch" style="background:var(--warn)"></span>Curbside <span class="count">3</span></button>
+        <button class="tab" data-type="delivery"><span class="swatch" style="background:var(--turo)"></span>Delivery zones <span class="count">2</span></button>
+        <button class="tab" data-type="meeting"><span class="swatch" style="background:var(--muted)"></span>Meeting points <span class="count">1</span></button>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filterbar">
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+          <input placeholder="Search by name, address, or city…" />
+        </div>
+        <button class="chip-select">Region: <span class="v">Bay Area</span> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="chip-select">Surface: <span class="v">All</span> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="chip-select">Status: <span class="v">Active</span> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="spacer"></div>
+        <div class="seg" id="viewSeg">
+          <button class="is-on" data-view="split"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="1.5"/><rect x="13" y="4" width="8" height="16" rx="1.5"/></svg>Split</button>
+          <button data-view="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>List</button>
+          <button data-view="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 7v13l6-3 6 3 6-3V4l-6 3z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg>Map</button>
+        </div>
+      </div>
+
+      <!-- Split content -->
+      <div class="split" id="split">
+        <!-- LIST -->
+        <div class="listcol">
+          <div class="listcol-head">
+            <div class="lbl"><b>9 locations</b> showing · <span style="color:var(--muted)">Bay Area</span></div>
+            <button class="sort">Sort: <b>Trips ↓</b></button>
+          </div>
+          <div class="lrows" id="lrows"></div>
+        </div>
+
+        <!-- MAP -->
+        <div class="mapwrap" id="mapwrap">
+          <svg class="mapsvg" id="mapsvg" viewBox="0 0 800 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <!-- water -->
+            <rect width="800" height="700" fill="var(--map-bg)"/>
+            <!-- bay water shapes -->
+            <path d="M0 0 L320 0 L300 120 L260 220 L240 320 L260 420 L290 520 L320 620 L360 700 L0 700 Z" fill="var(--map-water)"/>
+            <path d="M800 0 L800 700 L640 700 L600 600 L580 480 L600 380 L620 260 L600 160 L560 80 L520 0 Z" fill="var(--map-water)"/>
+            <!-- land (peninsula) -->
+            <path d="M320 0 L520 0 L560 80 L600 160 L620 260 L600 380 L580 480 L600 600 L640 700 L360 700 L320 620 L290 520 L260 420 L240 320 L260 220 L300 120 Z" fill="var(--map-land)"/>
+            <!-- dot grid texture -->
+            <g opacity="0.5">
+              <defs>
+                <pattern id="dots" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="0.8" fill="var(--map-line)"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="700" fill="url(#dots)"/>
+            </g>
+            <!-- roads -->
+            <g stroke="var(--map-road)" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.95">
+              <path d="M340 50 Q400 200 420 380 T 470 700"/>
+              <path d="M380 80 Q450 240 460 420 T 500 680"/>
+              <path d="M280 280 L600 290"/>
+              <path d="M260 460 L600 470"/>
+            </g>
+            <g stroke="var(--map-line)" stroke-width="1.5" fill="none" stroke-linecap="round">
+              <path d="M340 50 Q400 200 420 380 T 470 700"/>
+              <path d="M380 80 Q450 240 460 420 T 500 680"/>
+              <path d="M280 280 L600 290"/>
+              <path d="M260 460 L600 470"/>
+              <path d="M340 150 L500 160"/>
+              <path d="M310 200 L580 210"/>
+              <path d="M330 380 L580 390"/>
+              <path d="M310 550 L580 560"/>
+            </g>
+            <!-- city labels -->
+            <g font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="var(--muted)" opacity=".7">
+              <text x="430" y="135">SAN FRANCISCO</text>
+              <text x="450" y="265">DALY CITY</text>
+              <text x="465" y="365">SOUTH SF</text>
+              <text x="450" y="475">SAN MATEO</text>
+              <text x="475" y="595">PALO ALTO</text>
+              <text x="120" y="370" opacity=".5">PACIFIC</text>
+            </g>
+
+            <!-- Pin layer (populated by JS) -->
+            <g id="pinLayer"></g>
+          </svg>
+
+          <div class="map-controls">
+            <button class="mc-btn" title="Zoom in"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="mc-btn" title="Zoom out"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="mc-btn" title="Recenter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+          </div>
+
+          <div class="map-legend">
+            <div class="legend-row"><span class="dot" style="background:var(--ink)"></span>Hub</div>
+            <div class="legend-row"><span class="dot" style="background:var(--info)"></span>Airport</div>
+            <div class="legend-row"><span class="dot" style="background:var(--warn)"></span>Curbside</div>
+            <div class="legend-row"><span class="dot" style="background:var(--turo)"></span>Delivery zone</div>
+            <div class="legend-row"><span class="dot" style="background:var(--muted)"></span>Meeting point</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const app=document.getElementById('app');
+  const btnTheme=document.getElementById('btnTheme');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  btnTheme.addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+  document.getElementById('btnExpand').addEventListener('click',()=>{app.dataset.collapsed='false';localStorage.setItem('side-collapsed','0');});
+
+  // ===== Data =====
+  // Pin x/y inside the 800x700 viewBox (peninsula land area).
+  const locs=[
+    {id:'l1',num:1,name:'SFO · Long-term Lot C',type:'airport',addr:'780 N McDonnell Rd, San Francisco · 94128',hours:'24 / 7',open:true,fee:25,vehicles:6,trips:124,surface:['fleet','cust'],x:430,y:265},
+    {id:'l2',num:2,name:'Mission HQ',type:'hub',addr:'2455 Mission St, San Francisco · 94110',hours:'7:00 AM – 9:00 PM · Daily',open:true,fee:0,vehicles:5,trips:96,surface:['fleet','cust'],x:425,y:145},
+    {id:'l3',num:3,name:'Oakland Depot',type:'hub',addr:'1422 Embarcadero, Oakland · 94606',hours:'8:00 AM – 7:00 PM · Mon–Sat',open:true,fee:0,vehicles:3,trips:54,surface:['fleet','cust'],x:560,y:175},
+    {id:'l4',num:4,name:'OAK · Airport Curb',type:'airport',addr:'1 Airport Dr, Oakland · 94621',hours:'5:00 AM – 11:00 PM',open:true,fee:30,vehicles:0,trips:38,surface:['cust'],x:565,y:340},
+    {id:'l5',num:5,name:'Embarcadero Curbside',type:'curbside',addr:'Pier 14, San Francisco · 94105',hours:'9:00 AM – 8:00 PM · Daily',open:true,fee:15,vehicles:0,trips:34,surface:['cust'],x:475,y:120},
+    {id:'l6',num:6,name:'Palo Alto Caltrain',type:'curbside',addr:'95 University Ave, Palo Alto · 94301',hours:'7:00 AM – 9:00 PM · Daily',open:true,fee:18,vehicles:0,trips:26,surface:['cust'],x:495,y:590},
+    {id:'l7',num:7,name:'Marina Curbside',type:'curbside',addr:'3950 Scott St, San Francisco · 94123',hours:'10:00 AM – 7:00 PM',open:false,fee:15,vehicles:0,trips:18,surface:['cust'],x:405,y:115},
+    {id:'l8',num:8,name:'SF · Home delivery',type:'delivery',addr:'San Francisco · 94101–94134',hours:'On request · 1 hr min notice',open:true,fee:45,vehicles:0,trips:12,surface:['cust'],x:445,y:200},
+    {id:'l9',num:9,name:'Peninsula delivery',type:'delivery',addr:'Daly City → Redwood City · 6 ZIPs',hours:'On request · 2 hr notice',open:true,fee:55,vehicles:0,trips:8,surface:['cust'],x:480,y:455},
+    {id:'l10',num:10,name:'Lake Merritt meeting point',type:'meeting',addr:'Grand Ave & MacArthur, Oakland',hours:'Pre-arranged only',open:true,fee:10,vehicles:0,trips:2,surface:['fleet'],x:580,y:225},
+    {id:'l11',num:11,name:'SJC · San José (Draft)',type:'airport',addr:'1701 Airport Blvd, San José',hours:'Not yet open',open:null,fee:30,vehicles:0,trips:0,surface:[],x:540,y:660,draft:true}
+  ];
+  const typeMap={
+    hub:{label:'Hub',color:'var(--ink)'},
+    airport:{label:'Airport',color:'var(--info)'},
+    curbside:{label:'Curbside',color:'var(--warn)'},
+    delivery:{label:'Delivery zone',color:'var(--turo)'},
+    meeting:{label:'Meeting point',color:'var(--muted)'}
+  };
+
+  let activeType='all';
+  let activeId='l1';
+
+  // ===== Render list =====
+  function fmtFee(f){return f===0?`<span class="lfee free">Free</span>`:`<div class="lfee">$${f}<span class="un">/trip</span></div>`;}
+  function surfChips(s,draft){
+    if(draft) return `<span class="surf off">Draft</span>`;
+    return `
+      <span class="surf ${s.includes('fleet')?'fleet':'off'}" title="${s.includes('fleet')?'Used by fleet ops':'Hidden from fleet ops'}">Fleet</span>
+      <span class="surf ${s.includes('cust')?'cust':'off'}" title="${s.includes('cust')?'Visible to customers':'Hidden from customers'}">Customer</span>
+    `;
+  }
+  function renderList(){
+    const list=document.getElementById('lrows');
+    const filt=activeType==='all'?locs.filter(l=>!l.draft):locs.filter(l=>l.type===activeType);
+    if(!filt.length){list.innerHTML=`<div class="empty-hint">No locations match this filter.</div>`;return;}
+    list.innerHTML=filt.map(l=>`
+      <div class="lrow ${l.id===activeId?'is-on':''}" data-id="${l.id}" onclick="window.__selectLoc('${l.id}')" ondblclick="location.href='Location Details.html?id=${l.id}'">
+        <div class="lpin t-${l.type}">
+          <span class="num">${l.num}</span>
+        </div>
+        <div class="lmain">
+          <div class="ltitle">${l.name}<span class="ltype t-${l.type}">${typeMap[l.type].label}</span></div>
+          <div class="laddr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>${l.addr}</div>
+          <div class="lmeta">
+            <span class="m ${l.open===true?'open':l.open===false?'closed':'warn'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg><b>${l.open===true?'Open now':l.open===false?'Closed':'Setup'}</b> · ${l.hours}</span>
+            ${l.vehicles>0?`<span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5h18v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><b>${l.vehicles}</b> parked</span>`:''}
+            <span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><b>${l.trips}</b> trips · 30d</span>
+          </div>
+        </div>
+        <div class="lside">
+          <span class="surf-chips">${surfChips(l.surface,l.draft)}</span>
+          ${fmtFee(l.fee)}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ===== Render pins =====
+  function renderPins(){
+    const layer=document.getElementById('pinLayer');
+    const filt=activeType==='all'?locs.filter(l=>!l.draft):locs.filter(l=>l.type===activeType);
+    layer.innerHTML=filt.map(l=>{
+      const c=typeMap[l.type].color;
+      const sel=l.id===activeId;
+      return `
+        <g class="mpin ${sel?'is-on':''}" data-id="${l.id}" onclick="window.__selectLoc('${l.id}')" transform="translate(${l.x},${l.y})">
+          <ellipse class="pin-shadow" cx="0" cy="6" rx="14" ry="3"/>
+          <circle class="pin-body" r="${sel?16:13}" fill="${c}"/>
+          <text class="pin-label" y="0">${l.num}</text>
+        </g>
+      `;
+    }).join('');
+
+    // popover for selected
+    const sel=locs.find(l=>l.id===activeId);
+    const old=document.querySelector('.mpop');if(old)old.remove();
+    if(!sel||sel.draft||(activeType!=='all'&&sel.type!==activeType))return;
+    const mw=document.getElementById('mapwrap');
+    const svg=document.getElementById('mapsvg');
+    const rect=svg.getBoundingClientRect(),wrap=mw.getBoundingClientRect();
+    const sx=(sel.x/800)*rect.width + (rect.left-wrap.left);
+    const sy=(sel.y/700)*rect.height + (rect.top-wrap.top);
+    const pop=document.createElement('div');
+    pop.className='mpop';
+    pop.style.left=sx+'px';pop.style.top=sy+'px';
+    pop.innerHTML=`
+      <div class="mpop-head">
+        <div class="lpin t-${sel.type}" style="width:30px;height:30px;flex:0 0 30px"><span class="num" style="font-size:11px">${sel.num}</span></div>
+        <div style="min-width:0">
+          <div class="mpop-title">${sel.name}</div>
+          <div class="mpop-addr">${sel.addr}</div>
+        </div>
+      </div>
+      <div class="mpop-row"><span class="k">Hours</span><span class="v">${sel.hours}</span></div>
+      <div class="mpop-row"><span class="k">Pickup fee</span><span class="v">${sel.fee===0?'Free':'$'+sel.fee}</span></div>
+      <div class="mpop-row"><span class="k">Parked</span><span class="v">${sel.vehicles} vehicles · ${sel.trips} trips</span></div>
+      <div class="mpop-foot">
+        <button class="btn" onclick="event.stopPropagation();location.href='Location Details.html?id=${sel.id}'">Open</button>
+        <button class="btn btn-primary" onclick="event.stopPropagation();location.href='Location Details.html?id=${sel.id}&edit=1'">Edit</button>
+      </div>
+    `;
+    mw.appendChild(pop);
+  }
+
+  window.__selectLoc=function(id){
+    activeId=id;
+    renderList();renderPins();
+    const r=document.querySelector(`.lrow[data-id="${id}"]`);
+    if(r)r.scrollIntoView({block:'nearest',behavior:'smooth'});
+  };
+
+  // Tabs
+  document.querySelectorAll('#tabs .tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('is-on'));
+      t.classList.add('is-on');
+      activeType=t.dataset.type;
+      renderList();renderPins();
+    });
+  });
+
+  // View toggle
+  const split=document.getElementById('split');
+  document.querySelectorAll('#viewSeg button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.remove('is-on'));
+      b.classList.add('is-on');
+      split.classList.remove('list-only','map-only');
+      if(b.dataset.view==='list')split.classList.add('list-only');
+      if(b.dataset.view==='map')split.classList.add('map-only');
+      setTimeout(renderPins,250);
+    });
+  });
+
+  renderList();
+  setTimeout(renderPins,50);
+  window.addEventListener('resize',()=>{clearTimeout(window.__rrz);window.__rrz=setTimeout(renderPins,80);});
+})();
+</script>
+</body>
+</html>

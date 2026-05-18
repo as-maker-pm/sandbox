@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Edit · Tesla Model 3 — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d}
+  *{box-sizing:border-box}html,body{margin:0;padding:0;scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* ============ APP SHELL ============ */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+  .app[data-collapsed="true"] .logo-word{display:none}.app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}.toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}.app[data-collapsed="true"] .top-buttons{display:none}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px;transition:all var(--t-fast)}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* ============ TOPBAR ============ */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb a{color:var(--muted);transition:color var(--t-fast)}.crumb a:hover{color:var(--ink)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .btn-danger{color:var(--brand);border-color:color-mix(in srgb,var(--brand) 28%,var(--line))}
+  .btn-danger:hover{background:var(--brand-tint-2)}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* ============ WORK LAYOUT ============ */
+  .work{display:grid;grid-template-columns:264px 1fr;min-height:calc(100vh - 56px)}
+
+  /* Section nav rail */
+  .rail{border-right:1px solid var(--line);background:var(--canvas);padding:24px 18px 20px;display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px)}
+  .rail-head{display:flex;gap:12px;align-items:center;padding:0 4px 18px;border-bottom:1px solid var(--line-2);margin-bottom:14px}
+  .rail-thumb{width:46px;height:34px;border-radius:7px;background-size:cover;background-position:center;background-color:#222;flex-shrink:0;border:1px solid var(--line)}
+  .rail-titles{min-width:0;flex:1}
+  .rail-titles .t1{font-size:13px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rail-titles .t2{font-size:11.5px;color:var(--muted);margin-top:1px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .rail-titles .t2 .vplate{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);background:var(--field-bg);border:1px solid var(--line-2);padding:1px 5px;border-radius:4px;font-size:10.5px;font-weight:600}
+
+  .secnav{display:flex;flex-direction:column;gap:1px;flex:1;overflow-y:auto;margin:0 -18px;padding:0 14px}
+  .sn-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 8px;border-radius:7px;color:var(--muted);font-size:13px;font-weight:500;transition:all var(--t-fast);position:relative}
+  .sn-item:hover{color:var(--ink);background:var(--hover)}
+  .sn-item.is-on{color:var(--ink);background:var(--bg);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .sn-item.is-on{background:var(--active);box-shadow:none}
+  .sn-item .ico{width:14px;height:14px;color:var(--muted-2)}
+  .sn-item:hover .ico,.sn-item.is-on .ico{color:var(--ink)}
+  .sn-item .dirty{margin-left:auto;width:7px;height:7px;border-radius:99px;background:var(--brand);opacity:0;transition:opacity var(--t-fast)}
+  .sn-item.is-dirty .dirty{opacity:1}
+
+  .rail-foot{padding-top:14px;border-top:1px solid var(--line-2);margin-top:8px}
+  .rail-foot .back-link{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:7px;color:var(--muted);font-size:12.5px;font-weight:500;transition:all var(--t-fast)}
+  .rail-foot .back-link:hover{color:var(--ink);background:var(--hover)}
+  .rail-foot .back-link svg{width:13px;height:13px}
+
+  /* Form pane */
+  .pane{padding:32px 44px 140px;max-width:880px;margin:0 auto;width:100%}
+
+  /* Section card */
+  .section{margin-bottom:28px;scroll-margin-top:72px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;gap:14px}
+  .sec-title{font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .sec-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2)}
+  .sec-actions{display:flex;gap:6px;align-items:center}
+
+  .card{background:var(--canvas);border:1px solid var(--line);border-radius:12px;padding:22px 24px;transition:border-color var(--t-fast)}
+  .card.is-dirty{border-color:color-mix(in srgb,var(--brand) 40%,var(--line))}
+
+  /* Field primitives */
+  .field{margin-bottom:18px;display:block}
+  .field:last-child{margin-bottom:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+  .field-row.cols-4{grid-template-columns:repeat(4,1fr)}
+  .field-row > .field{margin-bottom:18px}
+  .field-row:last-child > .field{margin-bottom:0}
+  .label{display:flex;align-items:baseline;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .label .opt{font-weight:500;color:var(--muted);font-size:11.5px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .hint.ok{color:var(--ok)}.hint.warn{color:var(--warn)}
+
+  .input,.select,.textarea{width:100%;height:38px;padding:0 12px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13.5px;transition:all var(--t-fast);outline:none}
+  .input:hover,.select:hover,.textarea:hover{border-color:var(--muted-2)}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  [data-theme="dark"] .input:focus,[data-theme="dark"] .select:focus,[data-theme="dark"] .textarea:focus{border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .textarea{height:auto;padding:10px 12px;min-height:80px;resize:vertical;line-height:1.5;font-family:inherit}
+  .select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .input[data-mono]{font-family:ui-monospace,monospace;letter-spacing:.04em}
+  .input.is-changed,.select.is-changed,.textarea.is-changed{border-color:color-mix(in srgb,var(--brand) 38%,var(--line));background:color-mix(in srgb,var(--brand) 3%,var(--field))}
+
+  /* Prefix/suffix input */
+  .ipair{position:relative}
+  .ipair .input{padding-left:30px}
+  .ipair .pre{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:500;pointer-events:none}
+  .ipair .suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none}
+  .ipair.has-suf .input{padding-right:48px}
+
+  /* Plate-style input */
+  .plate-in{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+
+  /* Feature toggles */
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;transition:all var(--t-fast)}
+  .toggle-row:last-child{margin-bottom:0}
+  .toggle-row:hover{border-color:var(--muted-2)}
+  .toggle-row.is-on{background:var(--field-bg);border-color:var(--ink-2)}
+  [data-theme="dark"] .toggle-row.is-on{background:var(--hover)}
+  .tr-meta{display:flex;align-items:center;gap:12px;min-width:0}
+  .tr-ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--field-bg);color:var(--ink-2);flex:0 0 32px;transition:all var(--t-fast)}
+  .toggle-row.is-on .tr-ico{background:var(--ink);color:var(--canvas)}
+  .tr-name{font-size:13px;font-weight:600}
+  .tr-desc{font-size:12px;color:var(--muted)}
+  .tr-meta-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:99px;margin-left:8px}
+  .tr-meta-tag.brand{color:var(--brand);background:var(--brand-tint-2)}
+  .tr-meta-tag.turo{color:var(--turo);background:var(--turo-tint)}
+  .switch{width:36px;height:20px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);flex:0 0 36px}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch.is-on{background:var(--ink)}.switch.is-on::after{transform:translateX(16px)}
+
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+
+  /* Photo gallery */
+  .photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .photo-cell{aspect-ratio:4/3;border-radius:10px;border:1px dashed var(--line);background:var(--field-bg);display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center;cursor:pointer;transition:all var(--t-fast);position:relative;overflow:hidden}
+  .photo-cell:hover{border-color:var(--ink-2);color:var(--ink)}
+  .photo-cell.is-set{border-style:solid;border-color:var(--line)}
+  .photo-cell.is-set .ph-img{position:absolute;inset:0;background-size:cover;background-position:center}
+  .photo-cell.is-set .ph-rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:99px;background:rgba(15,18,22,.65);color:#fff;display:grid;place-items:center;backdrop-filter:blur(4px);z-index:2;opacity:0;transition:opacity var(--t-fast)}
+  .photo-cell.is-set:hover .ph-rm{opacity:1}
+  .photo-cell .ph-cover{position:absolute;bottom:6px;left:6px;background:rgba(15,18,22,.72);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;z-index:2}
+  .photo-cell .ph-add{display:grid;place-items:center;gap:4px}
+  .photo-cell .ph-add svg{width:18px;height:18px}
+
+  /* Pricing strip */
+  .price-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .price-row .field{margin-bottom:0}
+
+  /* Discount tiers table */
+  .tier-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .tier{display:grid;grid-template-columns:84px 1fr 1fr 130px 36px;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas)}
+  .tier .badge{height:28px;border-radius:7px;background:var(--field-bg);border:1px solid var(--line-2);color:var(--ink-2);font-size:11.5px;font-weight:700;display:grid;place-items:center;text-transform:uppercase;letter-spacing:.04em}
+  .tier .input{height:30px;font-size:13px}
+  .tier .eff{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+  .tier .eff b{color:var(--ink);font-weight:700;font-size:13px}
+  .tier .ex-rm{width:30px;height:30px;border-radius:6px;color:var(--muted);display:grid;place-items:center;transition:all var(--t-fast)}
+  .tier .ex-rm:hover{background:var(--brand-tint);color:var(--brand)}
+  .tier-add{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px dashed var(--line);color:var(--muted);font-size:12.5px;font-weight:600;transition:all var(--t-fast)}
+  .tier-add:hover{color:var(--ink);border-color:var(--ink-2)}
+
+  /* Add-ons list */
+  .addons{display:flex;flex-direction:column;gap:6px}
+  .addon{display:grid;grid-template-columns:34px 1fr 110px 36px;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+  .addon:hover{border-color:var(--muted-2)}
+  .addon .ai{width:34px;height:34px;border-radius:8px;background:var(--field-bg);display:grid;place-items:center;color:var(--ink-2)}
+  .addon .an{font-size:13px;font-weight:600}
+  .addon .ad{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .addon .ap{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;justify-content:flex-end}
+  .addon .ap small{color:var(--muted);font-weight:500;font-size:11.5px;margin-left:1px}
+  .addon-add{display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:8px;border:1px dashed var(--line);color:var(--muted);font-size:12.5px;font-weight:600;width:fit-content;margin-top:8px;transition:all var(--t-fast)}
+  .addon-add:hover{color:var(--ink);border-color:var(--ink-2)}
+
+  /* Insurance + doc */
+  .insurance-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .doc-att{margin-top:8px;padding:12px;background:var(--field-bg);border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;gap:12px;font-size:12px}
+  .doc-att .di{width:34px;height:34px;border-radius:7px;background:var(--canvas);border:1px solid var(--line);display:grid;place-items:center;color:var(--brand);flex:0 0 34px}
+  .doc-att b{display:block;color:var(--ink);font-weight:600;font-size:13px}
+  .doc-att .dm{color:var(--muted);font-size:11px;margin-top:1px}
+  .doc-att .da{margin-left:auto;display:flex;gap:4px}
+  .doc-att .da button{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--muted);transition:all var(--t-fast)}
+  .doc-att .da button:hover{background:var(--hover);color:var(--ink)}
+
+  /* Danger zone */
+  .danger{border-color:color-mix(in srgb,var(--brand) 24%,var(--line));background:color-mix(in srgb,var(--brand) 2.5%,var(--canvas))}
+  [data-theme="dark"] .danger{background:color-mix(in srgb,var(--brand) 6%,var(--canvas))}
+  .danger-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid color-mix(in srgb,var(--brand) 14%,var(--line))}
+  .danger-row:first-of-type{border-top:0}
+  .danger-row .dr-meta .name{font-size:13.5px;font-weight:700}
+  .danger-row .dr-meta .desc{font-size:12px;color:var(--muted);margin-top:2px}
+
+  /* ============ STICKY SAVE BAR ============ */
+  .savebar{position:fixed;left:var(--side-w,232px);right:0;bottom:0;background:color-mix(in srgb,var(--canvas) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 44px;display:flex;justify-content:space-between;align-items:center;z-index:5;transition:left var(--t-slow),transform var(--t-med),opacity var(--t-med);transform:translateY(100%);opacity:0;pointer-events:none}
+  .savebar.is-show{transform:translateY(0);opacity:1;pointer-events:auto}
+  .app[data-collapsed="true"] .savebar{left:56px}
+  .savebar .meta{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .savebar .meta .dot{width:8px;height:8px;border-radius:99px;background:var(--brand);animation:pulse 1.6s ease-in-out infinite}
+  .savebar .meta b{color:var(--ink);font-weight:600}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .savebar .actions{display:flex;gap:8px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--canvas);font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:99px;display:inline-flex;align-items:center;gap:8px;opacity:0;transition:all var(--t-med);z-index:99;box-shadow:0 6px 18px rgba(15,18,22,.18)}
+  .toast.is-show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{width:14px;height:14px;color:var(--ok)}
+
+  /* Empty-section confirm dialog */
+  .modal-shade{position:fixed;inset:0;background:rgba(15,18,22,.45);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;opacity:0;transition:opacity var(--t-med)}
+  .modal-shade.is-show{display:grid;opacity:1}
+  .modal{background:var(--canvas);border-radius:14px;padding:24px;max-width:380px;width:90%;box-shadow:0 24px 48px rgba(15,18,22,.16);transform:scale(.96);transition:transform var(--t-med)}
+  .modal-shade.is-show .modal{transform:scale(1)}
+  .modal h3{margin:0 0 6px;font-size:16px}
+  .modal p{margin:0 0 18px;color:var(--muted);font-size:13px}
+  .modal .actions{display:flex;gap:8px;justify-content:flex-end}
+
+  @media (max-width:1080px){
+    .work{grid-template-columns:1fr}
+    .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+    .pane{padding:24px 20px 140px}
+    .savebar{left:0 !important;padding:12px 20px}
+    .photo-grid{grid-template-columns:repeat(3,1fr)}
+    .insurance-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme">
+          <svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg>
+          <svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item is-active is-open has-sub">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg>
+          <span class="label">Vehicles</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Fleet.html" class="sub-item">All vehicles</a>
+          <a href="Vehicle.html" class="sub-item">Tesla Model 3</a>
+          <a href="Edit Vehicle.html" class="sub-item is-active">Edit details</a>
+          <a href="Add Vehicle.html" class="sub-item">Add vehicle</a>
+        </div>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Fleet.html">Fleet</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Vehicle.html">Tesla Model 3 LR</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">Edit</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost" onclick="history.back()">View vehicle</button>
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="work">
+
+      <!-- ============ SECTION RAIL ============ -->
+      <aside class="rail">
+        <div class="rail-head">
+          <div class="rail-thumb" style="background-image:url('https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=200&q=80')"></div>
+          <div class="rail-titles">
+            <div class="t1">Tesla Model 3 LR</div>
+            <div class="t2"><span class="vplate">7HZX-432</span><span>2023</span></div>
+          </div>
+        </div>
+
+        <nav class="secnav" id="secnav">
+          <a href="#sec-basics" class="sn-item is-on" data-sec="basics">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".8" fill="currentColor"/></svg>
+            Basics <span class="dirty"></span>
+          </a>
+          <a href="#sec-specs" class="sn-item" data-sec="specs">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+            Specs &amp; features <span class="dirty"></span>
+          </a>
+          <a href="#sec-photos" class="sn-item" data-sec="photos">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><polyline points="21 17 16 12 8 19"/></svg>
+            Photos <span class="dirty"></span>
+          </a>
+          <a href="#sec-pricing" class="sn-item" data-sec="pricing">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6H9.5a3 3 0 0 0 0 6h5a3 3 0 1 1 0 6H6"/></svg>
+            Pricing &amp; add-ons <span class="dirty"></span>
+          </a>
+          <a href="#sec-rules" class="sn-item" data-sec="rules">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Booking rules <span class="dirty"></span>
+          </a>
+          <a href="#sec-listing" class="sn-item" data-sec="listing">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+            Location &amp; listing <span class="dirty"></span>
+          </a>
+          <a href="#sec-insurance" class="sn-item" data-sec="insurance">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Insurance &amp; docs <span class="dirty"></span>
+          </a>
+          <a href="#sec-danger" class="sn-item" data-sec="danger">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r=".9" fill="currentColor"/></svg>
+            Danger zone
+          </a>
+        </nav>
+
+        <div class="rail-foot">
+          <a href="Vehicle.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to vehicle
+          </a>
+        </div>
+      </aside>
+
+      <!-- ============ EDIT PANE ============ -->
+      <div class="pane">
+
+        <!-- ============ BASICS ============ -->
+        <section class="section" id="sec-basics" data-sec="basics">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Basics</div>
+              <h2 class="sec-title">Vehicle identity</h2>
+              <div class="sec-sub">Core details that appear on the listing and customer receipts.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field-row cols-3">
+              <div class="field">
+                <label class="label" for="year">Year</label>
+                <select id="year" class="input" data-orig="2023">
+                  <option>2025</option><option>2024</option><option selected>2023</option><option>2022</option><option>2021</option><option>2020</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="make">Make</label>
+                <input id="make" class="input" value="Tesla" data-orig="Tesla" />
+              </div>
+              <div class="field">
+                <label class="label" for="model">Model</label>
+                <input id="model" class="input" value="Model 3" data-orig="Model 3" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="trim">Trim</label>
+                <input id="trim" class="input" value="Long Range" data-orig="Long Range" />
+              </div>
+              <div class="field">
+                <label class="label" for="color">Exterior color</label>
+                <select id="color" class="input" data-orig="Pearl White">
+                  <option selected>Pearl White</option><option>Solid Black</option><option>Midnight Silver</option><option>Deep Blue</option><option>Red Multi-Coat</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="vin">VIN <span class="opt">17 chars</span></label>
+                <input id="vin" class="input" data-mono value="5YJ3E1EA1NF391822" data-orig="5YJ3E1EA1NF391822" maxlength="17" />
+              </div>
+              <div class="field">
+                <label class="label" for="plate">License plate</label>
+                <input id="plate" class="input plate-in" value="7HZX-432" data-orig="7HZX-432" />
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="mileage">Odometer</label>
+                <div class="ipair has-suf">
+                  <input id="mileage" class="input" value="30840" data-orig="30840" />
+                  <span class="suf">mi</span>
+                </div>
+                <div class="hint">Last updated 9 days ago at SFO Lot C.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="nickname">Internal nickname <span class="opt">optional</span></label>
+                <input id="nickname" class="input" placeholder="e.g. White Lightning" value="" data-orig="" />
+                <div class="hint">Visible only to your team in the calendar and bookings.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ SPECS & FEATURES ============ -->
+        <section class="section" id="sec-specs" data-sec="specs">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Specs</div>
+              <h2 class="sec-title">Specs &amp; features</h2>
+              <div class="sec-sub">Drivetrain, capacity, and amenities the customer sees on the detail page.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field-row cols-4">
+              <div class="field">
+                <label class="label" for="body">Body</label>
+                <select id="body" class="input" data-orig="Sedan"><option>Sedan</option><option>SUV</option><option>Hatchback</option><option>Convertible</option><option>Truck</option><option>Van</option></select>
+              </div>
+              <div class="field">
+                <label class="label" for="seats">Seats</label>
+                <select id="seats" class="input" data-orig="5"><option>2</option><option>4</option><option selected>5</option><option>7</option><option>8</option></select>
+              </div>
+              <div class="field">
+                <label class="label" for="doors">Doors</label>
+                <select id="doors" class="input" data-orig="4"><option>2</option><option>3</option><option selected>4</option><option>5</option></select>
+              </div>
+              <div class="field">
+                <label class="label" for="trans">Transmission</label>
+                <select id="trans" class="input" data-orig="Automatic"><option selected>Automatic</option><option>Manual</option><option>Single-speed</option></select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="fuel">Fuel type</label>
+                <select id="fuel" class="input" data-orig="Electric"><option selected>Electric</option><option>Gasoline</option><option>Hybrid</option><option>Plug-in hybrid</option><option>Diesel</option></select>
+              </div>
+              <div class="field">
+                <label class="label" for="range">Range / efficiency</label>
+                <div class="ipair has-suf">
+                  <input id="range" class="input" value="358" data-orig="358" />
+                  <span class="suf">mi · EPA</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="sec-head" style="margin-bottom:10px">
+              <div><h3 style="font-size:13.5px;font-weight:700;margin:0">Features</h3><div class="sec-sub" style="margin-top:2px">Toggle what the vehicle ships with — shown as a checklist on the listing.</div></div>
+            </div>
+            <div class="feat-grid" id="featGrid">
+              <div class="toggle-row is-on" data-feat="ac"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M7 7l10 10M17 7L7 17"/></svg></div><div><div class="tr-name">Air conditioning</div><div class="tr-desc">Dual-zone climate</div></div></div><span class="switch is-on"></span></div>
+              <div class="toggle-row is-on" data-feat="autopilot"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></svg></div><div><div class="tr-name">Autopilot</div><div class="tr-desc">Lane keep + adaptive cruise</div></div></div><span class="switch is-on"></span></div>
+              <div class="toggle-row is-on" data-feat="apple"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg></div><div><div class="tr-name">Premium audio</div><div class="tr-desc">14-speaker · subwoofer</div></div></div><span class="switch is-on"></span></div>
+              <div class="toggle-row is-on" data-feat="usb"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></div><div><div class="tr-name">USB-C charging</div><div class="tr-desc">4 ports · 60W front</div></div></div><span class="switch is-on"></span></div>
+              <div class="toggle-row" data-feat="sunroof"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/></svg></div><div><div class="tr-name">Sunroof</div><div class="tr-desc">Glass roof — tinted</div></div></div><span class="switch"></span></div>
+              <div class="toggle-row is-on" data-feat="rear"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg></div><div><div class="tr-name">Rear camera</div><div class="tr-desc">+ 360° parking</div></div></div><span class="switch is-on"></span></div>
+              <div class="toggle-row" data-feat="heated"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14s1.5-2 4-2 4 2 4 2 1.5-2 4-2"/><path d="M12 3v8"/></svg></div><div><div class="tr-name">Heated seats</div><div class="tr-desc">Front and rear</div></div></div><span class="switch"></span></div>
+              <div class="toggle-row is-on" data-feat="bluetooth"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg></div><div><div class="tr-name">Bluetooth</div><div class="tr-desc">5.0 · multipoint</div></div></div><span class="switch is-on"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PHOTOS ============ -->
+        <section class="section" id="sec-photos" data-sec="photos">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Photos</div>
+              <h2 class="sec-title">Photos</h2>
+              <div class="sec-sub">The first photo is the cover — shown on the listing card. Drag to reorder.</div>
+            </div>
+            <div class="sec-actions">
+              <button class="btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>Upload</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="photo-grid" id="photoGrid"></div>
+            <div class="hint" style="margin-top:12px">JPG or PNG · min 1200 × 800 · max 12 photos · current 6 of 12.</div>
+          </div>
+        </section>
+
+        <!-- ============ PRICING ============ -->
+        <section class="section" id="sec-pricing" data-sec="pricing">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Pricing</div>
+              <h2 class="sec-title">Pricing &amp; add-ons</h2>
+              <div class="sec-sub">Base rates, length-of-trip discounts, deposit, and optional add-ons.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="price-row">
+              <div class="field">
+                <label class="label" for="dayRate">Daily rate</label>
+                <div class="ipair has-suf"><span class="pre">$</span><input id="dayRate" class="input" value="89" data-orig="89" /><span class="suf">/ day</span></div>
+              </div>
+              <div class="field">
+                <label class="label" for="hourRate">Hourly rate</label>
+                <div class="ipair has-suf"><span class="pre">$</span><input id="hourRate" class="input" value="11" data-orig="11" /><span class="suf">/ hr</span></div>
+              </div>
+              <div class="field">
+                <label class="label" for="deposit">Security deposit</label>
+                <div class="ipair"><span class="pre">$</span><input id="deposit" class="input" value="250" data-orig="250" /></div>
+              </div>
+            </div>
+            <div class="hint" style="margin-top:14px">Customers see <b>whichever is cheaper</b> for the booking length. Average around the 3-hour mark.</div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="sec-head" style="margin-bottom:12px">
+              <div><h3 style="font-size:13.5px;font-weight:700;margin:0">Length-of-trip discounts</h3><div class="sec-sub" style="margin-top:2px">Automatic. Higher discounts override lower ones.</div></div>
+            </div>
+            <div class="tier-list" id="tierList"></div>
+            <button class="tier-add" id="tierAdd"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add tier</button>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="sec-head" style="margin-bottom:12px">
+              <div><h3 style="font-size:13.5px;font-weight:700;margin:0">Add-ons</h3><div class="sec-sub" style="margin-top:2px">Optional extras offered at booking — toggle to enable.</div></div>
+            </div>
+            <div class="addons" id="addonsList"></div>
+            <button class="addon-add"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add an add-on</button>
+          </div>
+        </section>
+
+        <!-- ============ BOOKING RULES ============ -->
+        <section class="section" id="sec-rules" data-sec="rules">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Rules</div>
+              <h2 class="sec-title">Booking rules</h2>
+              <div class="sec-sub">Trip-length limits, mileage policy, and turnaround buffer.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field-row">
+              <div class="field">
+                <label class="label">Minimum trip</label>
+                <div class="field-row" style="gap:8px">
+                  <div class="ipair has-suf"><input id="minHrs" class="input" value="2" data-orig="2" /><span class="suf">hrs</span></div>
+                  <div class="ipair has-suf"><input id="minDays" class="input" value="3" data-orig="3" /><span class="suf">days</span></div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Maximum trip</label>
+                <div class="field-row" style="gap:8px">
+                  <div class="ipair has-suf"><input id="maxHrs" class="input" value="12" data-orig="12" /><span class="suf">hrs</span></div>
+                  <div class="ipair has-suf"><input id="maxDays" class="input" value="28" data-orig="28" /><span class="suf">days</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="milesDay">Daily mileage allowance</label>
+                <div class="ipair has-suf"><input id="milesDay" class="input" value="200" data-orig="200" /><span class="suf">mi / day</span></div>
+              </div>
+              <div class="field">
+                <label class="label" for="overFee">Over-mileage fee</label>
+                <div class="ipair has-suf"><span class="pre">$</span><input id="overFee" class="input" value="0.45" data-orig="0.45" /><span class="suf">/ mi over</span></div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="buffer">Buffer between trips</label>
+                <select id="buffer" class="input" data-orig="2 hours">
+                  <option>No buffer</option><option>30 minutes</option><option>1 hour</option><option selected>2 hours</option><option>4 hours</option><option>1 day</option>
+                </select>
+                <div class="hint">Block other bookings before/after each trip for cleaning &amp; inspection.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="lead">Lead time</label>
+                <select id="lead" class="input" data-orig="1 hour">
+                  <option>Instant — any time</option><option selected>1 hour</option><option>3 hours</option><option>1 day</option><option>2 days</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="toggle-row is-on" data-feat="instant"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div><div class="tr-name">Instant book</div><div class="tr-desc">Auto-accept eligible customers without manual approval</div></div></div><span class="switch is-on"></span></div>
+            <div class="toggle-row" data-feat="smart"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></div><div><div class="tr-name">Smart pricing <span class="tr-meta-tag brand">Beta</span></div><div class="tr-desc">Auto-adjust daily rate ±20% based on demand and lead time</div></div></div><span class="switch"></span></div>
+          </div>
+        </section>
+
+        <!-- ============ LISTING / LOCATION ============ -->
+        <section class="section" id="sec-listing" data-sec="listing">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Listing</div>
+              <h2 class="sec-title">Location &amp; listing</h2>
+              <div class="sec-sub">Pickup spot and where this vehicle is published.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="location">Primary location</label>
+                <select id="location" class="input" data-orig="SFO Lot C · Bay 12">
+                  <option selected>SFO Lot C · Bay 12</option><option>Downtown SF — Mission &amp; 5th</option><option>OAK Airport — Garage A</option><option>San Jose — North Lot</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="visibility">Listing visibility</label>
+                <select id="visibility" class="input" data-orig="Public — anyone can book">
+                  <option selected>Public — anyone can book</option><option>Unlisted — link only</option><option>Paused — hidden from search</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="desc">Listing description</label>
+              <textarea id="desc" class="textarea" data-orig="A clean, quiet electric sedan with Autopilot and a 358-mile EPA range — perfect for coastal trips. Pearl-white exterior, all-black interior. Charging is on us up to 50% per trip; we'll meet you at SFO Lot C, bay 12.">A clean, quiet electric sedan with Autopilot and a 358-mile EPA range — perfect for coastal trips. Pearl-white exterior, all-black interior. Charging is on us up to 50% per trip; we'll meet you at SFO Lot C, bay 12.</textarea>
+              <div class="hint"><span id="descChars">312</span> / 600 characters</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="sec-head" style="margin-bottom:12px">
+              <div><h3 style="font-size:13.5px;font-weight:700;margin:0">Marketplaces</h3><div class="sec-sub" style="margin-top:2px">Where this vehicle is published. Availability syncs in real time.</div></div>
+            </div>
+            <div class="toggle-row is-on" data-feat="direct"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg></div><div><div class="tr-name">Fleetly Direct <span class="tr-meta-tag brand">Default</span></div><div class="tr-desc">your.fleetly.com/v/m3lr — bookings made through your own site</div></div></div><span class="switch is-on"></span></div>
+            <div class="toggle-row is-on" data-feat="turo"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="13" x2="17.5" y2="22"/><line x1="13" y1="17.5" x2="22" y2="17.5"/></svg></div><div><div class="tr-name">Turo <span class="tr-meta-tag turo">Synced</span></div><div class="tr-desc">turo.com/listings/4291832 — last synced 4 minutes ago</div></div></div><span class="switch is-on"></span></div>
+            <div class="toggle-row" data-feat="getaround"><div class="tr-meta"><div class="tr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a13 13 0 0 1 0 18 13 13 0 0 1 0-18z"/></svg></div><div><div class="tr-name">Getaround</div><div class="tr-desc">Not connected — set up a Getaround integration in Settings</div></div></div><span class="switch"></span></div>
+          </div>
+        </section>
+
+        <!-- ============ INSURANCE & DOCS ============ -->
+        <section class="section" id="sec-insurance" data-sec="insurance">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow">Edit · Insurance</div>
+              <h2 class="sec-title">Insurance &amp; documents</h2>
+              <div class="sec-sub">Policy details and required documents for this vehicle.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="insurance-grid">
+              <div class="field">
+                <label class="label" for="ins-carrier">Carrier</label>
+                <input id="ins-carrier" class="input" value="Geico Commercial" data-orig="Geico Commercial" />
+              </div>
+              <div class="field">
+                <label class="label" for="ins-policy">Policy number</label>
+                <input id="ins-policy" class="input" data-mono value="4-G-2829341" data-orig="4-G-2829341" />
+              </div>
+              <div class="field">
+                <label class="label" for="ins-coverage">Coverage limits</label>
+                <select id="ins-coverage" class="input" data-orig="$1M / $50k">
+                  <option selected>$1M / $50k</option><option>$500k / $50k</option><option>$2M / $100k</option><option>$5M / $250k</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="ins-renew">Renews</label>
+                <input id="ins-renew" type="date" class="input" value="2026-09-12" data-orig="2026-09-12" />
+                <div class="hint ok">Active · renews in 121 days</div>
+              </div>
+            </div>
+
+            <div class="doc-att" style="margin-top:14px">
+              <div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div><b>geico-policy-2025.pdf</b><div class="dm">312 KB · uploaded May 6, 2025</div></div>
+              <div class="da">
+                <button title="View"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button title="Replace"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg></button>
+                <button title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+              </div>
+            </div>
+
+            <div class="doc-att" style="margin-top:8px">
+              <div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div><b>ca-registration.pdf</b><div class="dm">128 KB · expires Mar 2027</div></div>
+              <div class="da">
+                <button title="View"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button title="Replace"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ DANGER ZONE ============ -->
+        <section class="section" id="sec-danger" data-sec="danger">
+          <div class="sec-head">
+            <div>
+              <div class="sec-eyebrow" style="color:var(--brand)">Caution</div>
+              <h2 class="sec-title">Danger zone</h2>
+              <div class="sec-sub">Actions here affect availability and history. Be sure before continuing.</div>
+            </div>
+          </div>
+
+          <div class="card danger">
+            <div class="danger-row">
+              <div class="dr-meta">
+                <div class="name">Pause listing</div>
+                <div class="desc">Hide from search and stop new bookings. Existing bookings are untouched.</div>
+              </div>
+              <button class="btn">Pause</button>
+            </div>
+            <div class="danger-row">
+              <div class="dr-meta">
+                <div class="name">Mark as in maintenance</div>
+                <div class="desc">Blocks all bookings and shows a maintenance pill on the listing.</div>
+              </div>
+              <button class="btn">Set maintenance</button>
+            </div>
+            <div class="danger-row">
+              <div class="dr-meta">
+                <div class="name">Archive vehicle</div>
+                <div class="desc">Removes from your active fleet. History and revenue stay in reports. Cannot be undone from this page.</div>
+              </div>
+              <button class="btn btn-danger">Archive</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sticky save bar -->
+<div class="savebar" id="savebar">
+  <div class="meta">
+    <span class="dot"></span>
+    <span><b id="dirtyCount">0</b> unsaved <span id="dirtyWord">changes</span></span>
+  </div>
+  <div class="actions">
+    <button class="btn" id="discardBtn">Discard</button>
+    <button class="btn btn-primary" id="saveBtn">Save changes</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Changes saved</span></div>
+
+<!-- Discard confirm modal -->
+<div class="modal-shade" id="discardModal">
+  <div class="modal">
+    <h3>Discard changes?</h3>
+    <p>You have <b id="modalCount">0</b> unsaved changes. They'll be lost — this can't be undone.</p>
+    <div class="actions">
+      <button class="btn" onclick="document.getElementById('discardModal').classList.remove('is-show')">Keep editing</button>
+      <button class="btn btn-danger" id="discardConfirm">Discard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ============ Sidebar ============
+  const app = document.getElementById('app');
+  document.getElementById('btnToggle').onclick = () => app.dataset.collapsed = app.dataset.collapsed === 'true' ? 'false' : 'true';
+  document.getElementById('btnExpand').onclick = () => app.dataset.collapsed = 'false';
+  document.getElementById('btnTheme').onclick = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+    document.querySelector('.theme-sun').style.display = dark ? '' : 'none';
+    document.querySelector('.theme-moon').style.display = dark ? 'none' : '';
+  };
+
+  // ============ Photos ============
+  const samplePhotos = [
+    'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&q=80',
+    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80',
+    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80',
+    'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&q=80',
+    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80',
+    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&q=80'
+  ];
+  let photos = samplePhotos.slice();
+  const photoGrid = document.getElementById('photoGrid');
+  function renderPhotos() {
+    photoGrid.innerHTML = '';
+    const slots = Math.max(photos.length + 1, 8);
+    for (let i = 0; i < slots; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'photo-cell' + (photos[i] ? ' is-set' : '');
+      if (photos[i]) {
+        cell.innerHTML = `
+          ${i === 0 ? '<div class="ph-cover">Cover</div>' : ''}
+          <button class="ph-rm" data-i="${i}" title="Remove"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          <div class="ph-img" style="background-image:url('${photos[i]}')"></div>`;
+      } else {
+        cell.innerHTML = `<div class="ph-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add photo</span></div>`;
+        cell.addEventListener('click', () => {
+          photos.push(samplePhotos[Math.floor(Math.random()*samplePhotos.length)]);
+          markDirty('photos');
+          renderPhotos();
+        });
+      }
+      photoGrid.appendChild(cell);
+    }
+    photoGrid.querySelectorAll('.ph-rm').forEach(b => b.addEventListener('click', e => {
+      e.stopPropagation();
+      photos.splice(+b.dataset.i, 1);
+      markDirty('photos');
+      renderPhotos();
+    }));
+  }
+  renderPhotos();
+
+  // ============ Tiers ============
+  const tiersOrig = [
+    { from: 3, disc: 5 },
+    { from: 7, disc: 12 },
+    { from: 14, disc: 20 },
+    { from: 28, disc: 30 }
+  ];
+  let tiers = JSON.parse(JSON.stringify(tiersOrig));
+  const tierList = document.getElementById('tierList');
+  function effective(disc) { return (89 * (1 - disc/100)).toFixed(2); }
+  function renderTiers() {
+    tierList.innerHTML = '';
+    tiers.forEach((t,i) => {
+      const row = document.createElement('div');
+      row.className = 'tier';
+      row.innerHTML = `
+        <div class="badge">${t.from}+ days</div>
+        <div><input class="input" type="number" min="1" data-i="${i}" data-k="from" value="${t.from}" /></div>
+        <div><div class="ipair has-suf"><span class="pre">−</span><input class="input" type="number" min="0" max="60" data-i="${i}" data-k="disc" value="${t.disc}" /><span class="suf">%</span></div></div>
+        <div class="eff"><b>$${effective(t.disc)}</b> /day</div>
+        <button class="ex-rm" data-i="${i}" title="Remove tier"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6"/></svg></button>`;
+      tierList.appendChild(row);
+    });
+    tierList.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const i = +inp.dataset.i, k = inp.dataset.k;
+        tiers[i][k] = +inp.value || 0;
+        if (k === 'from') tierList.children[i].querySelector('.badge').textContent = tiers[i].from + '+ days';
+        if (k === 'disc') tierList.children[i].querySelector('.eff').innerHTML = `<b>$${effective(tiers[i].disc)}</b> /day`;
+        markDirty('pricing');
+      });
+    });
+    tierList.querySelectorAll('.ex-rm').forEach(b => b.addEventListener('click', () => {
+      tiers.splice(+b.dataset.i, 1);
+      markDirty('pricing');
+      renderTiers();
+    }));
+  }
+  renderTiers();
+  document.getElementById('tierAdd').addEventListener('click', () => {
+    const last = tiers[tiers.length - 1] || { from: 0, disc: 0 };
+    tiers.push({ from: last.from + 7, disc: Math.min(60, last.disc + 5) });
+    markDirty('pricing');
+    renderTiers();
+  });
+
+  // ============ Add-ons ============
+  const addonIcons = {
+    seat: '<rect x="6" y="4" width="12" height="10" rx="2"/><path d="M6 14v4 M18 14v4 M9 18h6"/>',
+    charge: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    driver: '<circle cx="12" cy="8" r="3.5"/><path d="M4 21c.7-4 4-6 8-6s7.3 2 8 6"/>',
+    pet: '<circle cx="5" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><circle cx="19" cy="9" r="2"/><path d="M9 13c-1.5 2-4 3-4 6a3 3 0 0 0 6 0c.5 0 1.5 0 2 0a3 3 0 0 0 6 0c0-3-2.5-4-4-6a4 4 0 0 0-6 0z"/>',
+    skybox: '<rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/>'
+  };
+  const addonsOrig = [
+    { ico:'seat', name:'Child seat', desc:'Forward-facing · ages 2–5', price:9, unit:'day', on:true },
+    { ico:'charge', name:'Pre-paid charge', desc:'Return without recharging', price:25, unit:'flat', on:true },
+    { ico:'driver', name:'Extra driver', desc:'Up to 1 additional', price:10, unit:'day', on:false }
+  ];
+  let addons = JSON.parse(JSON.stringify(addonsOrig));
+  const addonsList = document.getElementById('addonsList');
+  function renderAddons() {
+    addonsList.innerHTML = '';
+    addons.forEach((a,i) => {
+      const row = document.createElement('div');
+      row.className = 'addon';
+      row.innerHTML = `
+        <div class="ai"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${addonIcons[a.ico] || addonIcons.seat}</svg></div>
+        <div><div class="an">${a.name}</div><div class="ad">${a.desc}</div></div>
+        <div class="ap">$${a.price}<small>/ ${a.unit}</small></div>
+        <span class="switch ${a.on?'is-on':''}" data-i="${i}"></span>`;
+      addonsList.appendChild(row);
+    });
+    addonsList.querySelectorAll('.switch').forEach(sw => sw.addEventListener('click', () => {
+      const i = +sw.dataset.i;
+      addons[i].on = !addons[i].on;
+      sw.classList.toggle('is-on', addons[i].on);
+      markDirty('pricing');
+    }));
+  }
+  renderAddons();
+
+  // ============ Feature/marketplace toggles ============
+  document.querySelectorAll('.toggle-row').forEach(r => {
+    r.addEventListener('click', () => {
+      const on = r.classList.toggle('is-on');
+      const sw = r.querySelector('.switch');
+      sw && sw.classList.toggle('is-on', on);
+      const sec = r.closest('.section')?.dataset.sec;
+      if (sec) markDirty(sec);
+    });
+  });
+
+  // ============ Dirty tracking on inputs ============
+  const inputs = document.querySelectorAll('.pane input[data-orig], .pane select[data-orig], .pane textarea[data-orig]');
+  inputs.forEach(inp => {
+    inp.addEventListener('input', () => {
+      const orig = inp.dataset.orig;
+      const cur = inp.value;
+      inp.classList.toggle('is-changed', cur !== orig);
+      const sec = inp.closest('.section')?.dataset.sec;
+      if (sec) markDirty(sec);
+    });
+  });
+
+  // Char counter
+  const desc = document.getElementById('desc');
+  desc.addEventListener('input', () => {
+    document.getElementById('descChars').textContent = desc.value.length;
+  });
+
+  // ============ Dirty state machine ============
+  const dirtySecs = new Set();
+  function recomputeDirtyCounts() {
+    let total = 0;
+    document.querySelectorAll('.section').forEach(sec => {
+      const id = sec.dataset.sec;
+      if (!id) return;
+      let count = 0;
+      sec.querySelectorAll('[data-orig]').forEach(el => {
+        if (el.value !== el.dataset.orig) count++;
+      });
+      // Photos custom check
+      if (id === 'photos') {
+        if (JSON.stringify(photos) !== JSON.stringify(samplePhotos)) count++;
+      }
+      // Pricing extras
+      if (id === 'pricing') {
+        if (JSON.stringify(tiers) !== JSON.stringify(tiersOrig)) count++;
+        if (JSON.stringify(addons) !== JSON.stringify(addonsOrig)) count++;
+      }
+      // Feature toggles (sec-level — count any whose is-on differs from original 'is-on' attribute marker)
+      sec.querySelectorAll('.toggle-row').forEach(r => {
+        const wasOn = r.dataset.origOn === '1';
+        const isOn = r.classList.contains('is-on');
+        if (wasOn !== isOn) count++;
+      });
+      const navEl = document.querySelector(`.sn-item[data-sec="${id}"]`);
+      if (navEl) navEl.classList.toggle('is-dirty', count > 0);
+      const cardEls = sec.querySelectorAll('.card');
+      cardEls.forEach(c => c.classList.toggle('is-dirty', count > 0));
+      if (count > 0) dirtySecs.add(id); else dirtySecs.delete(id);
+      total += count;
+    });
+    const bar = document.getElementById('savebar');
+    bar.classList.toggle('is-show', total > 0);
+    document.getElementById('dirtyCount').textContent = total;
+    document.getElementById('dirtyWord').textContent = total === 1 ? 'change' : 'changes';
+    return total;
+  }
+  // Stash original toggle states once
+  document.querySelectorAll('.toggle-row').forEach(r => { r.dataset.origOn = r.classList.contains('is-on') ? '1' : '0'; });
+
+  function markDirty() { recomputeDirtyCounts(); }
+
+  // ============ Scrollspy on section nav ============
+  const secNavItems = document.querySelectorAll('.sn-item');
+  const sections = document.querySelectorAll('.section');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        secNavItems.forEach(n => n.classList.toggle('is-on', n.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-30% 0px -55% 0px', threshold: 0 });
+  sections.forEach(s => io.observe(s));
+
+  // ============ Save / Discard ============
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    // Commit: write all current values back to data-orig and snapshot extras
+    document.querySelectorAll('[data-orig]').forEach(el => { el.dataset.orig = el.value; el.classList.remove('is-changed'); });
+    samplePhotos.length = 0; photos.forEach(p => samplePhotos.push(p));
+    tiersOrig.length = 0; tiers.forEach(t => tiersOrig.push({...t}));
+    addonsOrig.length = 0; addons.forEach(a => addonsOrig.push({...a}));
+    document.querySelectorAll('.toggle-row').forEach(r => r.dataset.origOn = r.classList.contains('is-on') ? '1' : '0');
+    recomputeDirtyCounts();
+    const t = document.getElementById('toast');
+    t.classList.add('is-show');
+    setTimeout(() => t.classList.remove('is-show'), 1800);
+  });
+
+  document.getElementById('discardBtn').addEventListener('click', () => {
+    const total = +document.getElementById('dirtyCount').textContent;
+    document.getElementById('modalCount').textContent = total;
+    document.getElementById('discardModal').classList.add('is-show');
+  });
+
+  document.getElementById('discardConfirm').addEventListener('click', () => {
+    // Revert inputs
+    document.querySelectorAll('[data-orig]').forEach(el => {
+      el.value = el.dataset.orig;
+      el.classList.remove('is-changed');
+    });
+    // Revert toggles
+    document.querySelectorAll('.toggle-row').forEach(r => {
+      const should = r.dataset.origOn === '1';
+      r.classList.toggle('is-on', should);
+      const sw = r.querySelector('.switch'); sw && sw.classList.toggle('is-on', should);
+    });
+    // Revert photos / tiers / addons
+    photos = samplePhotos.slice(); renderPhotos();
+    tiers = JSON.parse(JSON.stringify(tiersOrig)); renderTiers();
+    addons = JSON.parse(JSON.stringify(addonsOrig)); renderAddons();
+    document.getElementById('discardModal').classList.remove('is-show');
+    recomputeDirtyCounts();
+    document.getElementById('desc').dispatchEvent(new Event('input'));
+  });
+
+  // ============ Smooth anchor ============
+  secNavItems.forEach(a => a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id.startsWith('#')) {
+      e.preventDefault();
+      const el = document.querySelector(id);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.pageYOffset - 70;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }
+  }));
+
+  // Keyboard save shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault();
+      if (+document.getElementById('dirtyCount').textContent > 0) document.getElementById('saveBtn').click();
+    }
+  });
+
+  // Warn on navigation when dirty
+  window.addEventListener('beforeunload', e => {
+    if (+document.getElementById('dirtyCount').textContent > 0) {
+      e.preventDefault(); e.returnValue = ''; return '';
+    }
+  });
+
+  recomputeDirtyCounts();
+})();
+</script>
+</body>
+</html>

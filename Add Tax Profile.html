@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>New tax profile — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--shadow-pop:0 6px 16px rgba(15,18,22,.08),0 24px 48px rgba(15,18,22,.10);--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* App shell — mirrors Tax Profiles */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* Topbar */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb a{color:var(--muted)}.crumb a:hover{color:var(--ink)}.crumb-sep{color:var(--muted-2)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:36px;padding:0 16px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:13px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* Layout — single form column with sticky summary on right */
+  .work{display:grid;grid-template-columns:1fr 320px;gap:24px;max-width:1180px;margin:0 auto;padding:32px 28px 140px}
+
+  .page-head{margin-bottom:24px}
+  .page-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .page-title{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .page-sub{color:var(--muted);margin:0;font-size:14px;line-height:1.55;max-width:62ch}
+
+  /* Sections */
+  .section{padding:24px 0;border-top:1px solid var(--line-2)}
+  .section:first-of-type{border-top:0;padding-top:0}
+  .sec-title{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 14px;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+  .sec-title .badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+
+  /* Fields */
+  .field{margin-bottom:18px;display:block}
+  .field:last-child{margin-bottom:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row > .field{margin-bottom:0}
+  .label{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px}
+  .label .req{color:var(--brand);margin-left:2px}
+  .label .opt{font-weight:500;color:var(--muted);font-size:11.5px}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .input,.select,.textarea{width:100%;height:42px;padding:0 13px;background:var(--field);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:14px;transition:all var(--t-fast);outline:none}
+  .input::placeholder{color:var(--muted-2)}
+  .input:hover,.select:hover,.textarea:hover{border-color:var(--muted-2)}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  [data-theme="dark"] .input:focus,[data-theme="dark"] .select:focus,[data-theme="dark"] .textarea:focus{border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+
+  /* Multi-select chip dropdown */
+  .multi{position:relative}
+  .multi-trigger{width:100%;min-height:42px;padding:6px 38px 6px 10px;background:var(--field);border:1px solid var(--line);border-radius:9px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer;transition:all var(--t-fast)}
+  .multi-trigger:hover{border-color:var(--muted-2)}
+  .multi-trigger.is-focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .multi-trigger::after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:1.6px solid var(--muted);border-bottom:1.6px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .multi-placeholder{color:var(--muted-2);font-size:14px;padding:5px 4px}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 6px 0 10px;background:var(--field-bg);border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:600;color:var(--ink)}
+  .chip .ico{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:9px;font-weight:800;flex-shrink:0}
+  .chip .x{width:20px;height:20px;border-radius:99px;display:grid;place-items:center;color:var(--muted)}
+  .chip .x:hover{background:var(--hover);color:var(--ink)}
+  .multi-menu{position:absolute;left:0;right:0;top:46px;background:var(--canvas);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-pop);overflow:hidden;z-index:8;max-height:320px;overflow-y:auto;opacity:0;transform:translateY(-4px);pointer-events:none;transition:all var(--t-fast)}
+  .multi-menu.is-show{opacity:1;transform:translateY(0);pointer-events:auto}
+  .multi-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-top:1px solid var(--line-2)}
+  .multi-opt:first-child{border-top:0}
+  .multi-opt:hover{background:var(--hover)}
+  .multi-opt .cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted-2);display:grid;place-items:center;flex-shrink:0;transition:all var(--t-fast)}
+  .multi-opt .cb svg{width:10px;height:10px;color:#fff;opacity:0}
+  .multi-opt.is-on .cb{background:var(--ink);border-color:var(--ink)}
+  .multi-opt.is-on .cb svg{opacity:1}
+  .multi-opt .opt-name{font-size:13px;font-weight:600;color:var(--ink)}
+  .multi-opt .opt-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .multi-opt .opt-pin{width:24px;height:24px;border-radius:6px;background:var(--ink);color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+  .multi-opt .opt-pin.t-info{background:var(--info)}
+  .multi-opt .opt-pin.t-turo{background:var(--turo)}
+  .multi-section-label{padding:8px 12px 6px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);background:var(--field-bg);border-top:1px solid var(--line-2)}
+  .multi-section-label:first-child{border-top:0}
+
+  /* Default toggle */
+  .row-default{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid color-mix(in srgb,var(--brand) 30%,var(--line));border-radius:10px;cursor:pointer;transition:all var(--t-fast);background:var(--brand-tint-2)}
+  .row-default .meta{display:flex;align-items:center;gap:12px;min-width:0}
+  .row-default .ico{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:var(--brand);color:#fff;flex-shrink:0}
+  .row-default .nm{font-size:13.5px;font-weight:700}
+  .row-default .ds{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+  .switch{width:38px;height:22px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);display:inline-block;flex-shrink:0}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch.is-on{background:var(--brand)}.switch.is-on::after{transform:translateX(16px)}
+
+  /* Tax components */
+  .comp-list{display:flex;flex-direction:column;gap:8px}
+  .comp{display:grid;grid-template-columns:36px 1fr 140px 38px;gap:10px;align-items:center;padding:8px 10px 8px 8px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);transition:all var(--t-fast);position:relative}
+  .comp:hover{border-color:var(--muted-2)}
+  .comp .handle{width:36px;height:36px;border-radius:8px;background:var(--field-bg);color:var(--muted);display:grid;place-items:center;cursor:grab;flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.04em}
+  .comp .handle:active{cursor:grabbing}
+  .comp .name-in{width:100%;height:36px;padding:0 12px;background:var(--field);border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:13.5px;font-weight:500;outline:none;transition:all var(--t-fast)}
+  .comp .name-in::placeholder{color:var(--muted-2)}
+  .comp .name-in:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .comp .val-wrap{display:flex;gap:0;height:36px;border:1px solid var(--line);border-radius:7px;background:var(--field);overflow:hidden;transition:all var(--t-fast)}
+  .comp .val-wrap:hover{border-color:var(--muted-2)}
+  .comp .val-wrap:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .comp .val-pre{padding:0 10px;display:grid;place-items:center;color:var(--muted);font-size:13px;font-weight:500;background:var(--field-bg);border-right:1px solid var(--line-2);min-width:30px}
+  .comp .val-in{flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:13.5px;font-weight:600;padding:0 10px;text-align:right;font-variant-numeric:tabular-nums;font-family:ui-monospace,monospace}
+  .comp .val-seg{display:flex;background:var(--field-bg);border-left:1px solid var(--line-2)}
+  .comp .val-seg button{width:30px;font-size:12px;font-weight:700;color:var(--muted);transition:all var(--t-fast)}
+  .comp .val-seg button.is-on{background:var(--canvas);color:var(--ink)}
+  [data-theme="dark"] .comp .val-seg button.is-on{background:var(--active)}
+  .comp .rm{width:34px;height:34px;border-radius:7px;color:var(--muted);display:grid;place-items:center;transition:all var(--t-fast)}
+  .comp .rm:hover{background:var(--brand-tint-2);color:var(--brand)}
+  .comp .rm[disabled]{opacity:0;pointer-events:none}
+
+  .comp-add{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:8px;border:1px dashed var(--line);color:var(--muted);font-size:13px;font-weight:600;margin-top:10px;transition:all var(--t-fast);width:100%;justify-content:center}
+  .comp-add:hover{color:var(--ink);border-color:var(--ink-2);background:var(--field-bg)}
+
+  /* Right summary */
+  .summary{position:sticky;top:80px;align-self:start;background:var(--canvas);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 120px);overflow-y:auto}
+  .summary h3{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+  .sm-name{font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.25;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .sm-name .def{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px 2px 5px;border-radius:99px;background:var(--brand-tint-2);color:var(--brand);display:inline-flex;align-items:center;gap:3px}
+  .sm-name .def svg{width:9px;height:9px;fill:currentColor}
+  .sm-empty{color:var(--muted-2);font-style:italic}
+
+  .sm-comps{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line-2);padding-top:12px}
+  .sm-comp{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+  .sm-comp .nm{color:var(--ink-2)}
+  .sm-comp .v{font-family:ui-monospace,monospace;font-size:12.5px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+  .sm-total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+  .sm-total .lbl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .sm-total .v{font-size:18px;font-weight:700;font-family:ui-monospace,monospace;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .sm-list{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line-2);padding-top:12px}
+  .sm-list h4{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+  .sm-chips{display:flex;flex-wrap:wrap;gap:4px}
+  .sm-chips .c{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;background:var(--field-bg);border:1px solid var(--line-2);border-radius:99px;font-size:11.5px;font-weight:500;color:var(--ink-2)}
+  .sm-chips .c.all{background:var(--info-tint);border-color:color-mix(in srgb,var(--info) 26%,transparent);color:var(--info);font-weight:600}
+  .sm-chips .placeholder{color:var(--muted-2);font-size:12px;font-style:italic}
+
+  /* Example calc preview */
+  .preview-card{margin-top:6px;padding:12px 14px;background:var(--field-bg);border:1px dashed var(--line);border-radius:10px}
+  .preview-card .ph{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .preview-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;font-family:ui-monospace,monospace}
+  .preview-row .k{color:var(--muted)}
+  .preview-row .v{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+  .preview-row.total{border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-weight:700}
+  .preview-row.total .v{color:var(--brand)}
+
+  /* Sticky footer */
+  .footer{position:fixed;left:var(--side-w,232px);right:0;bottom:0;background:color-mix(in srgb,var(--canvas) 94%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 28px;display:flex;justify-content:flex-end;align-items:center;gap:10px;z-index:5;transition:left var(--t-slow)}
+  .app[data-collapsed="true"] .footer{left:56px}
+  .footer .save-state{margin-right:auto;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+
+  /* Success modal */
+  .modal-shade{position:fixed;inset:0;background:rgba(15,18,22,.4);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;opacity:0;transition:opacity var(--t-med)}
+  .modal-shade.is-show{display:grid;opacity:1}
+  .modal{background:var(--canvas);border-radius:16px;padding:32px;max-width:440px;width:90%;text-align:center;box-shadow:var(--shadow-pop);transform:scale(.95);transition:transform var(--t-med)}
+  .modal-shade.is-show .modal{transform:scale(1)}
+  .modal .check{width:56px;height:56px;border-radius:99px;background:var(--ok-tint);color:var(--ok);display:grid;place-items:center;margin:0 auto 16px}
+  .modal h2{margin:0 0 6px;font-size:18px}.modal p{margin:0 0 20px;color:var(--muted);font-size:13px}
+  .modal .actions{display:flex;gap:8px;justify-content:center}
+
+  @media (max-width:1080px){
+    .work{grid-template-columns:1fr;padding:24px 18px 140px}
+    .summary{position:static;max-height:none}
+    .footer{left:0 !important;padding:12px 18px}
+    .field-row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+        <a href="Locations.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg><span class="label">Locations</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Finance</div>
+        <a href="Tax Profiles.html" class="nav-item is-active is-open">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14a1 1 0 0 0 1-1V4l-3 2-3-2-3 2-3-2-3 2v16a1 1 0 0 0 1 1z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <span class="label">Tax profiles</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Tax Profiles.html" class="sub-item">All profiles</a>
+          <a href="Add Tax Profile.html" class="sub-item is-active">New profile</a>
+        </div>
+        <a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="label">Invoices</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Finance</span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Tax Profiles.html">Tax profiles</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">New profile</span>
+      </div>
+      <div class="top-actions">
+        <a href="Tax Profiles.html" class="btn btn-ghost">Cancel</a>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="work">
+
+      <!-- ============ FORM ============ -->
+      <form id="form" onsubmit="return false;">
+        <div class="page-head">
+          <div class="page-eyebrow">New tax profile</div>
+          <h1 class="page-title">Build a tax profile</h1>
+          <p class="page-sub">Group one or more taxes into a single profile, choose where it applies, and we'll auto-attach it to bookings at checkout.</p>
+        </div>
+
+        <!-- 1. Basics -->
+        <section class="section">
+          <div class="field">
+            <label class="label" for="name">Tax title<span class="req">*</span></label>
+            <input id="name" class="input" placeholder="e.g. CA Sales Tax, SFO Concession, EU VAT" />
+            <div class="hint">A short, recognizable name. Shown on invoices and pickers.</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label">Locations <span class="opt">Leave empty for all</span></label>
+              <div class="multi" id="multiLoc">
+                <div class="multi-trigger" id="multiLocTrigger">
+                  <span class="multi-placeholder" id="multiLocPh">All locations</span>
+                </div>
+                <div class="multi-menu" id="multiLocMenu">
+                  <div class="multi-section-label">Default location</div>
+                  <div class="multi-opt" data-id="mission">
+                    <span class="opt-pin">M</span>
+                    <div style="flex:1"><div class="opt-name">Mission HQ <span style="color:var(--brand);font-size:11px;margin-left:4px">★</span></div><div class="opt-sub">Pickup &amp; drop-off · San Francisco</div></div>
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </div>
+                  <div class="multi-section-label">Other locations</div>
+                  <div class="multi-opt" data-id="oakland">
+                    <span class="opt-pin">O</span>
+                    <div style="flex:1"><div class="opt-name">Oakland Depot</div><div class="opt-sub">Pickup &amp; drop-off · Oakland</div></div>
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </div>
+                  <div class="multi-opt" data-id="sfo">
+                    <span class="opt-pin t-info">S</span>
+                    <div style="flex:1"><div class="opt-name">SFO · Long-term Lot C</div><div class="opt-sub">Pickup &amp; drop-off · Airport</div></div>
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </div>
+                  <div class="multi-opt" data-id="oak">
+                    <span class="opt-pin t-info">K</span>
+                    <div style="flex:1"><div class="opt-name">OAK · Airport Curb</div><div class="opt-sub">Pickup only · Oakland</div></div>
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </div>
+                  <div class="multi-opt" data-id="marina">
+                    <span class="opt-pin t-turo">M</span>
+                    <div style="flex:1"><div class="opt-name">Marina Drop-off</div><div class="opt-sub">Drop-off only · San Francisco</div></div>
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </div>
+                </div>
+              </div>
+              <div class="hint">Empty means every location uses this profile (unless it has its own).</div>
+            </div>
+
+            <div class="field">
+              <label class="label">Tax applicable on<span class="req">*</span></label>
+              <div class="multi" id="multiHead">
+                <div class="multi-trigger" id="multiHeadTrigger">
+                  <span class="multi-placeholder" id="multiHeadPh">Select invoice heads…</span>
+                </div>
+                <div class="multi-menu" id="multiHeadMenu">
+                  <div class="multi-opt" data-id="subtotal">
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div style="flex:1"><div class="opt-name">Subtotal</div><div class="opt-sub">Daily / hourly rental rate</div></div>
+                  </div>
+                  <div class="multi-opt" data-id="addons">
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div style="flex:1"><div class="opt-name">Add-ons</div><div class="opt-sub">Child seat, GPS, insurance…</div></div>
+                  </div>
+                  <div class="multi-opt" data-id="pickup">
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div style="flex:1"><div class="opt-name">Pickup fee</div><div class="opt-sub">Per-trip pickup charge</div></div>
+                  </div>
+                  <div class="multi-opt" data-id="dropoff">
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div style="flex:1"><div class="opt-name">Drop-off fee</div><div class="opt-sub">Per-trip drop-off charge</div></div>
+                  </div>
+                  <div class="multi-opt" data-id="delivery">
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div style="flex:1"><div class="opt-name">Delivery fee</div><div class="opt-sub">Door delivery charge</div></div>
+                  </div>
+                  <div class="multi-opt" data-id="late">
+                    <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div style="flex:1"><div class="opt-name">Late return fee</div><div class="opt-sub">Hourly overage charge</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="hint">Tax components multiply only by these line items.</div>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:14px">
+            <div class="row-default" id="rowDefault" onclick="window.__toggleDefault(this)">
+              <div class="meta">
+                <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg></div>
+                <div><div class="nm">Make default</div><div class="ds" id="defaultDs">Applied to every booking unless its location has its own profile.</div></div>
+              </div>
+              <span class="switch"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Components -->
+        <section class="section">
+          <h3 class="sec-title">Tax components <span class="badge" id="compCount">1 row</span></h3>
+          <div class="comp-list" id="compList">
+            <!-- populated by JS -->
+          </div>
+          <button class="comp-add" id="addComp" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add another component
+          </button>
+          <div class="hint" style="margin-top:10px">Each component is a separate line on the invoice. Use this when a region stacks state + county + city taxes that report separately.</div>
+        </section>
+
+      </form>
+
+      <!-- ============ SUMMARY ============ -->
+      <aside class="summary">
+        <div>
+          <h3>Profile preview</h3>
+          <div class="sm-name" id="smName" style="margin-top:6px"><span class="sm-empty">Untitled profile</span></div>
+        </div>
+
+        <div class="sm-comps" id="smComps">
+          <div class="sm-comp" style="color:var(--muted-2);font-style:italic">No components yet</div>
+        </div>
+
+        <div class="sm-total">
+          <span class="lbl">Total rate</span>
+          <span class="v" id="smTotal">—</span>
+        </div>
+
+        <div class="sm-list">
+          <h4>Applies on</h4>
+          <div class="sm-chips" id="smHeads"><span class="placeholder">No invoice heads selected</span></div>
+        </div>
+
+        <div class="sm-list">
+          <h4>Locations</h4>
+          <div class="sm-chips" id="smLocs"><span class="c all">All locations</span></div>
+        </div>
+
+        <div class="preview-card">
+          <div class="ph">Example · $100 booking</div>
+          <div class="preview-row"><span class="k">Subtotal</span><span class="v">$100.00</span></div>
+          <div class="preview-row" id="prevTaxRow" style="display:none"><span class="k">Tax</span><span class="v">$0.00</span></div>
+          <div class="preview-row total"><span class="k">Total</span><span class="v" id="prevTotal">$100.00</span></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Sticky footer -->
+    <div class="footer">
+      <div class="save-state">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ok)"><polyline points="20 6 9 17 4 12"/></svg>
+        Saves to draft automatically
+      </div>
+      <a href="Tax Profiles.html" class="btn btn-ghost">Cancel</a>
+      <button class="btn btn-primary" id="saveBtn">Save profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal -->
+<div class="modal-shade" id="modal">
+  <div class="modal">
+    <div class="check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2 id="modalTitle">Tax profile saved</h2>
+    <p id="modalBody">It will apply to the next booking matching its locations and invoice heads.</p>
+    <div class="actions">
+      <a href="Tax Profiles.html" class="btn">Back to list</a>
+      <button class="btn btn-primary" onclick="document.getElementById('modal').classList.remove('is-show')">Add another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== Theme / sidebar =====
+  const app=document.getElementById('app');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  document.getElementById('btnTheme').addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+  document.getElementById('btnExpand').addEventListener('click',()=>{app.dataset.collapsed='false';localStorage.setItem('side-collapsed','0');});
+
+  // ===== Multi-select helper =====
+  function makeMulti(id, opts){
+    const wrap = document.getElementById(id);
+    const trigger = wrap.querySelector('.multi-trigger');
+    const menu = wrap.querySelector('.multi-menu');
+    const ph = wrap.querySelector('.multi-placeholder');
+    const selected = new Set();
+    function render(){
+      [...trigger.querySelectorAll('.chip')].forEach(c=>c.remove());
+      ph.style.display = selected.size ? 'none' : 'inline-block';
+      [...selected].forEach(id => {
+        const opt = opts[id];
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = `<span class="ico" style="${opt.pinClass||''}">${opt.short||opt.name[0]}</span>${opt.name}<button type="button" class="x" data-id="${id}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>`;
+        trigger.insertBefore(chip, ph);
+      });
+      trigger.querySelectorAll('.x').forEach(b => b.addEventListener('click', e=>{
+        e.stopPropagation();
+        selected.delete(b.dataset.id);
+        menu.querySelectorAll('.multi-opt').forEach(o=>{ if(o.dataset.id===b.dataset.id) o.classList.remove('is-on'); });
+        render();
+        update();
+      }));
+    }
+    trigger.addEventListener('click', ()=>{
+      const open = !menu.classList.contains('is-show');
+      menu.classList.toggle('is-show', open);
+      trigger.classList.toggle('is-focus', open);
+    });
+    document.addEventListener('click', e=>{ if(!e.target.closest(`#${id}`)) { menu.classList.remove('is-show'); trigger.classList.remove('is-focus'); } });
+    menu.querySelectorAll('.multi-opt').forEach(o => o.addEventListener('click', ()=>{
+      const id2 = o.dataset.id;
+      if(selected.has(id2)){ selected.delete(id2); o.classList.remove('is-on'); }
+      else { selected.add(id2); o.classList.add('is-on'); }
+      render();
+      update();
+    }));
+    return { selected, render, get values(){ return [...selected].map(id=>opts[id]); } };
+  }
+
+  // Locations options
+  const locOpts = {
+    mission:{ name:'Mission HQ', short:'M' },
+    oakland:{ name:'Oakland Depot', short:'O' },
+    sfo:    { name:'SFO Lot C', short:'S', pinClass:'background:var(--info)' },
+    oak:    { name:'OAK Curb', short:'K', pinClass:'background:var(--info)' },
+    marina: { name:'Marina Drop-off', short:'M', pinClass:'background:var(--turo)' }
+  };
+  // Heads options
+  const headOpts = {
+    subtotal:{ name:'Subtotal' },
+    addons:  { name:'Add-ons' },
+    pickup:  { name:'Pickup fee' },
+    dropoff: { name:'Drop-off fee' },
+    delivery:{ name:'Delivery fee' },
+    late:    { name:'Late return' }
+  };
+
+  const ms = {
+    loc:  makeMulti('multiLoc', locOpts),
+    head: makeMulti('multiHead', headOpts)
+  };
+
+  // ===== Default toggle =====
+  let isDefault = false;
+  window.__toggleDefault = function(row){
+    isDefault = !isDefault;
+    row.querySelector('.switch').classList.toggle('is-on', isDefault);
+    row.style.background = isDefault ? 'var(--brand-tint-2)' : 'var(--field-bg)';
+    row.style.borderColor = isDefault ? 'color-mix(in srgb,var(--brand) 40%,var(--line))' : 'var(--line)';
+    document.getElementById('defaultDs').textContent = isDefault
+      ? 'This profile will replace the current default. Applied to every booking unless its location has its own.'
+      : 'Applied to every booking unless its location has its own profile.';
+    update();
+  };
+
+  // ===== Components =====
+  let components = [
+    { name: 'Sales Tax', type: '%', value: 7.25 }
+  ];
+  function renderComps(){
+    const list = document.getElementById('compList');
+    list.innerHTML = components.map((c,i) => `
+      <div class="comp" data-i="${i}">
+        <div class="handle" title="Drag to reorder">${i+1}</div>
+        <input class="name-in" data-field="name" data-i="${i}" placeholder="e.g. State Tax, City Surcharge" value="${escapeHtml(c.name)}" />
+        <div class="val-wrap">
+          <span class="val-pre">${c.type}</span>
+          <input class="val-in" data-field="value" data-i="${i}" type="number" step="0.01" min="0" value="${c.value}" placeholder="0" />
+          <div class="val-seg">
+            <button type="button" data-i="${i}" data-set="%"  class="${c.type==='%'?'is-on':''}">%</button>
+            <button type="button" data-i="${i}" data-set="$"  class="${c.type==='$'?'is-on':''}">$</button>
+          </div>
+        </div>
+        <button type="button" class="rm" data-rm="${i}" ${components.length===1?'disabled':''} title="Remove">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+        </button>
+      </div>
+    `).join('');
+    // Hook inputs
+    list.querySelectorAll('.name-in').forEach(el => el.addEventListener('input', e=>{
+      components[+el.dataset.i].name = el.value;
+      update();
+    }));
+    list.querySelectorAll('.val-in').forEach(el => el.addEventListener('input', e=>{
+      components[+el.dataset.i].value = parseFloat(el.value)||0;
+      update();
+    }));
+    list.querySelectorAll('.val-seg button').forEach(b => b.addEventListener('click', ()=>{
+      components[+b.dataset.i].type = b.dataset.set;
+      renderComps();
+      update();
+    }));
+    list.querySelectorAll('.rm').forEach(b => b.addEventListener('click', ()=>{
+      if(components.length===1) return;
+      components.splice(+b.dataset.rm, 1);
+      renderComps();
+      update();
+    }));
+    document.getElementById('compCount').textContent = components.length + ' row' + (components.length===1?'':'s');
+  }
+  document.getElementById('addComp').addEventListener('click', ()=>{
+    components.push({ name:'', type:'%', value:0 });
+    renderComps();
+    // Focus the new name input
+    setTimeout(()=>{
+      const inputs = document.querySelectorAll('.name-in');
+      inputs[inputs.length-1]?.focus();
+    }, 10);
+    update();
+  });
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  renderComps();
+
+  // ===== Live summary =====
+  function update(){
+    // Name
+    const name = document.getElementById('name').value.trim();
+    document.getElementById('smName').innerHTML = name
+      ? `${escapeHtml(name)}${isDefault ? '<span class="def"><svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>Default</span>' : ''}`
+      : '<span class="sm-empty">Untitled profile</span>';
+
+    // Components
+    const validComps = components.filter(c => c.name.trim() && c.value > 0);
+    const smC = document.getElementById('smComps');
+    if(validComps.length){
+      smC.innerHTML = validComps.map(c => `<div class="sm-comp"><span class="nm">${escapeHtml(c.name)}</span><span class="v">${c.type==='%'?c.value+'%':'$'+c.value.toFixed(2)}</span></div>`).join('');
+    } else {
+      smC.innerHTML = '<div class="sm-comp" style="color:var(--muted-2);font-style:italic">No components yet</div>';
+    }
+
+    // Total
+    const pct = components.filter(c=>c.type==='%').reduce((s,c)=>s+(parseFloat(c.value)||0), 0);
+    const fix = components.filter(c=>c.type==='$').reduce((s,c)=>s+(parseFloat(c.value)||0), 0);
+    let totalStr = '—';
+    if(pct && fix) totalStr = trim(pct)+'% + $'+trim(fix);
+    else if(pct) totalStr = trim(pct)+'%';
+    else if(fix) totalStr = '$'+trim(fix);
+    document.getElementById('smTotal').textContent = totalStr;
+
+    // Heads chips
+    const smH = document.getElementById('smHeads');
+    const headVals = ms.head.values;
+    smH.innerHTML = headVals.length
+      ? headVals.map(h => `<span class="c">${h.name}</span>`).join('')
+      : '<span class="placeholder">No invoice heads selected</span>';
+
+    // Locations chips
+    const smL = document.getElementById('smLocs');
+    const locVals = ms.loc.values;
+    smL.innerHTML = locVals.length
+      ? locVals.map(l => `<span class="c">${l.name}</span>`).join('')
+      : '<span class="c all">All locations</span>';
+
+    // Preview calculation on $100 booking
+    const taxAmt = (pct/100)*100 + fix;
+    const prevTaxRow = document.getElementById('prevTaxRow');
+    if(taxAmt > 0){
+      prevTaxRow.style.display = 'flex';
+      prevTaxRow.querySelector('.v').textContent = '$' + taxAmt.toFixed(2);
+      document.getElementById('prevTotal').textContent = '$' + (100 + taxAmt).toFixed(2);
+    } else {
+      prevTaxRow.style.display = 'none';
+      document.getElementById('prevTotal').textContent = '$100.00';
+    }
+  }
+  function trim(n){ return (Math.round(n*1000)/1000).toString(); }
+  document.getElementById('name').addEventListener('input', update);
+  update();
+
+  // ===== Save =====
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('name').value.trim();
+    if(!name){
+      document.getElementById('name').focus();
+      document.getElementById('name').style.borderColor='var(--brand)';
+      setTimeout(()=>{ document.getElementById('name').style.borderColor=''; }, 1500);
+      return;
+    }
+    if(!ms.head.values.length){
+      document.getElementById('multiHeadTrigger').style.borderColor='var(--brand)';
+      setTimeout(()=>{ document.getElementById('multiHeadTrigger').style.borderColor=''; }, 1500);
+      return;
+    }
+    const total = document.getElementById('smTotal').textContent;
+    document.getElementById('modalTitle').textContent = isDefault ? 'Default tax profile saved' : 'Tax profile saved';
+    document.getElementById('modalBody').textContent = `${name} (${total}) will apply on ${ms.head.values.map(h=>h.name).join(', ')}` + (ms.loc.values.length ? ` at ${ms.loc.values.length} location${ms.loc.values.length===1?'':'s'}.` : ' across all locations.');
+    document.getElementById('modal').classList.add('is-show');
+  });
+
+})();
+</script>
+</body>
+</html>

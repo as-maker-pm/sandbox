@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Booking #13214 (Cancelled) — Fleetly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --side-bg: #f4f4f5;
+    --canvas: #ffffff;
+    --bg: #ffffff;
+    --ink: #15171a;
+    --ink-2: #4a4f57;
+    --muted: #8a9099;
+    --muted-2: #b6bcc4;
+    --line: #e8e8ea;
+    --line-2: #ededef;
+    --hover: #ebebed;
+    --active: #e0e0e3;
+    --field: #ffffff;
+    --field-bg: #fafafa;
+    --brand: #ef3a3a;
+    --brand-tint: #fde8e8;
+    --brand-tint-2: #fbe7e7;
+    --ok: #1f8a5b;
+    --ok-tint: #e7f4ee;
+    --warn: #c97c0d;
+    --warn-tint: #fdf2e0;
+    --danger: #d72a2a;
+    --t-fast: 140ms cubic-bezier(.2,.7,.2,1);
+    --t-med: 220ms cubic-bezier(.2,.7,.2,1);
+    --t-slow: 320ms cubic-bezier(.22,.8,.18,1);
+  }
+  [data-theme="dark"] {
+    --side-bg: #18191c; --canvas: #0f1012; --bg: #0f1012;
+    --ink: #f3f4f6; --ink-2: #c7cbd1; --muted: #8b9098; --muted-2: #5b6068;
+    --line: #26282d; --line-2: #1f2125; --hover: #25272b; --active: #2f3137;
+    --field: #16181c; --field-bg: #131418; --brand: #ff5757;
+    --brand-tint: #3a1f20; --brand-tint-2: #2a1718;
+    --ok: #4cc38a; --ok-tint: #173025; --warn: #e0a64a; --warn-tint: #2e2418;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{background:none;border:0;cursor:pointer;padding:0}
+  a{text-decoration:none;color:inherit}
+
+  /* Shell */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+
+  /* Sidebar (compact) */
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px;flex:0 0 22px}
+  .logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;transition:opacity var(--t-fast)}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .app[data-collapsed="true"] .logo-word{opacity:0;width:0;overflow:hidden}
+  .app[data-collapsed="true"] .logo{gap:0;padding:0}
+  .top-buttons{display:flex;align-items:center;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .app[data-collapsed="true"] .side-top .top-buttons{display:none}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .toggle-floating:hover{background:var(--hover);color:var(--ink)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 8px 8px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .app[data-collapsed="true"] .nav{padding:4px 6px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap;overflow:hidden;transition:opacity var(--t-fast),padding var(--t-med)}
+  .nav-section:first-child .nav-section-label{padding-top:6px}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;margin:0 6px;border-top:1px solid var(--line-2)}
+  .app[data-collapsed="true"] .nav-section:first-child .nav-section-label{border-top:0}
+  .nav-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;text-align:left;transition:all var(--t-fast);font-size:13px}
+  .nav-item .icon{width:16px;height:16px;flex:0 0 16px;color:var(--muted);transition:color var(--t-fast)}
+  .nav-item .label{flex:1;white-space:nowrap;opacity:1;transition:opacity var(--t-fast);overflow:hidden}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}
+  .nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label{opacity:0;width:0;overflow:hidden;pointer-events:none}
+  .side-foot{padding:6px 8px 10px;flex:0 0 auto;display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--line-2)}
+  .app[data-collapsed="true"] .side-foot{padding:6px 6px 10px}
+  .get-started{display:flex;align-items:center;gap:10px;padding:0 10px;height:32px;background:var(--brand-tint-2);color:var(--brand);border-radius:7px;font-weight:600;font-size:13px;margin:4px 0 6px}
+  .get-started .gs-mark{width:16px;height:16px;flex:0 0 16px}
+  .get-started .gs-label{flex:1;white-space:nowrap;transition:opacity var(--t-fast);overflow:hidden}
+  .get-started .gs-progress{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;transition:opacity var(--t-fast)}
+  .ring{width:14px;height:14px;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:2.2}
+  .ring .track{stroke:rgba(239,58,58,.22)}
+  .ring .fill{stroke:var(--brand);stroke-linecap:round}
+  .app[data-collapsed="true"] .get-started{justify-content:center;padding:0;width:40px;height:32px;margin:4px auto 6px;gap:0}
+  .app[data-collapsed="true"] .get-started .gs-label,
+  .app[data-collapsed="true"] .get-started .gs-progress{opacity:0;width:0;overflow:hidden;pointer-events:none}
+
+  /* Topbar */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:4}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}
+  .crumb a{color:var(--muted)}
+  .crumb a:hover{color:var(--ink)}
+  .crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;transition:all var(--t-fast);border:1px solid var(--line);color:var(--ink);background:var(--canvas);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}
+  .btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+  .btn-primary:hover{background:#2a2d33}
+  .btn-brand{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-brand:hover{filter:brightness(1.05)}
+  .btn-danger{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-danger:hover{filter:brightness(1.05)}
+  .btn-sm{height:30px;padding:0 12px;font-size:12px}
+  .btn-success{background:#22c55e;color:#fff;border-color:#22c55e}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2);transition:background var(--t-fast)}
+  .icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px;cursor:pointer}
+
+  /* Page layout */
+  .page{padding:20px 28px 60px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;max-width:1480px;margin:0 auto;width:100%}
+  .col-main{display:flex;flex-direction:column;gap:20px;min-width:0}
+  .col-side{display:flex;flex-direction:column;gap:20px}
+
+  /* Page head */
+  .head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px}
+  .head-l{display:flex;align-items:center;gap:14px}
+  .head-l h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .badge-confirmed{background:var(--ok-tint);color:var(--ok)}
+  .badge-started{background:var(--warn-tint);color:var(--warn)}
+  .badge-pending{background:var(--warn-tint);color:var(--warn)}
+  .badge-paid{background:var(--ok-tint);color:var(--ok)}
+  .badge-cancelled{background:var(--brand-tint);color:var(--brand)}
+  .badge-refunded{background:#e9eef7;color:#2a5fb8}
+  [data-theme="dark"] .badge-refunded{background:#1d2638;color:#8ab1f0}
+  .badge-neutral{background:var(--field-bg);color:var(--muted);border:1px solid var(--line)}
+
+  /* Cancellation banner */
+  .cancel-banner{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;background:linear-gradient(180deg,var(--brand-tint) 0%,var(--brand-tint-2) 100%);border:1px solid #f4cdcd;border-radius:14px;padding:18px 22px}
+  [data-theme="dark"] .cancel-banner{border-color:#4a2628}
+  .cancel-banner .cb-ico{width:44px;height:44px;border-radius:11px;background:var(--brand);color:#fff;display:grid;place-items:center;flex:0 0 44px}
+  .cancel-banner h3{margin:0 0 4px;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.005em}
+  .cancel-banner p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+  .cancel-banner p b{color:var(--ink);font-weight:600}
+  .cancel-meta{display:flex;gap:18px;align-items:center;font-size:11.5px;color:var(--muted);margin-top:6px}
+  .cancel-meta span{display:inline-flex;align-items:center;gap:5px}
+  .cancel-meta b{color:var(--ink);font-weight:600}
+  .cb-right{display:flex;flex-direction:column;gap:4px;align-items:flex-end;text-align:right;min-width:140px}
+  .cb-right .lab{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .cb-right .val{font-size:18px;font-weight:700;color:var(--brand);letter-spacing:-.01em}
+
+  /* Cancelled trip strike */
+  .trip.is-cancelled::before{border-top-color:var(--muted-2);opacity:.6}
+  .trip.is-cancelled .trip-pt .dot{border-color:var(--muted)}
+  .trip.is-cancelled .trip-pt .time,
+  .trip.is-cancelled .trip-pt .date{text-decoration:line-through;text-decoration-color:var(--muted);text-decoration-thickness:1.5px;color:var(--ink-2)}
+  .trip.is-cancelled .trip-pt .addr{color:var(--muted-2)}
+  .trip-stamp{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:var(--field-bg);border:1px dashed var(--line);border-radius:10px;font-size:12px;color:var(--muted);font-weight:500}
+  .trip-stamp svg{width:14px;height:14px;color:var(--brand)}
+
+  /* Invoice refunded styling */
+  .inv-strike .inv-row .l,
+  .inv-strike .inv-row .r{color:var(--muted)}
+  .inv-strike .inv-row .r:not(.danger){text-decoration:line-through;text-decoration-color:var(--muted-2)}
+  .refund-block{margin-top:12px;background:#eef4fa;border:1px solid #d6e3f3;border-radius:10px;padding:14px 16px}
+  [data-theme="dark"] .refund-block{background:#172131;border-color:#26334b}
+  .refund-block .rb-head{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2a5fb8;margin-bottom:8px}
+  [data-theme="dark"] .refund-block .rb-head{color:#8ab1f0}
+  .refund-block .rb-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+  .refund-block .rb-row .k{color:var(--ink-2)}
+  .refund-block .rb-row .v{color:var(--ink);font-weight:600}
+  .refund-block .rb-row.total{border-top:1px solid #d6e3f3;margin-top:6px;padding-top:10px;font-size:14px}
+  [data-theme="dark"] .refund-block .rb-row.total{border-color:#26334b}
+  .refund-block .rb-row.total .v{color:#2a5fb8;font-size:15px}
+  [data-theme="dark"] .refund-block .rb-row.total .v{color:#8ab1f0}
+  .refund-method{margin-top:10px;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .refund-method svg{width:13px;height:13px}
+
+  /* Disabled top actions */
+  .btn[disabled]{opacity:.55;cursor:not-allowed}
+  .btn[disabled]:hover{background:var(--canvas)}
+
+  /* Policy ladder */
+  .policy-list{display:flex;flex-direction:column;gap:0}
+  .policy-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line-2);font-size:12.5px}
+  .policy-row:last-child{border-bottom:0}
+  .policy-row.is-applied{background:var(--brand-tint);border:1px solid #f4cdcd;border-radius:8px;padding:10px 12px;margin:4px -6px;border-bottom:1px solid #f4cdcd}
+  [data-theme="dark"] .policy-row.is-applied{border-color:#4a2628}
+  .policy-row .pr-dot{width:9px;height:9px;border-radius:99px;background:var(--line);flex:0 0 9px}
+  .policy-row.is-applied .pr-dot{background:var(--brand)}
+  .policy-row .pr-name{color:var(--ink);font-weight:500}
+  .policy-row.is-applied .pr-name{font-weight:700}
+  .policy-row .pr-meta{color:var(--muted);font-size:11.5px;display:block;margin-top:2px;font-weight:400}
+  .policy-row .pr-amt{color:var(--ink-2);font-weight:600;text-align:right;white-space:nowrap}
+  .policy-row.is-applied .pr-amt{color:var(--brand)}
+
+  /* Cancellation timeline */
+  .ct-item{display:flex;gap:12px;position:relative;padding-bottom:14px}
+  .ct-item:last-child{padding-bottom:0}
+  .ct-item::after{content:"";position:absolute;left:9px;top:22px;bottom:0;border-left:1.5px dashed var(--line)}
+  .ct-item:last-child::after{display:none}
+  .ct-dot{width:18px;height:18px;border-radius:99px;flex:0 0 18px;display:grid;place-items:center;margin-top:1px;z-index:1;background:var(--ok-tint);color:var(--ok)}
+  .ct-dot svg{width:10px;height:10px}
+  .ct-dot.muted{background:var(--field-bg);color:var(--muted)}
+  .ct-body{flex:1;min-width:0}
+  .ct-name{font-size:13px;font-weight:600}
+  .ct-meta{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .ct-by{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+  .ct-by b{font-weight:600;color:var(--ink)}
+  .head-r{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* Card */
+  .card{background:var(--canvas);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+  .card-title{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:10px}
+  .card-title .id{color:var(--muted);font-weight:600}
+
+  /* Booking ID block */
+  .bk-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+  .bk-id{font-size:12px;color:var(--muted)}
+  .bk-id b{color:var(--ink);font-weight:600}
+  .bk-name{margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .bk-veh{color:var(--muted);font-size:12.5px}
+  .bk-meta{text-align:right;font-size:12px;color:var(--muted)}
+  .bk-meta b{display:block;color:var(--ink);font-weight:600;font-size:13px;margin-top:2px}
+
+  /* Pickup/dropoff timeline */
+  .trip{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px;position:relative}
+  .trip::before{content:"";position:absolute;left:0;right:0;top:14px;border-top:1.5px dashed var(--brand);opacity:.5}
+  .trip-pt{position:relative}
+  .trip-pt .lab{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:18px;background:var(--canvas);width:fit-content;padding-right:8px;position:relative;z-index:1}
+  .trip-pt.r .lab{margin-left:auto;padding:0 0 0 8px}
+  .trip-pt .dot{width:10px;height:10px;border-radius:99px;border:2px solid var(--brand);background:var(--canvas)}
+  .trip-pt .time{font-size:14px;font-weight:700}
+  .trip-pt .date{font-size:13px;font-weight:600;margin-top:2px}
+  .trip-pt .addr{font-size:12px;color:var(--muted);margin-top:4px}
+  .trip-pt.r{text-align:right}
+
+  /* Invoice */
+  .inv-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;font-size:13px}
+  .inv-row.head{font-size:13px}
+  .inv-row .l{color:var(--ink);font-weight:500}
+  .inv-row .l.muted{color:var(--muted);font-weight:400}
+  .inv-row .l small{display:block;color:var(--muted);font-weight:400;margin-top:2px;font-size:12px}
+  .inv-row .r{font-weight:600;color:var(--ink)}
+  .inv-row .r.muted{color:var(--muted);font-weight:500}
+  .inv-row .r.danger{color:var(--brand)}
+  .inv-row .r .cur{color:var(--muted);font-weight:500;margin-right:4px;font-size:11.5px}
+  .inv-divider{border-top:1px solid var(--line-2);margin:8px 0}
+  .inv-section-title{font-size:12.5px;font-weight:600;color:var(--ink);margin:6px 0 2px}
+  .promo{display:inline-flex;align-items:center;gap:6px;background:var(--field-bg);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:600;letter-spacing:.04em;color:var(--brand)}
+  .promo svg{width:11px;height:11px}
+
+  .inv-totals{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+
+  /* Additional payments */
+  .ap-grid{display:grid;grid-template-columns:280px 1fr;gap:24px}
+  .ap-summary{display:flex;flex-direction:column;gap:0}
+  .ap-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:13px}
+  .ap-row:last-child{border-bottom:0}
+  .ap-row .v{font-weight:600}
+  .ap-row.outstanding .v{color:var(--brand)}
+
+  /* Charge table */
+  .ctbl{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--canvas)}
+  .ctbl-h,.ctbl-r{display:grid;grid-template-columns:1.2fr .9fr 1fr .9fr 70px;align-items:center;gap:8px;padding:10px 14px;font-size:12.5px}
+  .ctbl-h{background:var(--field-bg);color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;padding:9px 14px}
+  .ctbl-r{border-top:1px solid var(--line-2)}
+  .ctbl-r:hover{background:var(--field-bg)}
+  .ctbl-r .actions{display:flex;gap:4px;justify-content:flex-end}
+  .ctbl-r .actions button{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--muted)}
+  .ctbl-r .actions button:hover{background:var(--hover);color:var(--ink)}
+  .ctbl-r .actions .del:hover{background:var(--brand-tint);color:var(--brand)}
+  .ctbl-empty{padding:24px;text-align:center;color:var(--muted);font-size:12.5px}
+
+  /* Driver table */
+  .dtbl{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .dtbl-h,.dtbl-r{display:grid;grid-template-columns:120px 1fr 130px 110px 130px 130px 70px;align-items:center;gap:10px;padding:12px 14px;font-size:12.5px}
+  .dtbl-h{background:var(--field-bg);color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;padding:9px 14px}
+  .dtbl-r{border-top:1px solid var(--line-2)}
+  .dtbl-r .name{font-weight:600}
+  .dtbl-r .email,.dtbl-r .phone{color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:filter var(--t-fast),background var(--t-fast)}
+  .pill-view{background:#22c55e;color:#fff;width:100%}
+  .pill-view:hover{filter:brightness(1.05)}
+  .pill-verify{background:var(--canvas);border:1px solid var(--line);color:var(--ink);width:100%}
+  .pill-verify:hover{background:var(--hover)}
+
+  /* Side cards */
+  .sum-grid{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:12.5px}
+  .sum-grid .k{color:var(--muted)}
+  .sum-grid .v{color:var(--ink);font-weight:500;text-align:right;word-break:break-word}
+
+  /* Checklist */
+  .check-item{display:flex;gap:12px;position:relative;padding-bottom:18px}
+  .check-item:last-child{padding-bottom:0}
+  .check-item::after{content:"";position:absolute;left:9px;top:22px;bottom:0;border-left:1.5px dashed var(--line)}
+  .check-item:last-child::after{display:none}
+  .check-dot{width:18px;height:18px;border-radius:99px;flex:0 0 18px;display:grid;place-items:center;margin-top:1px;z-index:1;background:var(--canvas)}
+  .check-dot.ok{background:var(--ok-tint);color:var(--ok)}
+  .check-dot.ok svg{width:10px;height:10px}
+  .check-dot.pend{border:2px solid var(--brand);background:var(--brand)}
+  .check-body{flex:1}
+  .check-status{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+  .check-status.ok{color:var(--ok)}
+  .check-status.pend{color:var(--brand)}
+  .check-status.done-id{color:var(--ok)}
+  .check-name{font-size:14px;font-weight:600;margin-bottom:6px}
+  .check-desc{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+  .check-action{margin-top:6px}
+
+  /* Photo upload */
+  .ph-block{margin-bottom:16px}
+  .ph-block:last-child{margin-bottom:0}
+  .ph-title{font-size:13px;font-weight:600;margin-bottom:4px}
+  .ph-desc{font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+  .ph-desc b{color:var(--ink);font-weight:600}
+  .ph-up{display:flex;align-items:center;justify-content:center;gap:6px;height:36px;width:100%;background:var(--ink);color:var(--canvas);border-radius:7px;font-weight:600;font-size:12.5px;transition:background var(--t-fast)}
+  .ph-up:hover{background:#2a2d33}
+  .ph-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+  .ph-thumb{aspect-ratio:1;border-radius:6px;background-size:cover;background-position:center;background-color:var(--field-bg);position:relative}
+  .ph-thumb .rm{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:99px;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;opacity:0;transition:opacity var(--t-fast)}
+  .ph-thumb:hover .rm{opacity:1}
+
+  /* Booking notes */
+  .note-add{margin-top:0;display:none;padding:12px;background:var(--field-bg);border:1px solid var(--line);border-radius:10px;margin-bottom:12px}
+  .note-add.is-open{display:block;animation:fadeIn .22s}
+  .note-add textarea{width:100%;min-height:70px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--canvas);color:var(--ink);resize:vertical;font-size:12.5px;line-height:1.5;outline:none}
+  .note-add textarea:focus{border-color:var(--ink)}
+  .note-add .acts{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+  .note{padding:12px 0;border-bottom:1px solid var(--line-2);font-size:12.5px;animation:fadeIn .25s}
+  .note:last-child{border-bottom:0}
+  .note-time{color:var(--muted);font-size:11.5px;margin-bottom:4px}
+  .note-body{color:var(--ink-2);line-height:1.5}
+  .note-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:18px 0}
+
+  .add-btn{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line);transition:all var(--t-fast)}
+  .add-btn:hover{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+
+  /* Modal */
+  .modal-shade{position:fixed;inset:0;background:rgba(15,18,22,.5);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;opacity:0;transition:opacity var(--t-med);padding:20px}
+  .modal-shade.is-show{display:grid;opacity:1}
+  .modal{background:var(--canvas);border-radius:14px;padding:24px;max-width:480px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.2);transform:scale(.96);transition:transform var(--t-med);max-height:90vh;overflow:auto}
+  .modal-shade.is-show .modal{transform:scale(1)}
+  .modal h2{margin:0 0 6px;font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .modal .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+  .modal-x{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:99px;display:grid;place-items:center;color:var(--muted)}
+  .modal-x:hover{background:var(--hover);color:var(--ink)}
+  .modal-wrap{position:relative}
+
+  /* Forms */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .input,.select,.textarea{width:100%;height:38px;padding:0 12px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;transition:border-color var(--t-fast),box-shadow var(--t-fast)}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .textarea{height:auto;padding:10px 12px;min-height:80px;resize:vertical}
+  .select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* Verify chooser */
+  .chooser{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .ch-card{padding:16px;border:1.5px solid var(--line);border-radius:12px;text-align:left;cursor:pointer;background:var(--canvas);transition:border-color var(--t-fast),background var(--t-fast)}
+  .ch-card:hover{border-color:var(--ink);background:var(--field-bg)}
+  .ch-card .ico{width:32px;height:32px;border-radius:8px;background:var(--field-bg);display:grid;place-items:center;color:var(--ink-2);margin-bottom:10px}
+  .ch-card .name{font-size:13px;font-weight:700;margin-bottom:3px}
+  .ch-card .desc{font-size:11.5px;color:var(--muted);line-height:1.45}
+
+  /* Verified detail rows */
+  .v-detail .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+  .v-detail .row:last-child{border-bottom:0}
+  .v-detail .k{color:var(--muted)}
+  .v-detail .v{font-weight:600}
+  .v-detail .v.ok{color:var(--ok);display:inline-flex;align-items:center;gap:4px}
+  .v-doc{margin-top:14px;padding:14px;background:var(--field-bg);border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .v-doc .ico{width:36px;height:36px;border-radius:7px;background:var(--canvas);border:1px solid var(--line);display:grid;place-items:center;color:var(--brand)}
+  .v-doc b{display:block;color:var(--ink);font-weight:600}
+  .v-doc .meta{color:var(--muted);font-size:11.5px;margin-top:2px}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--canvas);padding:10px 16px;border-radius:99px;font-size:12.5px;font-weight:500;z-index:200;opacity:0;pointer-events:none;transition:all var(--t-med);display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  .toast.is-show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{color:#4cc38a;width:14px;height:14px}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  @media (max-width: 1100px){
+    .page{grid-template-columns:1fr}
+    .ap-grid{grid-template-columns:1fr}
+    .dtbl-h,.dtbl-r{grid-template-columns:1fr;gap:6px}
+    .dtbl-h{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+  <aside class="side" id="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme" title="Toggle theme">
+          <svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/>
+          </svg>
+          <svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="toggle" id="btnToggle" title="Collapse menu (⌘\)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <nav class="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item" data-stay="1">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+          <span class="label">Fleet</span>
+        </a>
+        <a href="#" class="nav-item is-active">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg>
+          <span class="label">Bookings</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          <span class="label">Calendar</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Analytics</div>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+          <span class="label">Utilization</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+          <span class="label">Revenue</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg>
+          <span class="label">Customers</span>
+        </a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <a href="#" class="get-started">
+        <svg class="gs-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="gs-label">Get Started</span>
+        <span class="gs-progress"><span>0/6</span>
+          <svg class="ring" viewBox="0 0 16 16"><circle class="track" cx="8" cy="8" r="6.5"/><circle class="fill" cx="8" cy="8" r="6.5" stroke-dasharray="40.84" stroke-dashoffset="40.84"/></svg>
+        </span>
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span class="label">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+        <span class="crumb"><a href="#">Booking Management</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+        <span class="crumb-cur">Booking #13214 · Cancelled</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn">Need Help?</button>
+        <button class="btn btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/></svg>
+          Upgrade
+        </button>
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <!-- ===== MAIN ===== -->
+      <div class="col-main">
+        <div class="head">
+          <div class="head-l">
+            <h1>Booking Details</h1>
+            <span class="badge badge-cancelled">CANCELLED</span>
+          </div>
+          <div class="head-r">
+            <button class="btn" id="btnDownload">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Invoice
+            </button>
+            <button class="btn" id="btnResend">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><polyline points="4 7 12 13 20 7"/></svg>
+              Resend Cancellation Email
+            </button>
+            <button class="btn btn-primary" id="btnRebook">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.65 4.36A9 9 0 0 0 20.5 15"/></svg>
+              Rebook Customer
+            </button>
+          </div>
+        </div>
+
+        <!-- CANCELLATION BANNER -->
+        <div class="cancel-banner">
+          <div class="cb-ico">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <div>
+            <h3>This booking was cancelled by the customer</h3>
+            <p>Reason: <b>Change of plans — trip postponed.</b> Cancelled 3 days before pick-up, so the <b>Moderate</b> policy tier was applied. Vehicle has been released back to availability.</p>
+            <div class="cancel-meta">
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Cancelled <b>26 Jun, 2025 · 11:42 AM</b></span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg> By <b>Zaid Irfan</b> (customer)</span>
+              <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><polyline points="4 7 12 13 20 7"/></svg> Notice sent to customer</span>
+            </div>
+          </div>
+          <div class="cb-right">
+            <span class="lab">Refund issued</span>
+            <span class="val">$40.99</span>
+            <span style="font-size:11px;color:var(--muted)">of $50.99 charged</span>
+          </div>
+        </div>
+
+        <!-- BOOKING -->
+        <div class="card">
+          <div class="bk-top">
+            <div>
+              <div class="bk-id">Booking ID <b>#13214</b></div>
+              <div class="bk-name">Zaid Irfan</div>
+              <div class="bk-veh">KIA Sportage · LEE-67-889A</div>
+            </div>
+            <div class="bk-meta">
+              <span class="badge badge-cancelled">CANCELLED</span>
+              <div style="margin-top:14px">Booked On<b>21st June 2025</b></div>
+            </div>
+          </div>
+          <div class="trip is-cancelled">
+            <div class="trip-pt">
+              <div class="lab"><span class="dot"></span> Pick-up</div>
+              <div class="time">8:00 AM</div>
+              <div class="date">Thu, 29 Jun '25</div>
+              <div class="addr">Am Isfeld 19, 22981, NY, New York</div>
+            </div>
+            <div class="trip-pt r">
+              <div class="lab">Drop-off <span class="dot"></span></div>
+              <div class="time">8:00 AM</div>
+              <div class="date">Thu, 29 Jun '25</div>
+              <div class="addr">Am Isfeld 19, 22981, NY, New York</div>
+            </div>
+          </div>
+          <div class="trip-stamp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            Trip did not take place — cancelled 3 days before scheduled pick-up
+          </div>
+        </div>
+
+        <!-- INVOICE (refunded) -->
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">Invoice <span class="id">#3522</span> <span class="badge badge-refunded">REFUNDED</span></h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn" title="Download invoice">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+              <button class="btn" title="Download refund receipt">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                Refund Receipt
+              </button>
+            </div>
+          </div>
+
+          <div class="inv-strike">
+            <div class="inv-row">
+              <div class="l">KIA Sportage · LEE-67-889A<small>Base price per day · 7 days</small></div>
+              <div class="r">$50.99</div>
+            </div>
+            <div class="inv-divider"></div>
+            <div class="inv-row"><div class="l muted">Subtotal</div><div class="r">$50.99</div></div>
+            <div class="inv-row">
+              <div class="l muted" style="display:flex;align-items:center;gap:8px">Discount <span class="promo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>FLEETHQSALE</span></div>
+              <div class="r">-$2.00</div>
+            </div>
+            <div class="inv-row"><div class="l muted">Tax</div><div class="r">$0.00</div></div>
+            <div class="inv-totals">
+              <div class="inv-row"><div class="l">Original total</div><div class="r"><span class="cur">USD</span>$48.99</div></div>
+              <div class="inv-row"><div class="l">Deposit paid</div><div class="r"><span class="cur">USD</span>$40.99</div></div>
+              <div class="inv-row"><div class="l">Balance paid</div><div class="r"><span class="cur">USD</span>$10.00</div></div>
+            </div>
+          </div>
+
+          <div class="refund-block">
+            <div class="rb-head"><span>Refund Summary</span><span>Issued 26 Jun, 2025</span></div>
+            <div class="rb-row"><div class="k">Amount paid by customer</div><div class="v">$50.99</div></div>
+            <div class="rb-row"><div class="k">Cancellation fee retained <span style="color:var(--muted)">(Moderate policy · 20%)</span></div><div class="v">− $10.00</div></div>
+            <div class="rb-row"><div class="k">Processing fee retained</div><div class="v">− $0.00</div></div>
+            <div class="rb-row total"><div class="k">Refunded to customer</div><div class="v">$40.99</div></div>
+            <div class="refund-method">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              Refunded to Visa •••• 4471 · Expected to settle by 30 Jun, 2025
+            </div>
+          </div>
+        </div>
+
+        <!-- CANCELLATION FEE & POLICY -->
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title" style="margin-bottom:2px">Cancellation Policy Applied</h2>
+              <div style="font-size:12px;color:var(--muted)">Fee tier determined by time before scheduled pick-up</div>
+            </div>
+            <button class="btn" id="btnViewPolicy">View full policy</button>
+          </div>
+
+          <div class="policy-list">
+            <div class="policy-row">
+              <span class="pr-dot"></span>
+              <div><div class="pr-name">Free — 7+ days before pick-up<span class="pr-meta">Cancelled before 22 Jun, 2025</span></div></div>
+              <span class="pr-amt">$0.00 fee</span>
+            </div>
+            <div class="policy-row">
+              <span class="pr-dot"></span>
+              <div><div class="pr-name">Flexible — 4 to 6 days before<span class="pr-meta">23 Jun to 25 Jun, 2025</span></div></div>
+              <span class="pr-amt">10% · $5.10</span>
+            </div>
+            <div class="policy-row is-applied">
+              <span class="pr-dot"></span>
+              <div><div class="pr-name">Moderate — 2 to 3 days before · Applied<span class="pr-meta">Cancelled 26 Jun, 11:42 AM · 3 days before pick-up</span></div></div>
+              <span class="pr-amt">20% · $10.00</span>
+            </div>
+            <div class="policy-row">
+              <span class="pr-dot"></span>
+              <div><div class="pr-name">Strict — within 24 hours<span class="pr-meta">28 Jun to 29 Jun, 2025</span></div></div>
+              <span class="pr-amt">50% · $25.50</span>
+            </div>
+            <div class="policy-row">
+              <span class="pr-dot"></span>
+              <div><div class="pr-name">No-show — after pick-up time<span class="pr-meta">From 29 Jun, 8:00 AM onward</span></div></div>
+              <span class="pr-amt">100% · $50.99</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DRIVER DETAILS (read-only on cancelled) -->
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">Driver on file</h2>
+            <span class="badge badge-neutral">READ-ONLY</span>
+          </div>
+          <div class="dtbl">
+            <div class="dtbl-h">
+              <div>Name</div><div>Email Address</div><div>Phone Number</div><div>ID Verification</div><div>Insurance Verification</div><div>Criminal Verification</div><div></div>
+            </div>
+            <div id="drvTbl"></div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.5" r=".8" fill="currentColor"/></svg>
+            Driver record retained for 7 years for compliance — verifications cannot be modified after cancellation.
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SIDE ===== -->
+      <div class="col-side">
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom:14px">Booking Summary</h3>
+          <div class="sum-grid">
+            <div class="k">Customer</div><div class="v">Zaid Irfan</div>
+            <div class="k">Email</div><div class="v">zaid@gmail.com</div>
+            <div class="k">Phone</div><div class="v">+1 (321) 213-9874</div>
+            <div class="k">Vehicle</div><div class="v">KIA Sportage · LEE-67-889A</div>
+            <div class="k">Vehicle VIN</div><div class="v">Z812AHSD812</div>
+            <div class="k">Source</div><div class="v">Direct</div>
+            <div class="k">Pick-up</div><div class="v">29 Jun '25 · 8:00 AM</div>
+            <div class="k">Drop-off</div><div class="v">6 Jul '25 · 8:00 AM</div>
+            <div class="k">Duration</div><div class="v">7 Days (planned)</div>
+            <div class="k">Location</div><div class="v">Am Isfeld 19, NY 22981</div>
+            <div class="k">Customer history</div><div class="v">3 prior trips · 4.9★</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom:16px">Cancellation Timeline</h3>
+          <div class="ct-item">
+            <div class="ct-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="ct-body">
+              <div class="ct-name">Cancellation requested</div>
+              <div class="ct-meta">26 Jun, 2025 · 11:42 AM</div>
+              <div class="ct-by">By <b>Zaid Irfan</b> (customer) — via web</div>
+            </div>
+          </div>
+          <div class="ct-item">
+            <div class="ct-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="ct-body">
+              <div class="ct-name">Cancellation policy applied</div>
+              <div class="ct-meta">Moderate tier · 20% fee retained</div>
+            </div>
+          </div>
+          <div class="ct-item">
+            <div class="ct-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="ct-body">
+              <div class="ct-name">Customer notified</div>
+              <div class="ct-meta">26 Jun, 2025 · 11:43 AM · Email + SMS</div>
+            </div>
+          </div>
+          <div class="ct-item">
+            <div class="ct-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="ct-body">
+              <div class="ct-name">Vehicle released to availability</div>
+              <div class="ct-meta">Calendar block removed for Jun 29 – Jul 6</div>
+            </div>
+          </div>
+          <div class="ct-item">
+            <div class="ct-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="ct-body">
+              <div class="ct-name">Refund issued</div>
+              <div class="ct-meta">$40.99 to Visa •••• 4471</div>
+            </div>
+          </div>
+          <div class="ct-item">
+            <div class="ct-dot muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+            <div class="ct-body">
+              <div class="ct-name" style="color:var(--muted)">Refund settlement</div>
+              <div class="ct-meta">Expected by 30 Jun, 2025 · Pending bank</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom:8px">Trip Photos</h3>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5;padding:14px;background:var(--field-bg);border:1px dashed var(--line);border-radius:10px;display:flex;gap:10px;align-items:flex-start">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex:0 0 14px"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><polyline points="21 17 16 12 5 21"/></svg>
+            <div>No photos were captured — the trip was cancelled before pick-up.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head" style="margin-bottom:8px">
+            <h3 class="card-title">Booking Notes</h3>
+            <button class="add-btn" id="btnAddNote" title="Add note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+          <div class="note-add" id="noteAdd">
+            <textarea id="noteInput" placeholder="Type your note…"></textarea>
+            <div class="acts">
+              <button class="btn btn-sm" id="noteCancel">Cancel</button>
+              <button class="btn btn-primary btn-sm" id="noteSave">Save Note</button>
+            </div>
+          </div>
+          <div id="notesList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+<div class="modal-shade" id="modal">
+  <div class="modal modal-wrap" id="modalBody">
+    <button class="modal-x" data-close><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="toastMsg">Saved</span></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const app = $('#app');
+
+  // Theme + collapse
+  const btnTheme = $('#btnTheme'), sun = btnTheme.querySelector('.theme-sun'), moon = btnTheme.querySelector('.theme-moon');
+  const applyTheme = t => {
+    document.documentElement.setAttribute('data-theme', t);
+    sun.style.display = t === 'dark' ? 'none' : '';
+    moon.style.display = t === 'dark' ? '' : 'none';
+    localStorage.setItem('theme', t);
+  };
+  applyTheme(localStorage.getItem('theme') || 'light');
+  btnTheme.addEventListener('click', () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+  if (localStorage.getItem('side-collapsed') === '1') app.dataset.collapsed = 'true';
+  const setColl = v => { app.dataset.collapsed = v ? 'true' : 'false'; localStorage.setItem('side-collapsed', v ? '1' : '0'); };
+  $('#btnToggle').addEventListener('click', () => setColl(true));
+  $('#btnExpand').addEventListener('click', () => setColl(false));
+  window.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === '\\') { e.preventDefault(); setColl(app.dataset.collapsed !== 'true'); }
+  });
+
+  // Toast
+  const toast = $('#toast'), toastMsg = $('#toastMsg');
+  let toastT;
+  function showToast(msg) {
+    toastMsg.textContent = msg;
+    toast.classList.add('is-show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => toast.classList.remove('is-show'), 2400);
+  }
+
+  // ============ STATE (cancelled — read-only) ============
+  let drivers = [
+    { id: 'd1', name: 'Zaid Irfan', email: 'zaid@gmail.com', phone: '+1 (321) 213-9874', id_v: 'verified', ins_v: 'verified', crim_v: 'not-required' }
+  ];
+  let notes = [
+    { time: '26 Jun, 2025 - 11:42 am', body: 'Customer cancelled via web app. Reason: change of plans — trip postponed. Refund of $40.99 issued automatically per Moderate policy tier.' },
+    { time: '21 Jun, 2026 - 04:09 pm', body: 'The car oil was changed before the booking.' }
+  ];
+  let checklist = { id: 'pending', ins: 'pending' };
+  let photos = { pre: [], post: [] };
+
+  // ============ DRIVERS (read-only on cancelled) ============
+  function renderDrivers() {
+    const root = $('#drvTbl');
+    root.innerHTML = drivers.map(d => {
+      const cell = (status, label) => {
+        if (status === 'verified') return `<button class="pill pill-view" data-vbtn="${d.id}|view">View</button>`;
+        if (status === 'not-required') return `<div style="font-size:12px;color:var(--muted);text-align:center">Not required</div>`;
+        return `<div style="font-size:12px;color:var(--muted);text-align:center">${label}</div>`;
+      };
+      return `
+      <div class="dtbl-r" data-id="${d.id}">
+        <div class="name">${d.name}</div>
+        <div class="email">${d.email}</div>
+        <div class="phone">${d.phone}</div>
+        <div>${cell(d.id_v, '—')}</div>
+        <div>${cell(d.ins_v, '—')}</div>
+        <div>${cell(d.crim_v, '—')}</div>
+        <div></div>
+      </div>`;
+    }).join('');
+    root.querySelectorAll('[data-vbtn]').forEach(b => b.addEventListener('click', () => {
+      openVerifiedDetails('Zaid Irfan', 'id_v');
+    }));
+  }
+
+  // ============ MODAL ============
+  const modal = $('#modal'), mc = $('#modalContent');
+  function openModal(html) { mc.innerHTML = html; modal.classList.add('is-show'); }
+  function closeModal() { modal.classList.remove('is-show'); }
+  modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  function todayStr() {
+    const d = new Date();
+    const z = n => String(n).padStart(2,'0');
+    return `${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()}`;
+  }
+
+  const verifLabels = { id_v: 'ID Verification', ins_v: 'Insurance Verification', crim_v: 'Criminal Verification' };
+
+  function openVerifiedDetails(name, key) {
+    openModal(`
+      <h2>${verifLabels[key]} — Verified</h2>
+      <p class="sub">Verified for <b style="color:var(--ink)">${name}</b> · Retained for compliance after cancellation.</p>
+      <div class="v-detail">
+        <div class="row"><div class="k">Status</div><div class="v ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verified</div></div>
+        <div class="row"><div class="k">Document type</div><div class="v">Driver License</div></div>
+        <div class="row"><div class="k">Document number</div><div class="v" style="font-family:ui-monospace,monospace">D1234-5678-NY</div></div>
+        <div class="row"><div class="k">Expiry</div><div class="v">12 / 2029</div></div>
+        <div class="row"><div class="k">Verified by</div><div class="v">Jane Doe (Admin)</div></div>
+        <div class="row"><div class="k">Method</div><div class="v">Manual review</div></div>
+      </div>
+      <div class="v-doc">
+        <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div style="flex:1"><b>license-front.jpg</b><div class="meta">2.4 MB · Uploaded ${todayStr()}</div></div>
+        <button class="btn btn-sm">Download</button>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" data-close>Close</button>
+      </div>
+    `);
+  }
+
+  // ============ NOTES ============
+  function renderNotes() {
+    const root = $('#notesList');
+    if (!notes.length) { root.innerHTML = `<div class="note-empty">No notes yet. Click <b>+</b> to add one.</div>`; return; }
+    root.innerHTML = notes.map(n => `
+      <div class="note">
+        <div class="note-time">${n.time}</div>
+        <div class="note-body">${escapeHtml(n.body)}</div>
+      </div>
+    `).join('');
+  }
+  function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+  const noteAdd = $('#noteAdd'), noteInput = $('#noteInput');
+  $('#btnAddNote').addEventListener('click', () => { noteAdd.classList.toggle('is-open'); if (noteAdd.classList.contains('is-open')) noteInput.focus(); });
+  $('#noteCancel').addEventListener('click', () => { noteAdd.classList.remove('is-open'); noteInput.value = ''; });
+  $('#noteSave').addEventListener('click', () => {
+    const v = noteInput.value.trim();
+    if (!v) { showToast('Add some text first'); return; }
+    const d = new Date();
+    const z = n => String(n).padStart(2,'0');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let h = d.getHours(); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12;
+    const time = `${z(d.getDate())} ${months[d.getMonth()]}, ${d.getFullYear()} - ${z(h)}:${z(d.getMinutes())} ${ap}`;
+    notes.unshift({ time, body: v });
+    noteInput.value = '';
+    noteAdd.classList.remove('is-open');
+    renderNotes();
+    showToast('Note added');
+  });
+
+  // ============ TOP ACTIONS (cancelled) ============
+  $('#btnDownload').addEventListener('click', () => showToast('Invoice downloaded'));
+  $('#btnResend').addEventListener('click', () => showToast('Cancellation email resent to zaid@gmail.com'));
+  $('#btnRebook').addEventListener('click', () => {
+    openModal(`
+      <h2>Rebook Customer</h2>
+      <p class="sub">Start a new booking pre-filled with this customer's details and last vehicle.</p>
+      <div class="row2">
+        <div class="field"><label>Customer</label><input class="input" value="Zaid Irfan" readonly /></div>
+        <div class="field"><label>Vehicle</label><input class="input" value="KIA Sportage · LEE-67-889A" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Pick-up date</label><input class="input" placeholder="DD/MM/YYYY" /></div>
+        <div class="field"><label>Drop-off date</label><input class="input" placeholder="DD/MM/YYYY" /></div>
+      </div>
+      <div class="field" style="background:var(--field-bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12px;color:var(--ink-2);line-height:1.5">
+        <b>Goodwill credit:</b> $10.00 cancellation fee will be auto-applied as a credit on the new booking.
+      </div>
+      <div class="modal-foot">
+        <button class="btn" data-close>Cancel</button>
+        <button class="btn btn-primary" id="rbGo">Start new booking</button>
+      </div>
+    `);
+    $('#rbGo').addEventListener('click', () => { closeModal(); showToast('Opening new booking…'); });
+  });
+  $('#btnViewPolicy').addEventListener('click', () => {
+    openModal(`
+      <h2>Cancellation Policy</h2>
+      <p class="sub">Standard tiered policy for KIA Sportage. Set on the vehicle listing.</p>
+      <div class="v-detail">
+        <div class="row"><div class="k">7+ days before pick-up</div><div class="v">Free</div></div>
+        <div class="row"><div class="k">4–6 days before</div><div class="v">10% fee</div></div>
+        <div class="row"><div class="k">2–3 days before</div><div class="v" style="color:var(--brand)">20% fee · Applied</div></div>
+        <div class="row"><div class="k">Within 24 hours</div><div class="v">50% fee</div></div>
+        <div class="row"><div class="k">No-show</div><div class="v">100% fee</div></div>
+      </div>
+      <div class="modal-foot"><button class="btn" data-close>Close</button></div>
+    `);
+  });
+
+  // Init
+  renderDrivers();
+  renderNotes();
+})();
+</script>
+</body>
+</html>

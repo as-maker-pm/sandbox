@@ -1,0 +1,1518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Add Location — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--map-bg:#eef0f2;--map-land:#f7f8f9;--map-water:#dce5ef;--map-line:#e2e6ea;--map-road:#fff;--shadow-pop:0 6px 16px rgba(15,18,22,.08),0 24px 48px rgba(15,18,22,.10);--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d;--map-bg:#15171a;--map-land:#1a1d22;--map-water:#0f1216;--map-line:#23262b;--map-road:#2a2e34}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* App shell */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* Topbar */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb a{color:var(--muted)}.crumb a:hover{color:var(--ink)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* Work */
+  .work{display:grid;grid-template-columns:288px 1fr;min-height:calc(100vh - 56px)}
+  .rail{border-right:1px solid var(--line);background:var(--canvas);padding:28px 20px 20px;display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px)}
+  .rail-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);margin:0 0 14px}
+  .rail h1{font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px}
+  .rail .sub{color:var(--muted);font-size:12.5px;margin-bottom:20px}
+  .progress{height:4px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:22px}
+  .progress-bar{height:100%;background:var(--brand);border-radius:99px;transition:width var(--t-slow)}
+  .steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}
+  .step{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;cursor:pointer;transition:background var(--t-fast)}
+  .step:hover{background:var(--hover)}
+  .step.is-active{background:var(--bg);box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .step.is-active{background:var(--active);box-shadow:none}
+  .step-marker{width:22px;height:22px;flex:0 0 22px;border-radius:99px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted);background:var(--canvas);transition:all var(--t-fast)}
+  .step.is-active .step-marker{border-color:var(--ink);color:var(--ink)}
+  .step.is-done .step-marker{background:var(--ok);border-color:var(--ok);color:#fff}
+  .step.is-done .step-marker .num{display:none}
+  .step.is-done .step-marker .check{display:block!important}
+  .step-meta{flex:1;min-width:0}
+  .step-name{font-size:13px;font-weight:600;color:var(--ink-2)}
+  .step.is-active .step-name,.step.is-done .step-name{color:var(--ink)}
+  .step-hint{font-size:11.5px;color:var(--muted)}
+  .rail-tip{margin-top:auto;padding:14px;background:var(--field-bg);border:1px solid var(--line);border-radius:10px;display:flex;gap:10px}
+  .rail-tip svg{width:16px;height:16px;flex:0 0 16px;color:var(--brand);margin-top:2px}
+  .rail-tip-title{font-size:12px;font-weight:600;margin:0 0 2px}
+  .rail-tip-body{font-size:12px;color:var(--muted);margin:0}
+
+  /* Pane */
+  .pane{padding:36px 48px 120px;max-width:760px;margin:0 auto;width:100%}
+  .pane-head{margin-bottom:24px}
+  .pane-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:6px}
+  .pane-title{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .pane-sub{color:var(--muted);margin:0;font-size:13.5px;max-width:62ch}
+
+  /* Fields */
+  .field{margin-bottom:20px;display:block}
+  .field:last-child{margin-bottom:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+  .field-row.cols-4{grid-template-columns:1fr 1fr 1fr 1fr}
+  .field-row > .field{margin-bottom:20px}
+  .label{display:flex;align-items:baseline;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .label .opt{font-weight:500;color:var(--muted);font-size:11.5px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .hint.ok{color:var(--ok)}.hint.warn{color:var(--warn)}.hint.info{color:var(--info)}
+  .input,.select,.textarea{width:100%;height:38px;padding:0 12px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13.5px;transition:all var(--t-fast);outline:none}
+  .input:hover,.select:hover,.textarea:hover{border-color:var(--muted-2)}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  [data-theme="dark"] .input:focus,[data-theme="dark"] .select:focus,[data-theme="dark"] .textarea:focus{border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .textarea{height:auto;padding:10px 12px;min-height:80px;resize:vertical;line-height:1.5;font-family:inherit}
+  .select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .ipair{position:relative}
+  .ipair .input{padding-left:30px}
+  .ipair .pre{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:500;pointer-events:none}
+  .ipair .suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none}
+  .ipair.has-suf .input{padding-right:64px}
+
+  /* Type picker */
+  .type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .type-card{border:1.5px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;transition:all var(--t-fast);text-align:left;background:var(--canvas);display:grid;grid-template-columns:42px 1fr 16px;gap:14px;align-items:center;min-width:0;position:relative}
+  .type-card:hover{border-color:var(--muted-2)}
+  .type-card.is-on{border-color:var(--ink);background:var(--field-bg)}
+  [data-theme="dark"] .type-card.is-on{background:var(--hover)}
+  .type-card .ico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;color:#fff}
+  .type-card .ico.t-hub{background:var(--ink)}
+  .type-card .ico.t-airport{background:var(--info)}
+  .type-card .ico.t-curbside{background:var(--warn)}
+  .type-card .ico.t-delivery{background:var(--turo)}
+  .type-card .ico.t-meeting{background:var(--muted)}
+  .type-card .nm{font-size:13.5px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+  .type-card .ds{font-size:11.5px;color:var(--muted);line-height:1.35}
+  .type-card .pop{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:99px;background:var(--ok-tint);color:var(--ok)}
+  .type-card .radio{width:16px;height:16px;border-radius:99px;border:1.5px solid var(--muted-2);display:grid;place-items:center;transition:all var(--t-fast)}
+  .type-card.is-on .radio{border-color:var(--ink);background:var(--ink)}
+  .type-card.is-on .radio::after{content:"";width:6px;height:6px;background:var(--canvas);border-radius:99px}
+
+  /* Address autocomplete */
+  .addr-search{position:relative;margin-bottom:18px}
+  .addr-search .input{padding-left:38px;height:44px;font-size:14px}
+  .addr-search .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .addr-suggest{position:absolute;left:0;right:0;top:48px;background:var(--canvas);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-pop);overflow:hidden;z-index:8;opacity:0;transform:translateY(-4px);pointer-events:none;transition:all var(--t-fast)}
+  .addr-suggest.is-show{opacity:1;transform:translateY(0);pointer-events:auto}
+  .addr-suggest .sug{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;cursor:pointer;transition:background var(--t-fast);border-top:1px solid var(--line-2)}
+  .addr-suggest .sug:first-child{border-top:0}
+  .addr-suggest .sug:hover{background:var(--hover)}
+  .addr-suggest .sug-pin{width:24px;height:24px;flex:0 0 24px;border-radius:6px;background:var(--field-bg);display:grid;place-items:center;color:var(--muted);margin-top:1px}
+  .addr-suggest .sug-main{font-size:13px;font-weight:600;color:var(--ink)}
+  .addr-suggest .sug-main em{font-style:normal;background:color-mix(in srgb,var(--brand) 18%,transparent);font-weight:700;padding:0 2px;border-radius:2px}
+  .addr-suggest .sug-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .addr-suggest .sug-kbd{margin-left:auto;align-self:center;font-size:10px;font-weight:600;color:var(--muted-2);background:var(--field-bg);border:1px solid var(--line-2);border-radius:4px;padding:1px 6px;font-family:ui-monospace,monospace}
+
+  /* Map preview */
+  .map-preview{height:260px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--map-bg);position:relative;user-select:none}
+  .map-preview svg{width:100%;height:100%;display:block}
+  .map-preview .pin-handle{cursor:grab;transition:transform var(--t-fast)}
+  .map-preview .pin-handle:active{cursor:grabbing}
+  .map-preview .pin-handle:hover{transform:translate(0,-2px)}
+  .map-preview .hint-pill{position:absolute;left:10px;bottom:10px;background:color-mix(in srgb,var(--canvas) 92%,transparent);border:1px solid var(--line);border-radius:99px;padding:5px 10px;font-size:11px;color:var(--ink-2);font-weight:600;backdrop-filter:blur(8px);display:inline-flex;align-items:center;gap:6px}
+  .map-preview .coords{position:absolute;right:10px;bottom:10px;background:color-mix(in srgb,var(--canvas) 92%,transparent);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:600;color:var(--ink-2);font-family:ui-monospace,monospace;backdrop-filter:blur(8px)}
+
+  /* Hours editor */
+  .hours-row{display:grid;grid-template-columns:88px 38px 1fr 56px;gap:14px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-2)}
+  .hours-row:last-child{border-bottom:0}
+  .hours-row .day{font-size:13px;font-weight:600}
+  .hours-row .closed-text{font-size:12px;color:var(--muted);font-style:italic;grid-column:3/4}
+  .hours-times{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center}
+  .hours-times .input{height:32px;font-size:12.5px;text-align:center;padding:0 6px}
+  .hours-times .dash{color:var(--muted-2);font-weight:600;text-align:center}
+  .hours-row .copy{font-size:11px;color:var(--muted);text-align:right}
+  .hours-row .copy:hover{color:var(--ink)}
+  .switch{width:34px;height:20px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);flex-shrink:0;display:inline-block}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch.is-on{background:var(--ink)}.switch.is-on::after{transform:translateX(14px)}
+
+  /* Toggle row */
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;transition:all var(--t-fast);cursor:pointer}
+  .toggle-row:last-child{margin-bottom:0}
+  .toggle-row:hover{border-color:var(--muted-2)}
+  .toggle-row.is-on{background:var(--field-bg);border-color:var(--ink-2)}
+  [data-theme="dark"] .toggle-row.is-on{background:var(--hover)}
+  .tr-meta{display:flex;align-items:center;gap:12px;min-width:0}
+  .tr-ico{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--field-bg);color:var(--ink-2);flex-shrink:0}
+  .toggle-row.is-on .tr-ico{background:var(--ink);color:var(--canvas)}
+  .toggle-row.fleet.is-on .tr-ico{background:var(--brand);color:#fff}
+  .toggle-row.cust.is-on .tr-ico{background:var(--info);color:#fff}
+  .tr-name{font-size:13.5px;font-weight:700}
+  .tr-desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Sep / group */
+  .sep{height:1px;background:var(--line);margin:24px 0}
+  .group-title{font-size:13px;font-weight:600;margin:0 0 12px;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .group-title .badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+
+  /* Photo grid */
+  .photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .photo-cell{aspect-ratio:4/3;border-radius:10px;border:1px dashed var(--line);background:var(--field-bg);display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center;cursor:pointer;transition:all var(--t-fast);position:relative;overflow:hidden}
+  .photo-cell:hover{border-color:var(--ink-2);color:var(--ink)}
+  .photo-cell.is-set{border-style:solid;border-color:var(--line)}
+  .photo-cell.is-set .ph-img{position:absolute;inset:0;background-size:cover;background-position:center}
+  .photo-cell.is-set .ph-rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:99px;background:rgba(15,18,22,.6);color:#fff;display:grid;place-items:center;backdrop-filter:blur(4px);z-index:2;opacity:0;transition:opacity var(--t-fast)}
+  .photo-cell.is-set:hover .ph-rm{opacity:1}
+  .photo-cell .ph-cover{position:absolute;bottom:6px;left:6px;background:rgba(15,18,22,.72);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;z-index:2}
+  .photo-cell .ph-add{display:grid;place-items:center;gap:4px}
+  .photo-cell .ph-add svg{width:18px;height:18px}
+
+  /* ZIP chips */
+  .chips-input{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--field);min-height:42px;align-items:center;transition:all var(--t-fast)}
+  .chips-input:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .chip{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 4px 0 10px;background:var(--field-bg);border:1px solid var(--line);border-radius:99px;font-size:12px;font-weight:600;color:var(--ink-2);font-family:ui-monospace,monospace;letter-spacing:.02em}
+  .chip .x{width:18px;height:18px;border-radius:99px;display:grid;place-items:center;color:var(--muted)}
+  .chip .x:hover{background:var(--hover);color:var(--ink)}
+  .chips-input input{border:0;background:transparent;outline:none;font-size:12.5px;min-width:80px;height:24px;flex:1}
+
+  /* Pill picker */
+  .pill-pick{display:flex;flex-wrap:wrap;gap:6px}
+  .pill-pick button{height:32px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--canvas);font-size:12.5px;font-weight:500;color:var(--ink-2);transition:all var(--t-fast)}
+  .pill-pick button:hover{border-color:var(--muted-2)}
+  .pill-pick button.is-on{background:var(--ink);border-color:var(--ink);color:var(--canvas)}
+
+  /* Review cards */
+  .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .review-card{padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
+  .review-card.full{grid-column:1/-1}
+  .review-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .review-head h3{font-size:13px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+  .review-head .edit-link{font-size:12px;color:var(--brand);font-weight:600;cursor:pointer}
+  .review-head .edit-link:hover{text-decoration:underline}
+  .review-head .pin-mini{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:800}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:12.5px;border-bottom:1px dashed var(--line-2)}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted)}.kv .v{color:var(--ink);font-weight:500;text-align:right;max-width:64%;word-break:break-word}
+
+  .pub{margin-top:24px;padding:18px 20px;border-radius:12px;background:var(--field-bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .pub .ptxt h3{margin:0 0 4px;font-size:14px}.pub .ptxt p{margin:0;font-size:12.5px;color:var(--muted)}
+  .pub .seg{display:inline-flex;padding:3px;background:var(--canvas);border:1px solid var(--line);border-radius:9px;gap:2px}
+  .pub .seg button{height:28px;padding:0 12px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .pub .seg button.is-on{background:var(--ink);color:var(--canvas)}
+
+  /* Footer */
+  .footer{position:sticky;bottom:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:14px 48px;display:flex;justify-content:space-between;align-items:center;margin:0 -48px -120px}
+  .footer .save-state{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+  .footer .save-state svg{width:14px;height:14px;color:var(--ok)}
+  .footer .actions{display:flex;gap:10px}
+
+  /* Step content fade */
+  .step-content{animation:fadeIn 320ms cubic-bezier(.22,.8,.18,1)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Success modal */
+  .modal-shade{position:fixed;inset:0;background:rgba(15,18,22,.4);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;opacity:0;transition:opacity var(--t-med)}
+  .modal-shade.is-show{display:grid;opacity:1}
+  .modal{background:var(--canvas);border-radius:16px;padding:32px;max-width:440px;width:90%;text-align:center;box-shadow:var(--shadow-pop);transform:scale(.95);transition:transform var(--t-med)}
+  .modal-shade.is-show .modal{transform:scale(1)}
+  .modal .check{width:56px;height:56px;border-radius:99px;background:var(--ok-tint);color:var(--ok);display:grid;place-items:center;margin:0 auto 16px}
+  .modal h2{margin:0 0 6px;font-size:18px}.modal p{margin:0 0 20px;color:var(--muted);font-size:13px}
+  .modal .actions{display:flex;gap:8px;justify-content:center}
+
+  /* Role picker (operations step) */
+  .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0}
+  .role-card{border:1.5px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;transition:all var(--t-fast);text-align:left;background:var(--canvas);display:grid;grid-template-columns:36px 1fr 16px;gap:12px;align-items:center}
+  .role-card:hover{border-color:var(--muted-2)}
+  .role-card.is-on{border-color:var(--ink);background:var(--field-bg)}
+  [data-theme="dark"] .role-card.is-on{background:var(--hover)}
+  .role-card .role-ico{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--field-bg);color:var(--ink-2)}
+  .role-card.is-on .role-ico{background:var(--ink);color:var(--canvas)}
+  .role-card .role-nm{font-size:13px;font-weight:700;margin-bottom:2px}
+  .role-card .role-ds{font-size:11.5px;color:var(--muted);line-height:1.35}
+  .role-card .radio{width:16px;height:16px;border-radius:99px;border:1.5px solid var(--muted-2);display:grid;place-items:center;transition:all var(--t-fast)}
+  .role-card.is-on .radio{border-color:var(--ink);background:var(--ink)}
+  .role-card.is-on .radio::after{content:"";width:6px;height:6px;background:var(--canvas);border-radius:99px}
+
+  /* Parent-child preview card */
+  .parent-card{margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--field-bg);overflow-x:auto}
+  .pc-flow{display:flex;align-items:center;gap:14px;min-width:0}
+  .pc-node{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--canvas);border:1px solid var(--line);border-radius:10px;flex:1;min-width:0}
+  .pc-node.child{border-style:dashed}
+  .pc-pin{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;background:var(--ink);flex:0 0 30px}
+  .pc-pin.t-airport{background:var(--info)}
+  .pc-pin.t-curbside{background:var(--warn)}
+  .pc-pin.t-delivery{background:var(--turo)}
+  .pc-pin.t-meeting{background:var(--muted)}
+  .pc-pin.child-pin{background:var(--canvas);color:var(--ink-2);border:1.5px dashed var(--muted-2);font-size:16px;font-weight:700}
+  .pc-info{min-width:0;flex:1}
+  .pc-name{font-size:13px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pc-sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pc-arrow{color:var(--muted-2);flex:0 0 auto;display:grid;place-items:center}
+
+  /* Conditional bits */
+  [data-show-types]{display:none}
+  /* show variant by checking ancestor with data-active-type */
+  /* JS toggles these */
+
+  @media (max-width:1080px){
+    .work{grid-template-columns:1fr}
+    .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:20px}
+    .pane{padding:24px 20px 140px}
+    .footer{margin:0 -20px -140px;padding:12px 20px}
+    .type-grid{grid-template-columns:1fr}
+    .review-grid{grid-template-columns:1fr}
+    .photo-grid{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+        <a href="Locations.html" class="nav-item is-active is-open">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+          <span class="label">Locations</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Locations.html" class="sub-item">All locations</a>
+          <a href="Add Location.html" class="sub-item is-active">Add location</a>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Fleet</span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Locations.html">Locations</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">Add location</span>
+      </div>
+      <div class="top-actions">
+        <a href="Locations.html" class="btn btn-ghost">Save & exit</a>
+        <button class="btn">Need help?</button>
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="work">
+
+      <!-- ============ RAIL ============ -->
+      <aside class="rail">
+        <div class="rail-title">New pickup point</div>
+        <h1>Add a location</h1>
+        <div class="sub">5 quick steps. We'll save as you go.</div>
+
+        <div class="progress"><div class="progress-bar" id="progressBar" style="width:20%"></div></div>
+
+        <ol class="steps" id="steps">
+          <li class="step is-active" data-step="1">
+            <div class="step-marker"><span class="num">1</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Type</div><div class="step-hint">Hub, airport, curbside…</div></div>
+          </li>
+          <li class="step" data-step="2">
+            <div class="step-marker"><span class="num">2</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name" id="stepName2">Address &amp; pin</div><div class="step-hint" id="stepHint2">Where customers meet you</div></div>
+          </li>
+          <li class="step" data-step="3">
+            <div class="step-marker"><span class="num">3</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Operations</div><div class="step-hint">Link, hours, buffer</div></div>
+          </li>
+          <li class="step" data-step="4">
+            <div class="step-marker"><span class="num">4</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Pickup details</div><div class="step-hint">Fees, photos, instructions</div></div>
+          </li>
+          <li class="step" data-step="5">
+            <div class="step-marker"><span class="num">5</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Review &amp; publish</div><div class="step-hint">Surfaces, final check</div></div>
+          </li>
+        </ol>
+
+        <div class="rail-tip" id="railTip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.5" r=".8" fill="currentColor"/></svg>
+          <div>
+            <div class="rail-tip-title" id="tipTitle">Pick a type first</div>
+            <p class="rail-tip-body" id="tipBody">The location type shapes the next steps — delivery zones use ZIPs instead of a pin, and airports default to 24/7 hours.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ FORM PANE ============ -->
+      <div class="pane">
+
+        <!-- ============ STEP 1: TYPE ============ -->
+        <section class="step-content" data-pane="1">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 1 of 5</div>
+            <h1 class="pane-title">What kind of location is this?</h1>
+            <p class="pane-sub">Choose the closest match. You can change it later, but a few of the next steps depend on this.</p>
+          </div>
+
+          <div class="field">
+            <div class="type-grid" id="typeGrid">
+              <button type="button" class="type-card is-on" data-type="hub">
+                <div class="ico t-hub"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></div>
+                <div>
+                  <div class="nm">Hub <span class="pop">Most common</span></div>
+                  <div class="ds">Your own lot, garage, or office. Customers come to you and you store vehicles here.</div>
+                </div>
+                <span class="radio"></span>
+              </button>
+              <button type="button" class="type-card" data-type="airport">
+                <div class="ico t-airport"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.5L13 11V4.5a1.5 1.5 0 0 0-3 0V11l-9 5.5v2l9-3v5l-2 1v1.5l3.5-1 3.5 1v-1.5l-2-1v-5l9 3z" fill="currentColor"/></svg></div>
+                <div>
+                  <div class="nm">Airport</div>
+                  <div class="ds">Long-term lot or curbside meetup at a terminal. Often 24/7 with a pickup fee.</div>
+                </div>
+                <span class="radio"></span>
+              </button>
+              <button type="button" class="type-card" data-type="curbside">
+                <div class="ico t-curbside"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>
+                <div>
+                  <div class="nm">Curbside</div>
+                  <div class="ds">A public street, transit stop, or storefront where you hand off keys.</div>
+                </div>
+                <span class="radio"></span>
+              </button>
+              <button type="button" class="type-card" data-type="delivery">
+                <div class="ico t-delivery"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="10" rx="1.5"/><polyline points="16 10 20 10 22 13 22 17 16 17"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg></div>
+                <div>
+                  <div class="nm">Delivery zone</div>
+                  <div class="ds">You drive to the customer. Set a list of ZIPs or a radius — no pin required.</div>
+                </div>
+                <span class="radio"></span>
+              </button>
+              <button type="button" class="type-card" data-type="meeting" style="grid-column:1/-1">
+                <div class="ico t-meeting"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c.6-3 3-5 6-5s5.4 2 6 5"/></svg></div>
+                <div>
+                  <div class="nm">Meeting point</div>
+                  <div class="ds">Coordinated handoff at a pre-arranged spot. Hidden from customer search.</div>
+                </div>
+                <span class="radio"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="region">Region</label>
+              <select id="region" class="select">
+                <option>Bay Area</option><option>Sacramento</option><option>Los Angeles</option><option>San Diego</option><option>+ New region…</option>
+              </select>
+              <div class="hint">Groups locations in reporting and filters.</div>
+            </div>
+            <div class="field">
+              <label class="label" for="code">Internal code <span class="opt">optional</span></label>
+              <input id="code" class="input" placeholder="e.g. SFO-LTC" style="font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em" />
+              <div class="hint">Used in calendar tags and CSV exports.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ STEP 2: ADDRESS ============ -->
+        <section class="step-content" data-pane="2" style="display:none">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 2 of 5</div>
+            <h1 class="pane-title" id="addrTitle">Where is it?</h1>
+            <p class="pane-sub" id="addrSub">Start typing — we'll search and drop a pin you can refine.</p>
+          </div>
+
+          <!-- Variant: address (hub/airport/curbside/meeting) -->
+          <div id="addrVariant">
+            <div class="field">
+              <label class="label" for="name">Public name</label>
+              <input id="name" class="input" placeholder="e.g. Mission HQ" />
+              <div class="hint">Customers see this when picking a pickup point.</div>
+            </div>
+
+            <div class="addr-search">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg></span>
+              <input id="addrQ" class="input" placeholder="Search an address, place, or terminal…" autocomplete="off" />
+              <div class="addr-suggest" id="addrSuggest"></div>
+            </div>
+
+            <div class="field-row cols-3">
+              <div class="field" style="grid-column:1/-1">
+                <label class="label" for="addr1">Street address</label>
+                <input id="addr1" class="input" placeholder="123 Main St" />
+              </div>
+              <div class="field">
+                <label class="label" for="city">City</label>
+                <input id="city" class="input" placeholder="San Francisco" />
+              </div>
+              <div class="field">
+                <label class="label" for="state">State</label>
+                <select id="state" class="select"><option>CA</option><option>OR</option><option>WA</option><option>NV</option><option>AZ</option><option>TX</option></select>
+              </div>
+              <div class="field">
+                <label class="label" for="zip">ZIP</label>
+                <input id="zip" class="input" placeholder="94110" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="suite">Suite / Lot / Bay <span class="opt">optional</span></label>
+                <input id="suite" class="input" placeholder="e.g. Lot C, Row 4, Stalls 41–46" />
+              </div>
+              <div class="field">
+                <label class="label" for="tz">Timezone <span class="opt" id="tzGuess">Detected from pin</span></label>
+                <select id="tz" class="select">
+                  <option value="America/Los_Angeles" selected>(GMT−08:00) America/Los Angeles</option>
+                  <option value="America/Denver">(GMT−07:00) America/Denver</option>
+                  <option value="America/Chicago">(GMT−06:00) America/Chicago</option>
+                  <option value="America/New_York">(GMT−05:00) America/New York</option>
+                  <option value="America/Phoenix">(GMT−07:00) America/Phoenix</option>
+                  <option value="America/Anchorage">(GMT−09:00) America/Anchorage</option>
+                  <option value="Pacific/Honolulu">(GMT−10:00) Pacific/Honolulu</option>
+                  <option value="America/St_Johns">(GMT−02:30) America/St Johns</option>
+                </select>
+                <div class="hint">Hours below will be shown in this timezone.</div>
+              </div>
+            </div>
+
+            <!-- Map -->
+            <div class="map-preview" id="mapPreview">
+              <svg id="mapSvg" viewBox="0 0 800 260" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <rect width="800" height="260" fill="var(--map-bg)"/>
+                <path d="M0 0 H240 L220 80 L195 160 L185 260 H0 Z" fill="var(--map-water)"/>
+                <path d="M800 0 H720 L700 80 L720 160 L740 260 H800 Z" fill="var(--map-water)"/>
+                <path d="M240 0 H720 L700 80 L720 160 L740 260 H185 L195 160 L220 80 Z" fill="var(--map-land)"/>
+                <g opacity=".5">
+                  <defs><pattern id="dp2" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.8" fill="var(--map-line)"/></pattern></defs>
+                  <rect width="800" height="260" fill="url(#dp2)"/>
+                </g>
+                <g stroke="var(--map-road)" stroke-width="6" fill="none" stroke-linecap="round" opacity=".95">
+                  <path d="M240 30 Q420 100 480 260"/><path d="M240 120 L720 120"/><path d="M240 190 L720 190"/>
+                </g>
+                <g stroke="var(--map-line)" stroke-width="1.5" fill="none" stroke-linecap="round">
+                  <path d="M240 30 Q420 100 480 260"/><path d="M240 120 L720 120"/><path d="M240 190 L720 190"/><path d="M340 60 L680 70"/><path d="M340 220 L680 230"/>
+                </g>
+                <g font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="var(--muted)" opacity=".55">
+                  <text x="380" y="50">DOWNTOWN</text><text x="500" y="155">MISSION</text>
+                </g>
+                <g id="pinG" class="pin-handle" transform="translate(420,140)">
+                  <ellipse cx="0" cy="8" rx="11" ry="3.5" fill="rgba(15,18,22,.18)"/>
+                  <path d="M0,-24 C9,-24 14,-17 14,-11 C14,-2 0,13 0,13 C0,13 -14,-2 -14,-11 C-14,-17 -9,-24 0,-24 Z" fill="var(--ink)" stroke="#fff" stroke-width="2"/>
+                  <circle cx="0" cy="-12" r="4.5" fill="#fff"/>
+                </g>
+              </svg>
+              <div class="hint-pill">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                Drag pin to refine
+              </div>
+              <div class="coords" id="coords">37.7600, −122.4194</div>
+            </div>
+          </div>
+
+          <!-- Variant: delivery zone -->
+          <div id="deliveryVariant" style="display:none">
+            <div class="field">
+              <label class="label" for="dname">Public name</label>
+              <input id="dname" class="input" placeholder="e.g. SF Home delivery" />
+              <div class="hint">What customers see when picking a delivery option.</div>
+            </div>
+
+            <div class="field">
+              <label class="label">Zone mode</label>
+              <div class="pill-pick" id="zoneMode">
+                <button data-mode="zips" class="is-on">ZIP codes</button>
+                <button data-mode="radius">Radius around point</button>
+                <button data-mode="city">Entire city</button>
+              </div>
+            </div>
+
+            <div class="field" id="zoneZips">
+              <label class="label">ZIP codes <span class="opt" id="zipCount">0 ZIPs</span></label>
+              <div class="chips-input" id="chipsInput">
+                <input id="zipInput" placeholder="Type a ZIP and press Enter…" maxlength="5" inputmode="numeric" />
+              </div>
+              <div class="hint">Comma-separated also works. We'll validate as 5-digit US ZIPs.</div>
+            </div>
+
+            <div class="field" id="zoneRadius" style="display:none">
+              <div class="field-row">
+                <div class="field">
+                  <label class="label" for="radCenter">Center point</label>
+                  <input id="radCenter" class="input" value="Mission HQ · 2455 Mission St" />
+                </div>
+                <div class="field">
+                  <label class="label" for="radMiles">Radius</label>
+                  <div class="ipair has-suf"><input id="radMiles" class="input" value="8" type="number" min="1" max="50" /><span class="suf">miles</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field" id="zoneCity" style="display:none">
+              <label class="label" for="cityPick">City</label>
+              <select id="cityPick" class="select">
+                <option>San Francisco, CA</option><option>Oakland, CA</option><option>Berkeley, CA</option><option>Daly City, CA</option><option>San Mateo, CA</option><option>Palo Alto, CA</option>
+              </select>
+              <div class="hint">All addresses inside the city limits are eligible.</div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="notice">Min advance notice</label>
+                <div class="ipair has-suf"><input id="notice" class="input" value="2" type="number" min="0" /><span class="suf">hours</span></div>
+                <div class="hint">Time we need between booking and delivery.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="delivBase">Base delivery fee</label>
+                <div class="ipair has-suf"><span class="pre">$</span><input id="delivBase" class="input" value="45" type="number" /><span class="suf">USD</span></div>
+                <div class="hint">Charged once per trip — round trip.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ STEP 3: OPERATIONS ============ -->
+        <section class="step-content" data-pane="3" style="display:none">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 3 of 5</div>
+            <h1 class="pane-title">How does this location operate?</h1>
+            <p class="pane-sub">A standalone location runs on its own — its own hours, vehicles, and team. Or link it to an existing location to inherit hours and act as a satellite pickup point.</p>
+          </div>
+
+          <h3 class="group-title">Role <span class="badge">Optional</span></h3>
+          <div class="role-grid" id="roleGrid">
+            <button type="button" class="role-card is-on" data-role="standalone">
+              <div class="role-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></div>
+              <div class="role-meta">
+                <div class="role-nm">Standalone</div>
+                <div class="role-ds">Operates on its own. Set its own hours, timezone, and park vehicles here.</div>
+              </div>
+              <span class="radio"></span>
+            </button>
+            <button type="button" class="role-card" data-role="linked">
+              <div class="role-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div>
+              <div class="role-meta">
+                <div class="role-nm">Linked pickup point</div>
+                <div class="role-ds">Satellite of another location. Inherits hours &amp; timezone by default.</div>
+              </div>
+              <span class="radio"></span>
+            </button>
+          </div>
+
+          <div class="linked-config" id="linkedConfig" style="display:none">
+            <div class="field" style="margin-top:14px">
+              <label class="label" for="linkSel">Link to <span class="opt">Required when linked</span></label>
+              <select id="linkSel" class="select">
+                <option value="">Select a parent location…</option>
+                <option value="mission" data-tz="America/Los_Angeles" data-hours="7am–9pm daily" data-type="hub">Mission HQ · Hub · San Francisco</option>
+                <option value="oakland" data-tz="America/Los_Angeles" data-hours="8am–7pm Mon–Sat" data-type="hub">Oakland Depot · Hub · Oakland</option>
+                <option value="sfo" data-tz="America/Los_Angeles" data-hours="24 / 7" data-type="airport">SFO · Long-term Lot C · Airport</option>
+              </select>
+            </div>
+
+            <div class="parent-card" id="parentCard" style="display:none">
+              <div class="pc-flow">
+                <div class="pc-node parent">
+                  <div class="pc-pin" id="pcPin">M</div>
+                  <div class="pc-info">
+                    <div class="pc-name" id="pcName">Mission HQ</div>
+                    <div class="pc-sub" id="pcSub">Hub · 7am–9pm daily · America/Los Angeles</div>
+                  </div>
+                </div>
+                <div class="pc-arrow">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+                </div>
+                <div class="pc-node child">
+                  <div class="pc-pin child-pin" id="pcChildPin">·</div>
+                  <div class="pc-info">
+                    <div class="pc-name" id="pcChildName">This new location</div>
+                    <div class="pc-sub" id="pcChildSub">Curbside · inheriting hours</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="toggle-row is-on" id="rowInherit" style="margin-top:14px" onclick="window.__toggleInherit(this)">
+              <div class="tr-meta">
+                <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 12 13 12"/></svg></div>
+                <div><div class="tr-name">Inherit hours &amp; timezone from parent</div><div class="tr-desc" id="inheritDesc">Stays in sync with Mission HQ. Turn off to set custom hours below.</div></div>
+              </div>
+              <span class="switch is-on"></span>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div id="hoursBlock">
+          <h3 class="group-title">Hours <span class="badge" id="hoursBadge">Standalone</span></h3>
+          <div class="toggle-row is-on" id="row24" onclick="window.__toggle24(this)">
+            <div class="tr-meta">
+              <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+              <div><div class="tr-name">Open 24 / 7</div><div class="tr-desc">Customers can pick up and drop off any hour. Recommended for airport lots.</div></div>
+            </div>
+            <span class="switch is-on"></span>
+          </div>
+
+          <div class="toggle-row" id="rowOnRequest" onclick="window.__toggleOnRequest(this)">
+            <div class="tr-meta">
+              <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h16"/></svg></div>
+              <div><div class="tr-name">By request only</div><div class="tr-desc">No fixed hours — customers request a time and you confirm.</div></div>
+            </div>
+            <span class="switch"></span>
+          </div>
+
+          <div class="sep"></div>
+
+          <div id="hoursList" style="opacity:.45;pointer-events:none;transition:opacity var(--t-fast)">
+            <h3 class="group-title">Weekly schedule</h3>
+            <!-- populated by JS -->
+          </div>
+
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="field">
+            <label class="label" for="prep">Buffer between bookings</label>
+            <div class="pill-pick" id="bufferPick">
+              <button data-min="0">No buffer</button>
+              <button data-min="30">30 min</button>
+              <button data-min="60" class="is-on">1 hr</button>
+              <button data-min="120">2 hr</button>
+              <button data-min="240">4 hr</button>
+            </div>
+            <div class="hint">Time reserved between checkout and next pickup to clean and inspect.</div>
+          </div>
+        </section>
+
+        <!-- ============ STEP 4: PICKUP DETAILS ============ -->
+        <section class="step-content" data-pane="4" style="display:none">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 4 of 5</div>
+            <h1 class="pane-title">Pickup details</h1>
+            <p class="pane-sub">Fees customers pay, instructions your team sees, and photos to help drivers find the spot.</p>
+          </div>
+
+          <h3 class="group-title">Trip fees <span class="badge">Per trip</span></h3>
+          <div class="field-row cols-3">
+            <div class="field">
+              <label class="label" for="pfee">Pickup fee</label>
+              <div class="ipair has-suf"><span class="pre">$</span><input id="pfee" class="input" value="0" type="number" min="0" /><span class="suf">USD</span></div>
+              <div class="hint" id="pfeeHint">Charged once per trip.</div>
+            </div>
+            <div class="field">
+              <label class="label" for="dfee">Dropoff fee</label>
+              <div class="ipair has-suf"><span class="pre">$</span><input id="dfee" class="input" value="0" type="number" min="0" /><span class="suf">USD</span></div>
+              <div class="hint">Often $0 if same as pickup.</div>
+            </div>
+            <div class="field">
+              <label class="label" for="afee">After-hours fee <span class="opt">10pm–6am</span></label>
+              <div class="ipair has-suf"><span class="pre">$</span><input id="afee" class="input" value="0" type="number" min="0" /><span class="suf">USD</span></div>
+              <div class="hint warn">Stacks on top of pickup fee.</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <h3 class="group-title">Driver instructions <span class="badge">Internal</span></h3>
+          <div class="field">
+            <label class="label" for="instr">For your team</label>
+            <textarea id="instr" class="textarea" rows="3" placeholder="e.g. Enter from N McDonnell Rd. Take ticket at gate. Keys in lockbox 41…"></textarea>
+            <div class="hint">Shown to dispatch and on bookings exports. Customers won't see this.</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <h3 class="group-title">What customers see <span class="badge">Public</span></h3>
+          <div class="field">
+            <label class="label" for="cdesc">Short description</label>
+            <textarea id="cdesc" class="textarea" rows="2" placeholder="e.g. Covered lot, 4 minutes from Terminal 2 via free AirTrain."></textarea>
+            <div class="hint">First 140 chars show in the booking summary.</div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="howto">How to find us <span class="opt">optional</span></label>
+            <textarea id="howto" class="textarea" rows="4" placeholder="1. Exit baggage claim…
+2. Take the AirTrain Red Line…
+3. Walk to Lot C…"></textarea>
+            <div class="hint">Plain text or numbered steps work best. Shown on the confirmation 24 hrs before pickup.</div>
+          </div>
+
+          <div class="field-row" id="contactRow">
+            <div class="field">
+              <label class="label" for="phone">Pickup phone <span class="opt">optional</span></label>
+              <input id="phone" class="input" placeholder="+1 (415) 555-0142" style="font-family:ui-monospace,monospace" />
+              <div class="hint">Shown to the customer 24h before pickup.</div>
+            </div>
+            <div class="field">
+              <label class="label" for="contact">On-site contact <span class="opt">optional</span></label>
+              <input id="contact" class="input" placeholder="e.g. Tomás Rivera — Lot manager" />
+            </div>
+          </div>
+
+          <div class="sep" id="photosSep"></div>
+
+          <div id="photosBlock">
+            <h3 class="group-title">Photos <span class="badge">Up to 4</span></h3>
+            <div class="field">
+              <div class="photo-grid" id="photoGrid">
+                <!-- populated by JS -->
+              </div>
+              <div class="hint">JPG / PNG · min 1200 × 800 · the first photo is the cover.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ STEP 5: REVIEW ============ -->
+        <section class="step-content" data-pane="5" style="display:none">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 5 of 5</div>
+            <h1 class="pane-title">Review &amp; publish</h1>
+            <p class="pane-sub">Last look. You can edit any section, then choose where this location shows up.</p>
+          </div>
+
+          <h3 class="group-title">Visibility</h3>
+          <div class="toggle-row cust is-on" id="surfCust" onclick="window.__toggleSurf(this)">
+            <div class="tr-meta">
+              <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg></div>
+              <div><div class="tr-name">Show on customer booking site</div><div class="tr-desc">Customers can select this as pickup or dropoff during checkout.</div></div>
+            </div>
+            <span class="switch is-on"></span>
+          </div>
+          <div class="toggle-row fleet is-on" id="surfFleet" onclick="window.__toggleSurf(this)">
+            <div class="tr-meta">
+              <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5h18v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg></div>
+              <div><div class="tr-name">Available in fleet ops</div><div class="tr-desc">Team can park vehicles here, assign in calendar, and route returns.</div></div>
+            </div>
+            <span class="switch is-on"></span>
+          </div>
+          <div class="toggle-row" id="surfTuro" onclick="window.__toggleSurf(this)">
+            <div class="tr-meta">
+              <div class="tr-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><polyline points="8 12 11 15 16 9"/></svg></div>
+              <div><div class="tr-name">Sync to Turo listings</div><div class="tr-desc">Mirror this location as a Turo handoff option for compatible vehicles.</div></div>
+            </div>
+            <span class="switch"></span>
+          </div>
+
+          <div class="sep"></div>
+
+          <h3 class="group-title">Summary</h3>
+          <div class="review-grid" id="reviewGrid"></div>
+
+          <div class="pub">
+            <div class="ptxt">
+              <h3>Ready to publish?</h3>
+              <p>Active locations appear immediately on the surfaces above. Draft saves it for later.</p>
+            </div>
+            <div class="seg" id="pubSeg">
+              <button class="is-on" data-pub="active">Publish active</button>
+              <button data-pub="draft">Save as draft</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ FOOTER ============ -->
+        <div class="footer">
+          <div class="save-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Saved a moment ago</div>
+          <div class="actions">
+            <button class="btn" id="backBtn" disabled>Back</button>
+            <button class="btn btn-primary" id="nextBtn">Continue</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SUCCESS MODAL ============ -->
+<div class="modal-shade" id="modal">
+  <div class="modal">
+    <div class="check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2 id="modalTitle">Location added</h2>
+    <p id="modalBody">Mission HQ is live on your customer site and fleet ops.</p>
+    <div class="actions">
+      <a href="Locations.html" class="btn">Back to all locations</a>
+      <a href="Location Details.html" class="btn btn-primary">Open location</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== Theme / sidebar =====
+  const app=document.getElementById('app');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  document.getElementById('btnTheme').addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+  document.getElementById('btnExpand').addEventListener('click',()=>{app.dataset.collapsed='false';localStorage.setItem('side-collapsed','0');});
+
+  // ===== State =====
+  const state = {
+    step: 1,
+    type: 'hub',
+    region: 'Bay Area',
+    code: '',
+    name: '',
+    address: { line1:'', city:'', state:'CA', zip:'', suite:'' },
+    coords: { lat: 37.7600, lng: -122.4194 },
+    deliv: { mode:'zips', zips:[], city:'San Francisco, CA', radCenter:'Mission HQ · 2455 Mission St', radMiles:8, notice:2, base:45 },
+    hours: { mode:'24', schedule: null, bufferMin:60 },
+    fees: { pickup:0, dropoff:0, after:0 },
+    instr: '', cdesc: '', howto: '', phone:'', contact:'',
+    photos: [null,null,null,null],
+    surfaces: { customer:true, fleet:true, turo:false },
+    publish: 'active',
+    timezone: 'America/Los_Angeles',
+    role: 'standalone',
+    linkTo: '',
+    inherit: true
+  };
+
+  const parents = {
+    mission: { name:'Mission HQ', type:'hub',     sub:'Hub · 7am–9pm daily · America/Los Angeles',  tz:'America/Los_Angeles', hoursLbl:'7am–9pm daily' },
+    oakland: { name:'Oakland Depot', type:'hub',  sub:'Hub · 8am–7pm Mon–Sat · America/Los Angeles', tz:'America/Los_Angeles', hoursLbl:'8am–7pm Mon–Sat' },
+    sfo:     { name:'SFO · Long-term Lot C', type:'airport', sub:'Airport · 24 / 7 · America/Los Angeles', tz:'America/Los_Angeles', hoursLbl:'24 / 7' }
+  };
+
+  // ===== Type picker =====
+  const typeMeta = {
+    hub:      { label:'Hub',           addrTitle:'Where is your hub?',        addrSub:'Drop a pin on your lot, garage, or office.', defaultFee:0,  default24:false, hoursOK:true,  photos:true,  defaultName:'New hub' },
+    airport:  { label:'Airport',       addrTitle:'Where do you meet at the airport?', addrSub:'Pick the terminal curb or long-term lot.', defaultFee:25, default24:true,  hoursOK:true,  photos:true,  defaultName:'New airport pickup' },
+    curbside: { label:'Curbside',      addrTitle:'Which curb or storefront?',  addrSub:'Pin the exact spot a customer should look for.',  defaultFee:15, default24:false, hoursOK:true,  photos:true,  defaultName:'New curbside spot' },
+    delivery: { label:'Delivery zone', addrTitle:'Where will you deliver?',    addrSub:'No pin needed — set a list of ZIPs, a radius, or a whole city.', defaultFee:45, default24:false, hoursOK:false, photos:false, defaultName:'New delivery zone' },
+    meeting:  { label:'Meeting point', addrTitle:'Where do you meet for handoffs?', addrSub:'Pre-arranged spots only — hidden from customer search.', defaultFee:10, default24:false, hoursOK:true,  photos:false, defaultName:'New meeting point' }
+  };
+
+  function pickType(t){
+    state.type = t;
+    document.querySelectorAll('#typeGrid .type-card').forEach(c => c.classList.toggle('is-on', c.dataset.type===t));
+    // Step 2 label
+    document.getElementById('stepName2').textContent = t==='delivery' ? 'Zone' : 'Address & pin';
+    document.getElementById('stepHint2').textContent = t==='delivery' ? 'ZIPs or radius' : 'Where customers meet you';
+    // Step 2 variant
+    document.getElementById('addrTitle').textContent = typeMeta[t].addrTitle;
+    document.getElementById('addrSub').textContent = typeMeta[t].addrSub;
+    document.getElementById('addrVariant').style.display = t==='delivery' ? 'none' : 'block';
+    document.getElementById('deliveryVariant').style.display = t==='delivery' ? 'block' : 'none';
+    // Step 3 24/7 default
+    if(typeMeta[t].default24 && state.hours.mode==='custom'){ /* keep custom */ }
+    // Step 4 default fee
+    document.getElementById('pfee').value = typeMeta[t].defaultFee;
+    state.fees.pickup = typeMeta[t].defaultFee;
+    document.getElementById('pfeeHint').textContent = t==='airport' ? 'Airport access surcharge — typical $20–30.' : t==='delivery' ? 'Round-trip delivery fee.' : 'Charged once per trip.';
+    // Photos visibility
+    document.getElementById('photosBlock').style.display = typeMeta[t].photos ? 'block' : 'none';
+    document.getElementById('photosSep').style.display = typeMeta[t].photos ? 'block' : 'none';
+    // Refresh child preview if linked
+    if(state.linkTo) setLink(state.linkTo);
+    // Hours: delivery hides weekly schedule, defaults to on-request
+    if(t==='delivery'){
+      document.getElementById('row24').style.display='none';
+      const swR=document.querySelector('#rowOnRequest .switch');
+      document.getElementById('rowOnRequest').classList.add('is-on');
+      swR.classList.add('is-on');
+      state.hours.mode='request';
+      document.getElementById('hoursList').style.opacity=.45;
+      document.getElementById('hoursList').style.pointerEvents='none';
+    } else {
+      document.getElementById('row24').style.display='flex';
+    }
+    // Tip
+    updateTip();
+  }
+  document.querySelectorAll('#typeGrid .type-card').forEach(c => c.addEventListener('click', ()=> pickType(c.dataset.type)));
+
+  // ===== Address suggest (fake) =====
+  const addrQ = document.getElementById('addrQ');
+  const sug = document.getElementById('addrSuggest');
+  const sample = [
+    {main:'2455 Mission St', sub:'San Francisco, CA 94110', lat:37.7600, lng:-122.4194},
+    {main:'780 N McDonnell Rd', sub:'San Francisco, CA 94128 · SFO', lat:37.6213, lng:-122.3790},
+    {main:'1422 Embarcadero', sub:'Oakland, CA 94606', lat:37.7800, lng:-122.2470},
+    {main:'1 Airport Dr', sub:'Oakland, CA 94621 · OAK', lat:37.7213, lng:-122.2210},
+    {main:'95 University Ave', sub:'Palo Alto, CA 94301 · Caltrain', lat:37.4445, lng:-122.1640},
+    {main:'Pier 14', sub:'San Francisco, CA 94105 · Embarcadero', lat:37.7910, lng:-122.3895},
+    {main:'3950 Scott St', sub:'San Francisco, CA 94123 · Marina', lat:37.8000, lng:-122.4400}
+  ];
+  function renderSug(q){
+    if(!q || q.length<2){ sug.classList.remove('is-show'); return; }
+    const qLower = q.toLowerCase();
+    const matches = sample.filter(s=> s.main.toLowerCase().includes(qLower) || s.sub.toLowerCase().includes(qLower)).slice(0,5);
+    if(!matches.length){ sug.classList.remove('is-show'); return; }
+    sug.innerHTML = matches.map((m,i)=>`
+      <div class="sug" data-i="${i}">
+        <div class="sug-pin"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg></div>
+        <div>
+          <div class="sug-main">${highlight(m.main,qLower)}</div>
+          <div class="sug-sub">${m.sub}</div>
+        </div>
+        <span class="sug-kbd">↵</span>
+      </div>
+    `).join('');
+    sug.classList.add('is-show');
+    sug.querySelectorAll('.sug').forEach(el => el.addEventListener('click', ()=> pickAddr(matches[+el.dataset.i])));
+  }
+  function highlight(s, q){
+    const i = s.toLowerCase().indexOf(q);
+    if(i<0) return s;
+    return s.slice(0,i)+'<em>'+s.slice(i,i+q.length)+'</em>'+s.slice(i+q.length);
+  }
+  function pickAddr(m){
+    document.getElementById('addrQ').value = m.main + ', ' + m.sub.split(' · ')[0];
+    const parts = m.sub.split(' · ')[0].split(', ');
+    document.getElementById('addr1').value = m.main;
+    document.getElementById('city').value = parts[0] || '';
+    if(parts[1]){
+      const sz = parts[1].trim().split(' ');
+      document.getElementById('state').value = sz[0]||'CA';
+      document.getElementById('zip').value = sz[1]||'';
+    }
+    state.coords = { lat:m.lat, lng:m.lng };
+    document.getElementById('coords').textContent = m.lat.toFixed(4) + ', ' + m.lng.toFixed(4);
+    sug.classList.remove('is-show');
+    // suggest a name
+    if(!document.getElementById('name').value){
+      document.getElementById('name').value = m.sub.includes('·') ? m.sub.split(' · ').pop() : m.main;
+    }
+  }
+  addrQ.addEventListener('input', e=> renderSug(e.target.value));
+  addrQ.addEventListener('focus', e=> renderSug(e.target.value));
+  document.addEventListener('click', e=>{ if(!e.target.closest('.addr-search')) sug.classList.remove('is-show'); });
+
+  // ===== Pin drag =====
+  (function(){
+    const svg = document.getElementById('mapSvg');
+    const pin = document.getElementById('pinG');
+    if(!svg||!pin) return;
+    let dragging=false, off={x:0,y:0};
+    function pt(evt){
+      const rect = svg.getBoundingClientRect();
+      const x = ((evt.clientX-rect.left)/rect.width)*800;
+      const y = ((evt.clientY-rect.top)/rect.height)*260;
+      return {x,y};
+    }
+    pin.addEventListener('pointerdown', e=>{
+      dragging=true; pin.setPointerCapture(e.pointerId);
+      const cur = pin.getAttribute('transform').match(/translate\(([^,]+),([^)]+)\)/);
+      const p = pt(e);
+      off.x = p.x - parseFloat(cur[1]); off.y = p.y - parseFloat(cur[2]);
+    });
+    pin.addEventListener('pointermove', e=>{
+      if(!dragging) return;
+      const p = pt(e);
+      const x = Math.max(20, Math.min(780, p.x-off.x));
+      const y = Math.max(30, Math.min(250, p.y-off.y));
+      pin.setAttribute('transform', `translate(${x},${y})`);
+      // fake-correlate to lat/lng
+      const lat = 37.85 - (y/260)*0.20;
+      const lng = -122.50 + (x/800)*0.18;
+      state.coords = { lat, lng };
+      document.getElementById('coords').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+    });
+    pin.addEventListener('pointerup', e=>{ dragging=false; pin.releasePointerCapture(e.pointerId); });
+  })();
+
+  // ===== Delivery zone mode =====
+  document.querySelectorAll('#zoneMode button').forEach(b => b.addEventListener('click', ()=>{
+    document.querySelectorAll('#zoneMode button').forEach(x=>x.classList.remove('is-on'));
+    b.classList.add('is-on');
+    const m = b.dataset.mode;
+    state.deliv.mode = m;
+    document.getElementById('zoneZips').style.display = m==='zips' ? 'block' : 'none';
+    document.getElementById('zoneRadius').style.display = m==='radius' ? 'block' : 'none';
+    document.getElementById('zoneCity').style.display = m==='city' ? 'block' : 'none';
+  }));
+
+  // ===== ZIP chips =====
+  const chips = document.getElementById('chipsInput');
+  const zipInput = document.getElementById('zipInput');
+  function renderZips(){
+    [...chips.querySelectorAll('.chip')].forEach(c=>c.remove());
+    state.deliv.zips.forEach((z,i)=>{
+      const el = document.createElement('span');
+      el.className = 'chip';
+      el.innerHTML = `${z}<button class="x" data-i="${i}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>`;
+      chips.insertBefore(el, zipInput);
+    });
+    document.getElementById('zipCount').textContent = state.deliv.zips.length + ' ZIP' + (state.deliv.zips.length===1?'':'s');
+    chips.querySelectorAll('.x').forEach(b=> b.addEventListener('click', ()=>{ state.deliv.zips.splice(+b.dataset.i,1); renderZips(); }));
+  }
+  function addZip(){
+    const raw = zipInput.value.trim();
+    if(!raw) return;
+    raw.split(/[, ]+/).map(z=>z.trim()).filter(z => /^\d{5}$/.test(z) && !state.deliv.zips.includes(z))
+      .forEach(z => state.deliv.zips.push(z));
+    zipInput.value = '';
+    renderZips();
+  }
+  zipInput.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===','||e.key===' ' || e.key==='Tab'){ e.preventDefault(); addZip(); } });
+  zipInput.addEventListener('blur', addZip);
+  chips.addEventListener('click', e=>{ if(e.target===chips) zipInput.focus(); });
+  // seed
+  state.deliv.zips = ['94110','94114','94115','94117','94123','94133'];
+  renderZips();
+
+  // ===== Hours =====
+  const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  state.hours.schedule = days.map((d,i)=>({day:d, open:i<6, from:'08:00', to:'19:00'}));
+  function renderHours(){
+    const wrap = document.getElementById('hoursList');
+    wrap.innerHTML = '<h3 class="group-title">Weekly schedule</h3>' + state.hours.schedule.map((s,i)=>`
+      <div class="hours-row">
+        <div class="day">${s.day}</div>
+        <span class="switch ${s.open?'is-on':''}" data-day="${i}"></span>
+        ${s.open
+          ? `<div class="hours-times"><input class="input" value="${s.from}" data-hr="from" data-day="${i}"/><span class="dash">–</span><input class="input" value="${s.to}" data-hr="to" data-day="${i}"/></div>`
+          : `<div class="closed-text">Closed</div>`}
+        <button class="copy" data-copy="${i}">Apply to all</button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.switch').forEach(sw=> sw.addEventListener('click', ()=>{
+      const d = +sw.dataset.day; state.hours.schedule[d].open = !state.hours.schedule[d].open; renderHours();
+    }));
+    wrap.querySelectorAll('input[data-hr]').forEach(inp=> inp.addEventListener('input', ()=>{
+      state.hours.schedule[+inp.dataset.day][inp.dataset.hr] = inp.value;
+    }));
+    wrap.querySelectorAll('.copy').forEach(b=> b.addEventListener('click', ()=>{
+      const src = state.hours.schedule[+b.dataset.copy];
+      state.hours.schedule = state.hours.schedule.map(()=>({...src, day: src.day}));
+      // re-sync days
+      state.hours.schedule.forEach((s,i)=> s.day = days[i]);
+      renderHours();
+    }));
+  }
+  renderHours();
+
+  window.__toggle24 = function(el){
+    const on = !el.classList.contains('is-on');
+    el.classList.toggle('is-on', on);
+    el.querySelector('.switch').classList.toggle('is-on', on);
+    if(on){
+      // turn off on-request
+      document.getElementById('rowOnRequest').classList.remove('is-on');
+      document.querySelector('#rowOnRequest .switch').classList.remove('is-on');
+      state.hours.mode='24';
+      document.getElementById('hoursList').style.opacity=.45;
+      document.getElementById('hoursList').style.pointerEvents='none';
+    } else {
+      state.hours.mode='custom';
+      document.getElementById('hoursList').style.opacity=1;
+      document.getElementById('hoursList').style.pointerEvents='auto';
+    }
+  };
+  window.__toggleOnRequest = function(el){
+    const on = !el.classList.contains('is-on');
+    el.classList.toggle('is-on', on);
+    el.querySelector('.switch').classList.toggle('is-on', on);
+    if(on){
+      document.getElementById('row24').classList.remove('is-on');
+      document.querySelector('#row24 .switch').classList.remove('is-on');
+      state.hours.mode='request';
+      document.getElementById('hoursList').style.opacity=.3;
+      document.getElementById('hoursList').style.pointerEvents='none';
+    } else {
+      state.hours.mode='custom';
+      document.getElementById('hoursList').style.opacity=1;
+      document.getElementById('hoursList').style.pointerEvents='auto';
+    }
+  };
+
+  // Buffer pills
+  document.querySelectorAll('#bufferPick button').forEach(b => b.addEventListener('click', ()=>{
+    document.querySelectorAll('#bufferPick button').forEach(x=>x.classList.remove('is-on'));
+    b.classList.add('is-on');
+    state.hours.bufferMin = +b.dataset.min;
+  }));
+
+  // ===== Surfaces toggles (review step) =====
+  window.__toggleSurf = function(el){
+    const on = !el.classList.contains('is-on');
+    el.classList.toggle('is-on', on);
+    el.querySelector('.switch').classList.toggle('is-on', on);
+    if(el.id==='surfCust') state.surfaces.customer = on;
+    if(el.id==='surfFleet') state.surfaces.fleet = on;
+    if(el.id==='surfTuro') state.surfaces.turo = on;
+  };
+
+  // ===== Photos =====
+  const samplePhotos = [
+    'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400&q=80',
+    'https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=400&q=80',
+    'https://images.unsplash.com/photo-1545179605-1296651e9d43?w=400&q=80',
+    'https://images.unsplash.com/photo-1597007029837-2f86c8b51f73?w=400&q=80'
+  ];
+  function renderPhotos(){
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = state.photos.map((p,i)=> p
+      ? `<div class="photo-cell is-set"><div class="ph-img" style="background-image:url('${p}')"></div>${i===0?'<span class="ph-cover">Cover</span>':''}<button class="ph-rm" data-i="${i}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button></div>`
+      : `<div class="photo-cell" data-add="${i}"><div class="ph-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add photo</div></div>`
+    ).join('');
+    grid.querySelectorAll('[data-add]').forEach(c => c.addEventListener('click', ()=>{
+      const i = +c.dataset.add;
+      // pick the next sample not used
+      const used = new Set(state.photos.filter(Boolean));
+      const next = samplePhotos.find(p => !used.has(p));
+      state.photos[i] = next || samplePhotos[i];
+      renderPhotos();
+    }));
+    grid.querySelectorAll('.ph-rm').forEach(b => b.addEventListener('click', e=>{
+      e.stopPropagation();
+      state.photos[+b.dataset.i] = null;
+      renderPhotos();
+    }));
+  }
+  renderPhotos();
+
+  // ===== Publish seg =====
+  document.querySelectorAll('#pubSeg button').forEach(b => b.addEventListener('click', ()=>{
+    document.querySelectorAll('#pubSeg button').forEach(x=>x.classList.remove('is-on'));
+    b.classList.add('is-on');
+    state.publish = b.dataset.pub;
+    document.getElementById('nextBtn').textContent = state.publish==='active' ? 'Publish location' : 'Save as draft';
+  }));
+
+  // ===== Role / Link =====
+  function setRole(r){
+    state.role = r;
+    document.querySelectorAll('#roleGrid .role-card').forEach(c => c.classList.toggle('is-on', c.dataset.role===r));
+    document.getElementById('linkedConfig').style.display = r==='linked' ? 'block' : 'none';
+    document.getElementById('hoursBadge').textContent = r==='linked' ? (state.inherit ? 'Inherited' : 'Custom override') : 'Standalone';
+    applyInheritance();
+    updateTip();
+  }
+  document.querySelectorAll('#roleGrid .role-card').forEach(c => c.addEventListener('click', ()=> setRole(c.dataset.role)));
+
+  function setLink(v){
+    state.linkTo = v;
+    const card = document.getElementById('parentCard');
+    if(!v || !parents[v]){
+      card.style.display = 'none';
+      return;
+    }
+    const p = parents[v];
+    card.style.display = 'block';
+    const pin = document.getElementById('pcPin');
+    pin.textContent = p.name[0];
+    pin.className = 'pc-pin t-' + p.type;
+    document.getElementById('pcName').textContent = p.name;
+    document.getElementById('pcSub').textContent = p.sub;
+    document.getElementById('inheritDesc').textContent = 'Stays in sync with ' + p.name + '. Turn off to set custom hours below.';
+    // Update child preview
+    document.getElementById('pcChildName').textContent = (state.name && state.name.trim()) || (typeMeta[state.type]?.defaultName) || 'This new location';
+    document.getElementById('pcChildPin').className = 'pc-pin child-pin t-' + state.type;
+    document.getElementById('pcChildSub').textContent = (typeMeta[state.type]?.label || 'Location') + ' · ' + (state.inherit ? 'inheriting hours' : 'custom hours');
+    // Auto-set timezone to parent's
+    if(state.inherit){
+      document.getElementById('tz').value = p.tz;
+      state.timezone = p.tz;
+    }
+    applyInheritance();
+  }
+  document.getElementById('linkSel').addEventListener('change', e => setLink(e.target.value));
+
+  function applyInheritance(){
+    const block = document.getElementById('hoursBlock');
+    const showCustom = !(state.role==='linked' && state.inherit && state.linkTo);
+    block.style.opacity = showCustom ? 1 : .45;
+    block.style.pointerEvents = showCustom ? 'auto' : 'none';
+    document.getElementById('hoursBadge').textContent = state.role==='linked'
+      ? (state.inherit ? 'Inherited' : 'Custom override')
+      : 'Standalone';
+  }
+
+  window.__toggleInherit = function(el){
+    const on = !el.classList.contains('is-on');
+    el.classList.toggle('is-on', on);
+    el.querySelector('.switch').classList.toggle('is-on', on);
+    state.inherit = on;
+    if(on && state.linkTo && parents[state.linkTo]){
+      document.getElementById('tz').value = parents[state.linkTo].tz;
+      state.timezone = parents[state.linkTo].tz;
+    }
+    if(state.linkTo) setLink(state.linkTo);
+    applyInheritance();
+  };
+
+  // ===== Stepper =====
+  function syncState(){
+    state.region = document.getElementById('region').value;
+    state.code = document.getElementById('code').value;
+    state.timezone = document.getElementById('tz').value;
+    if(state.type==='delivery'){
+      state.name = document.getElementById('dname').value;
+    } else {
+      state.name = document.getElementById('name').value;
+      state.address.line1 = document.getElementById('addr1').value;
+      state.address.city = document.getElementById('city').value;
+      state.address.state = document.getElementById('state').value;
+      state.address.zip = document.getElementById('zip').value;
+      state.address.suite = document.getElementById('suite').value;
+    }
+    state.deliv.radMiles = +document.getElementById('radMiles').value;
+    state.deliv.notice = +document.getElementById('notice').value;
+    state.deliv.base = +document.getElementById('delivBase').value;
+    state.deliv.city = document.getElementById('cityPick').value;
+    state.fees.pickup = +document.getElementById('pfee').value;
+    state.fees.dropoff = +document.getElementById('dfee').value;
+    state.fees.after = +document.getElementById('afee').value;
+    state.instr = document.getElementById('instr').value;
+    state.cdesc = document.getElementById('cdesc').value;
+    state.howto = document.getElementById('howto').value;
+    state.phone = document.getElementById('phone').value;
+    state.contact = document.getElementById('contact').value;
+  }
+
+  function setStep(n){
+    if(n<1||n>5) return;
+    syncState();
+    // refresh child preview before showing operations
+    if(n===3 && state.linkTo) setLink(state.linkTo);
+    // mark done
+    document.querySelectorAll('.step').forEach(s=>{
+      const i = +s.dataset.step;
+      s.classList.toggle('is-active', i===n);
+      s.classList.toggle('is-done', i<n);
+      const ck = s.querySelector('.check'); if(ck) ck.style.display = i<n ? 'block':'none';
+      const num = s.querySelector('.num'); if(num) num.style.display = i<n ? 'none':'inline';
+    });
+    document.querySelectorAll('[data-pane]').forEach(p=> p.style.display = (+p.dataset.pane===n) ? 'block':'none');
+    document.getElementById('progressBar').style.width = (n*20) + '%';
+    state.step = n;
+    // back/next labels
+    document.getElementById('backBtn').disabled = n===1;
+    if(n===5){
+      document.getElementById('nextBtn').textContent = state.publish==='active' ? 'Publish location' : 'Save as draft';
+      renderReview();
+    } else {
+      document.getElementById('nextBtn').textContent = 'Continue';
+    }
+    updateTip();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    if(state.step===5){ openModal(); return; }
+    setStep(state.step+1);
+  });
+  document.getElementById('backBtn').addEventListener('click', ()=> setStep(state.step-1));
+  document.querySelectorAll('.step').forEach(s=> s.addEventListener('click', ()=> setStep(+s.dataset.step)));
+
+  // ===== Tip =====
+  function updateTip(){
+    const t = state.type;
+    const tips = {
+      1: {
+        title: 'One entity, two roles',
+        body: 'Every location can stand on its own — like a branch — or link to a parent to share hours. You\'ll choose that in step 3.'
+      },
+      2: t==='delivery'
+        ? { title:'Tip · Start with 6–8 ZIPs', body:'You can paste a comma-separated list. Add ZIPs gradually as you learn which neighborhoods convert.' }
+        : { title:'Tip · Drag for accuracy', body:'A pin off by 50 m can route customers to the wrong gate. Refine to the actual pickup spot, not the postal address.' },
+      3: state.role==='linked'
+        ? { title:'Inherit by default', body:'A linked pickup point follows its parent\'s hours and timezone unless you flip the toggle. The buffer is always set per-location.' }
+        : t==='airport'
+        ? { title:'Airports usually 24/7', body:'Most airport lots take pickups at any hour. The buffer below stays separate from open hours.' }
+        : t==='delivery'
+          ? { title:'Set a notice window', body:'Use the advance-notice field on the previous step. Delivery zones run on request, not on a schedule.' }
+          : { title:'Match real staffing', body:'Customers see this exact schedule. Avoid showing 9 am if no one is on site until 10.' },
+      4: { title:'Public vs internal', body:'"What customers see" goes on the receipt. "Driver instructions" stays inside the team — paste a lockbox code there if you have one.' },
+      5: { title:'Publish or draft?', body:'Draft is invisible everywhere until you flip it active. Use it while you finalize photos or coordinate with the team.' }
+    };
+    const tip = tips[state.step] || tips[1];
+    document.getElementById('tipTitle').textContent = tip.title;
+    document.getElementById('tipBody').textContent = tip.body;
+  }
+
+  // ===== Review =====
+  function renderReview(){
+    const t = state.type;
+    const colorMap = {hub:'var(--ink)', airport:'var(--info)', curbside:'var(--warn)', delivery:'var(--turo)', meeting:'var(--muted)'};
+    const name = state.name || typeMeta[t].defaultName;
+    const addr = t==='delivery'
+      ? (state.deliv.mode==='zips' ? `${state.deliv.zips.length} ZIPs · ${state.deliv.zips.slice(0,4).join(', ')}${state.deliv.zips.length>4?'…':''}`
+        : state.deliv.mode==='radius' ? `${state.deliv.radMiles} mi around ${state.deliv.radCenter}`
+        : state.deliv.city)
+      : `${state.address.line1||'—'}, ${state.address.city||'—'}, ${state.address.state} ${state.address.zip||''}`.replace(/, ,/g,',');
+
+    const hoursLabel = state.hours.mode==='24' ? '24 / 7'
+                    : state.hours.mode==='request' ? 'By request only'
+                    : state.hours.schedule.filter(s=>s.open).length + ' days/week · ' + (state.hours.schedule.find(s=>s.open)?.from||'') + '–' + (state.hours.schedule.find(s=>s.open)?.to||'');
+
+    const buf = state.hours.bufferMin===0 ? 'No buffer' : state.hours.bufferMin>=60 ? (state.hours.bufferMin/60)+' hr' : state.hours.bufferMin+' min';
+
+    const parent = state.role==='linked' && state.linkTo ? parents[state.linkTo] : null;
+    const inherits = state.role==='linked' && state.inherit && parent;
+    const effectiveHours = inherits ? parent.hoursLbl : hoursLabel;
+    const effectiveTz = inherits ? parent.tz : state.timezone;
+    const tzLabel = effectiveTz.replace('_',' ');
+
+    const photoStrip = state.photos.filter(Boolean);
+    const surfNames = [
+      state.surfaces.customer ? 'Customer site' : null,
+      state.surfaces.fleet ? 'Fleet ops' : null,
+      state.surfaces.turo ? 'Turo' : null
+    ].filter(Boolean).join(' · ') || 'Hidden';
+
+    document.getElementById('reviewGrid').innerHTML = `
+      <div class="review-card full">
+        <div class="review-head">
+          <h3><span class="pin-mini" style="background:${colorMap[t]}">${(typeMeta[t].label[0])}</span>${name}</h3>
+          <a class="edit-link" data-go="1">Edit</a>
+        </div>
+        <div class="kv"><span class="k">Type</span><span class="v">${typeMeta[t].label}</span></div>
+        <div class="kv"><span class="k">Region</span><span class="v">${state.region}</span></div>
+        ${state.code ? `<div class="kv"><span class="k">Internal code</span><span class="v" style="font-family:ui-monospace,monospace">${state.code.toUpperCase()}</span></div>` : ''}
+      </div>
+
+      <div class="review-card">
+        <div class="review-head"><h3>${t==='delivery'?'Coverage':'Address &amp; pin'}</h3><a class="edit-link" data-go="2">Edit</a></div>
+        <div class="kv"><span class="k">${t==='delivery'?'Zone':'Address'}</span><span class="v">${addr}</span></div>
+        ${t==='delivery'
+          ? `<div class="kv"><span class="k">Min notice</span><span class="v">${state.deliv.notice} hr</span></div><div class="kv"><span class="k">Base delivery fee</span><span class="v">$${state.deliv.base}</span></div>`
+          : `<div class="kv"><span class="k">Coordinates</span><span class="v" style="font-family:ui-monospace,monospace">${state.coords.lat.toFixed(4)}, ${state.coords.lng.toFixed(4)}</span></div>${state.address.suite?`<div class="kv"><span class="k">Suite</span><span class="v">${state.address.suite}</span></div>`:''}`
+        }
+      </div>
+
+      <div class="review-card">
+        <div class="review-head"><h3>Hours &amp; buffer</h3><a class="edit-link" data-go="3">Edit</a></div>
+        <div class="kv"><span class="k">Role</span><span class="v">${state.role==='linked' && parent ? `Linked to <b>${parent.name}</b>` : 'Standalone'}</span></div>
+        <div class="kv"><span class="k">Schedule</span><span class="v">${effectiveHours}${inherits?' <span style="color:var(--muted);font-weight:500">(inherited)</span>':''}</span></div>
+        <div class="kv"><span class="k">Timezone</span><span class="v" style="font-family:ui-monospace,monospace;font-size:11.5px">${tzLabel}</span></div>
+        <div class="kv"><span class="k">Buffer</span><span class="v">${buf}</span></div>
+      </div>
+
+      ${t==='delivery' ? '' : `
+      <div class="review-card">
+        <div class="review-head"><h3>Trip fees</h3><a class="edit-link" data-go="4">Edit</a></div>
+        <div class="kv"><span class="k">Pickup</span><span class="v">${state.fees.pickup===0?'Free':'$'+state.fees.pickup}</span></div>
+        <div class="kv"><span class="k">Dropoff</span><span class="v">${state.fees.dropoff===0?'Free':'$'+state.fees.dropoff}</span></div>
+        <div class="kv"><span class="k">After-hours</span><span class="v">${state.fees.after===0?'—':'$'+state.fees.after}</span></div>
+      </div>`}
+
+      ${typeMeta[t].photos && photoStrip.length ? `
+      <div class="review-card full">
+        <div class="review-head"><h3>Photos</h3><a class="edit-link" data-go="4">Edit</a></div>
+        <div style="display:grid;grid-template-columns:repeat(${Math.max(photoStrip.length,4)},1fr);gap:6px">
+          ${photoStrip.map((p,i)=>`<div style="aspect-ratio:4/3;border-radius:6px;background:url('${p}') center/cover var(--field-bg);position:relative">${i===0?'<span style="position:absolute;bottom:4px;left:4px;background:rgba(15,18,22,.72);color:#fff;font-size:9.5px;font-weight:600;padding:1px 5px;border-radius:3px">Cover</span>':''}</div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${state.cdesc || state.instr ? `
+      <div class="review-card full">
+        <div class="review-head"><h3>Instructions</h3><a class="edit-link" data-go="4">Edit</a></div>
+        ${state.cdesc ? `<div class="kv"><span class="k">Customer description</span><span class="v">${state.cdesc}</span></div>` : ''}
+        ${state.instr ? `<div class="kv"><span class="k">Driver instructions</span><span class="v">${state.instr}</span></div>` : ''}
+        ${state.phone ? `<div class="kv"><span class="k">Pickup phone</span><span class="v" style="font-family:ui-monospace,monospace">${state.phone}</span></div>` : ''}
+      </div>` : ''}
+
+      <div class="review-card full">
+        <div class="review-head"><h3>Visibility</h3><a class="edit-link" data-go="5">Edit</a></div>
+        <div class="kv"><span class="k">Surfaces</span><span class="v">${surfNames}</span></div>
+        <div class="kv"><span class="k">Publish</span><span class="v">${state.publish==='active' ? '<span style="color:var(--ok);font-weight:700">Active now</span>' : '<span style="color:var(--warn);font-weight:700">Saved as draft</span>'}</span></div>
+      </div>
+    `;
+    document.querySelectorAll('.edit-link').forEach(l => l.addEventListener('click', e=>{
+      e.preventDefault(); setStep(+l.dataset.go);
+    }));
+  }
+
+  // ===== Modal =====
+  function openModal(){
+    syncState();
+    document.getElementById('modalTitle').textContent = state.publish==='active' ? 'Location published' : 'Saved as draft';
+    document.getElementById('modalBody').textContent = state.publish==='active'
+      ? `${state.name || typeMeta[state.type].defaultName} is live on ${[state.surfaces.customer?'your customer site':null,state.surfaces.fleet?'fleet ops':null].filter(Boolean).join(' and ')||'no surfaces yet'}.`
+      : `${state.name || typeMeta[state.type].defaultName} is saved. Flip it active any time from the location list.`;
+    document.getElementById('modal').classList.add('is-show');
+  }
+  document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal'){ /* keep open — user must navigate */ } });
+
+  // ===== Init =====
+  pickType('hub');
+  updateTip();
+
+})();
+</script>
+
+</body>
+</html>

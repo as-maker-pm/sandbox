@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sub-tabs explorations — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+  :root{
+    --canvas:#fff; --ink:#15171a; --ink-2:#4a4f57;
+    --muted:#8a9099; --muted-2:#b6bcc4; --line:#e8e8ea; --line-2:#ededef;
+    --hover:#ebebed; --field:#fff; --field-bg:#fafafa;
+    --brand:#ef3a3a; --brand-tint:#fde8e8; --brand-tint-2:#fbe7e7;
+    --ok:#1f8a5b; --warn:#c97c0d; --info:#2f6feb; --info-tint:#e6efff;
+    --t-fast:140ms cubic-bezier(.2,.7,.2,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#e8e8ea}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+
+  /* ===== Shared artboard chrome ===== */
+  .art{padding:24px;background:var(--canvas);min-height:100%;display:flex;flex-direction:column;gap:14px}
+  .art-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:4px}
+  .art-cust{display:flex;align-items:center;gap:12px;min-width:0}
+  .art-cust .av{width:38px;height:38px;border-radius:99px;background:oklch(0.62 0.14 30);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px}
+  .art-cust .nm{font-size:15px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .art-cust .nm .vchip{font-size:10px;font-weight:700;background:var(--ok);color:#fff;padding:2px 7px;border-radius:99px;letter-spacing:.04em;text-transform:uppercase}
+  .art-cust .mt{font-size:12px;color:var(--muted);margin-top:2px}
+  .art-cust .mt b{color:var(--ink-2);font-weight:600}
+
+  /* tiny "card" shell for some variants */
+  .card{background:var(--canvas);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .card-head{padding:14px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .card-head .ct{font-size:14px;font-weight:700;letter-spacing:-.005em}
+  .card-head .cs{font-size:12px;color:var(--muted);margin-top:2px}
+  .card-body{padding:20px 22px 22px}
+
+  /* ===== Shared pane preview (filler under the tabs) ===== */
+  .filter-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .chip-row{display:flex;gap:4px}
+  .chip{height:28px;padding:0 10px;font-size:12px;font-weight:600;color:var(--muted);border-radius:7px;display:inline-flex;align-items:center;gap:5px}
+  .chip.is-on{background:var(--field-bg);color:var(--ink)}
+  .btn-sm{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:7px;font-size:12px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:5px}
+
+  .row{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line-2)}
+  .row:first-of-type{border-top:0}
+  .row .th{width:54px;height:38px;border-radius:7px;background:linear-gradient(135deg,#dde,#bbc)}
+  .row .th.r{background:linear-gradient(135deg,#f4c1c1,#e08383)}
+  .row .th.g{background:linear-gradient(135deg,#c5e6cf,#7fbf95)}
+  .row .th.b{background:linear-gradient(135deg,#cad8ee,#8aa3d4)}
+  .row .th.a{background:linear-gradient(135deg,#f1deb4,#d8b06b)}
+  .row .id{font-family:ui-monospace,monospace;font-size:11px;background:var(--field-bg);border:1px solid var(--line-2);padding:1px 6px;border-radius:4px;color:var(--ink-2);font-weight:600;margin-right:8px}
+  .row .veh{font-weight:600;font-size:13px}
+  .row .meta{font-size:11.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+  .row .meta b{color:var(--ink-2);font-weight:500}
+  .row .right{text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+  .row .right small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+
+  /* ===== A — Baseline (current) ===== */
+  .a-tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:0 -22px 18px;padding:0 22px}
+  .a-tab{height:40px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .a-tab .ct{font-size:11px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2)}
+  .a-tab.is-on{color:var(--ink)}
+  .a-tab.is-on .ct{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .a-tab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+
+  /* ===== B — Segmented pill ===== */
+  .b-tabs{display:inline-flex;align-items:center;background:var(--field-bg);border:1px solid var(--line);padding:3px;border-radius:10px;gap:2px}
+  .b-tab{height:30px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--muted);border-radius:7px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:all var(--t-fast)}
+  .b-tab .ct{font-size:10.5px;background:var(--canvas);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2)}
+  .b-tab.is-on{background:var(--canvas);color:var(--ink);box-shadow:0 1px 2px rgba(15,18,22,.06),0 0 0 1px var(--line-2)}
+  .b-tab.is-on .ct{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .b-tabs-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .b-tabs-row .sub{font-size:12px;color:var(--muted)}
+  .b-tabs-row .sub b{color:var(--ink);font-weight:600}
+
+  /* ===== C — Vertical sidebar ===== */
+  .c-split{display:grid;grid-template-columns:220px 1fr;min-height:380px}
+  .c-rail{border-right:1px solid var(--line);padding:14px 10px}
+  .c-rail .rl{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);padding:6px 10px 8px}
+  .c-tab{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--ink-2);width:100%;transition:all var(--t-fast);margin-bottom:1px}
+  .c-tab .ci{width:18px;height:18px;color:var(--muted);flex-shrink:0}
+  .c-tab .ct{margin-left:auto;font-size:10.5px;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2);font-weight:600}
+  .c-tab:hover{background:var(--hover);color:var(--ink)}
+  .c-tab.is-on{background:var(--field-bg);color:var(--ink);font-weight:600}
+  .c-tab.is-on .ci{color:var(--ink)}
+  .c-tab.is-on .ct{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .c-tab.is-on::before{content:"";position:absolute;left:0;width:3px;top:8px;bottom:8px;background:var(--brand);border-radius:0 3px 3px 0}
+  .c-tab{position:relative}
+  .c-content{padding:20px 22px}
+
+  /* ===== D — Big tab cards ===== */
+  .d-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
+  .d-tab{padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--canvas);text-align:left;transition:all var(--t-fast);display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+  .d-tab:hover{border-color:var(--ink-2);background:var(--field-bg)}
+  .d-tab .di{width:24px;height:24px;border-radius:6px;background:var(--field-bg);color:var(--ink-2);display:grid;place-items:center}
+  .d-tab .dn{font-size:12.5px;font-weight:700;letter-spacing:-.005em}
+  .d-tab .dv{font-size:18px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1}
+  .d-tab .ds{font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+  .d-tab.is-on{border-color:var(--ink);background:var(--canvas);box-shadow:0 0 0 1px var(--ink),0 6px 14px rgba(15,18,22,.07)}
+  .d-tab.is-on .di{background:var(--ink);color:#fff}
+  .d-tab.is-on::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--brand)}
+
+  /* ===== E — Anchor scroll (no tabs, but section header w/ jump nav) ===== */
+  .e-jumpnav{display:flex;align-items:center;gap:14px;padding:10px 22px;border-bottom:1px solid var(--line);background:var(--canvas);position:sticky;top:0;font-size:12.5px}
+  .e-jumpnav .label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-2);margin-right:4px}
+  .e-jumpnav a{color:var(--muted);font-weight:500;display:inline-flex;align-items:center;gap:5px}
+  .e-jumpnav a.is-on{color:var(--ink);font-weight:600}
+  .e-jumpnav a .ct{font-size:10.5px;background:var(--field-bg);color:var(--muted);padding:1px 5px;border-radius:99px;border:1px solid var(--line-2);font-weight:600}
+  .e-jumpnav a.is-on .ct{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .e-jumpnav .spacer{flex:1}
+  .e-jumpnav .scroll-hint{font-size:11px;color:var(--muted-2);display:inline-flex;align-items:center;gap:4px}
+  .e-section{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .e-section:last-child{border-bottom:0}
+  .e-section h3{margin:0 0 12px;font-size:14px;font-weight:700;letter-spacing:-.005em;display:flex;align-items:center;gap:8px}
+  .e-section h3 .ct{font-size:11px;font-weight:700;background:var(--field-bg);color:var(--ink-2);padding:1px 7px;border-radius:99px;border:1px solid var(--line-2)}
+  .e-section h3 .more{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:600}
+
+  /* compact ver verifications mini */
+  .ver-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .ver{padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--field-bg)}
+  .ver .n{font-size:11.5px;color:var(--ink-2);font-weight:600}
+  .ver .v{font-size:11px;color:var(--ok);font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:4px}
+  .ver .v svg{width:11px;height:11px}
+
+  .note{padding:10px 12px;border:1px solid var(--line-2);border-radius:9px;background:var(--field-bg);font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:6px}
+  .note .by{font-size:11px;color:var(--muted);margin-bottom:3px}
+
+  /* icon helpers */
+  .i{width:14px;height:14px;flex-shrink:0}
+  .check svg{width:11px;height:11px}
+
+</style>
+</head>
+<body>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+// ===== Shared header rendered inside every artboard =====
+const CustHeader = () => (
+  <div className="art-meta">
+    <div className="art-cust">
+      <div className="av">ZI</div>
+      <div>
+        <div className="nm">Zaid Irfan <span className="vchip">Verified</span></div>
+        <div className="mt">Customer #C-1042 · <b>8 trips</b> · <b>$1,840</b> lifetime · since Aug 2023</div>
+      </div>
+    </div>
+    <div style={{display:'flex',gap:6}}>
+      <button className="btn-sm">Edit profile</button>
+      <button className="btn-sm">Merge…</button>
+    </div>
+  </div>
+);
+
+const Booking = ({id,veh,plate,thumb,when,meta,total,status,statusColor}) => (
+  <div className="row">
+    <div className={`th ${thumb}`}></div>
+    <div>
+      <div style={{display:'flex',alignItems:'center',gap:0}}>
+        <span className="id">#{id}</span>
+        <span className="veh">{veh}</span>
+        <span style={{fontSize:11.5,color:'var(--muted)',marginLeft:8,fontFamily:'ui-monospace,monospace'}}>{plate}</span>
+      </div>
+      <div className="meta">
+        <span><b>{when}</b></span>
+        <span>· {meta}</span>
+      </div>
+    </div>
+    <div className="right">
+      ${total}
+      <small style={{color:statusColor}}>● {status}</small>
+    </div>
+  </div>
+);
+
+const BookingsPreview = () => (
+  <>
+    <div className="filter-row">
+      <div className="chip-row">
+        <button className="chip is-on">All <span style={{opacity:.5,marginLeft:3}}>8</span></button>
+        <button className="chip">Upcoming <span style={{opacity:.5,marginLeft:3}}>1</span></button>
+        <button className="chip">Completed <span style={{opacity:.5,marginLeft:3}}>6</span></button>
+        <button className="chip">Cancelled <span style={{opacity:.5,marginLeft:3}}>1</span></button>
+      </div>
+      <button className="btn-sm">
+        <svg className="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+    <Booking id="13190" veh="BMW X5" plate="LXR-44-820B" thumb="b" when="18 May – 25 May '26" meta="7 days · Brooklyn" total="612.00" status="Confirmed" statusColor="var(--info)" />
+    <Booking id="12977" veh="Toyota RAV4" plate="JHK-22-110C" thumb="g" when="4 Mar – 8 Mar '26" meta="4 days · 312 mi" total="284.00" status="Completed" statusColor="var(--ok)" />
+    <Booking id="13214" veh="KIA Sportage" plate="LEE-67-889A" thumb="r" when="29 Jun – 6 Jul '25" meta="7 days · refunded" total="50.99" status="Cancelled" statusColor="var(--brand)" />
+    <Booking id="12734" veh="Honda Civic" plate="PRT-91-554F" thumb="a" when="20 Dec – 22 Dec '25" meta="2 days · 145 mi" total="118.00" status="Completed" statusColor="var(--ok)" />
+  </>
+);
+
+// ===== Variation A — Baseline (current pattern) =====
+const ArtA = () => (
+  <div className="art">
+    <CustHeader />
+    <div className="card">
+      <div style={{padding:'4px 22px 0'}}>
+        <div className="a-tabs">
+          <button className="a-tab is-on">Bookings &amp; Trips <span className="ct">8</span></button>
+          <button className="a-tab">Verifications <span className="ct">5/5</span></button>
+          <button className="a-tab">Payments <span className="ct">12</span></button>
+          <button className="a-tab">Notes <span className="ct">3</span></button>
+          <button className="a-tab">Communication</button>
+        </div>
+      </div>
+      <div className="card-body" style={{paddingTop:8}}>
+        <BookingsPreview />
+      </div>
+    </div>
+  </div>
+);
+
+// ===== Variation B — Segmented pill =====
+const ArtB = () => (
+  <div className="art">
+    <CustHeader />
+    <div className="card">
+      <div className="card-body">
+        <div className="b-tabs-row">
+          <div className="b-tabs">
+            <button className="b-tab is-on">
+              <svg className="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Bookings <span className="ct">8</span>
+            </button>
+            <button className="b-tab">
+              <svg className="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/></svg>
+              Verifications <span className="ct">5/5</span>
+            </button>
+            <button className="b-tab">
+              <svg className="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Payments <span className="ct">12</span>
+            </button>
+            <button className="b-tab">
+              <svg className="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H7l-3 3z"/></svg>
+              Notes <span className="ct">3</span>
+            </button>
+            <button className="b-tab">
+              <svg className="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.1 1A19 19 0 0 1 2 4.1 1 1 0 0 1 3 3h4l2 5-3 2a14 14 0 0 0 6 6l2-3 5 2z"/></svg>
+              Comms
+            </button>
+          </div>
+          <div className="sub">Showing <b>Bookings &amp; Trips</b></div>
+        </div>
+        <BookingsPreview />
+      </div>
+    </div>
+  </div>
+);
+
+// ===== Variation C — Vertical sidebar =====
+const ArtC = () => (
+  <div className="art">
+    <CustHeader />
+    <div className="card">
+      <div className="c-split">
+        <aside className="c-rail">
+          <div className="rl">Customer details</div>
+          <button className="c-tab is-on">
+            <svg className="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Bookings &amp; Trips
+            <span className="ct">8</span>
+          </button>
+          <button className="c-tab">
+            <svg className="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Verifications
+            <span className="ct">5/5</span>
+          </button>
+          <button className="c-tab">
+            <svg className="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Payments
+            <span className="ct">12</span>
+          </button>
+          <button className="c-tab">
+            <svg className="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H7l-3 3z"/></svg>
+            Notes
+            <span className="ct">3</span>
+          </button>
+          <button className="c-tab">
+            <svg className="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.1 1A19 19 0 0 1 2 4.1 1 1 0 0 1 3 3h4l2 5-3 2a14 14 0 0 0 6 6l2-3 5 2z"/></svg>
+            Communication
+          </button>
+
+          <div className="rl" style={{marginTop:18}}>Risk</div>
+          <button className="c-tab">
+            <svg className="ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 17 9 11 13 15 21 7"/></svg>
+            Activity log
+          </button>
+        </aside>
+        <div className="c-content">
+          <BookingsPreview />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ===== Variation D — Big cards as tabs =====
+const ArtD = () => (
+  <div className="art">
+    <CustHeader />
+    <div className="card">
+      <div className="card-body">
+        <div className="d-tabs">
+          <button className="d-tab is-on">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div className="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div className="dv">8</div>
+            </div>
+            <div className="dn">Bookings</div>
+            <div className="ds">1 upcoming · 6 done</div>
+          </button>
+          <button className="d-tab">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div className="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/></svg></div>
+              <div className="dv" style={{color:'var(--ok)'}}>5/5</div>
+            </div>
+            <div className="dn">Verifications</div>
+            <div className="ds">All passed</div>
+          </button>
+          <button className="d-tab">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div className="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div className="dv">12</div>
+            </div>
+            <div className="dn">Payments</div>
+            <div className="ds">$1,840 · 1 refund</div>
+          </button>
+          <button className="d-tab">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div className="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H7l-3 3z"/></svg></div>
+              <div className="dv">3</div>
+            </div>
+            <div className="dn">Notes</div>
+            <div className="ds">Last: 3 days ago</div>
+          </button>
+          <button className="d-tab">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div className="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.1 1A19 19 0 0 1 2 4.1 1 1 0 0 1 3 3h4l2 5-3 2a14 14 0 0 0 6 6l2-3 5 2z"/></svg></div>
+              <div className="dv" style={{fontSize:14}}>—</div>
+            </div>
+            <div className="dn">Comms</div>
+            <div className="ds">No recent</div>
+          </button>
+        </div>
+        <BookingsPreview />
+      </div>
+    </div>
+  </div>
+);
+
+// ===== Variation E — No tabs: section anchors with sticky jump nav =====
+const ArtE = () => (
+  <div className="art">
+    <CustHeader />
+    <div className="card">
+      <div className="e-jumpnav">
+        <span className="label">Jump to</span>
+        <a className="is-on">Bookings <span className="ct">8</span></a>
+        <a>Verifications <span className="ct">5/5</span></a>
+        <a>Payments <span className="ct">12</span></a>
+        <a>Notes <span className="ct">3</span></a>
+        <a>Comms</a>
+        <span className="spacer"></span>
+        <span className="scroll-hint">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="6 13 12 19 18 13"/></svg>
+          Scroll
+        </span>
+      </div>
+
+      <div className="e-section">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Bookings &amp; Trips <span className="ct">8</span>
+          <a className="more">Filter ▾</a>
+        </h3>
+        <Booking id="13190" veh="BMW X5" plate="LXR-44-820B" thumb="b" when="18 May – 25 May '26" meta="7 days · Brooklyn" total="612.00" status="Confirmed" statusColor="var(--info)" />
+        <Booking id="12977" veh="Toyota RAV4" plate="JHK-22-110C" thumb="g" when="4 Mar – 8 Mar '26" meta="4 days · 312 mi" total="284.00" status="Completed" statusColor="var(--ok)" />
+      </div>
+
+      <div className="e-section">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/><polyline points="9 12 11 14 15 10"/></svg>
+          Verifications <span className="ct">5/5</span>
+        </h3>
+        <div className="ver-grid">
+          {['ID document','Selfie match','Phone','Email','Address'].map(n=>(
+            <div className="ver" key={n}>
+              <div className="n">{n}</div>
+              <div className="v">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Verified
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="e-section">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H7l-3 3z"/></svg>
+          Notes <span className="ct">3</span>
+        </h3>
+        <div className="note"><div className="by">Maya · 3 days ago</div>Returned car early and topped up charge. Great customer — flag for VIP.</div>
+        <div className="note"><div className="by">Diego · 2 weeks ago</div>Asked about long-term rental rates. Sent monthly pricing PDF.</div>
+      </div>
+    </div>
+  </div>
+);
+
+const App = () => (
+  <DesignCanvas title="Sub-tab UI explorations" subtitle="5 alternatives for the Customer Details tabs — same data, different navigation models">
+
+    <DCSection id="baseline" title="A · Baseline (current)" subtitle="Underlined text tabs in a row above the card body. Familiar, but visually quiet — easy to miss in a busy hero/stats page.">
+      <DCArtboard id="a" label="Underlined tabs · current" width={960} height={640}>
+        <ArtA />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="pill" title="B · Segmented pill control" subtitle="Compact, clearly a control (not nav). Reads as one component, easy to scan, scales nicely with icons. Best when you have 3–6 sub-views and want them to feel like a switcher, not page navigation.">
+      <DCArtboard id="b" label="Segmented pill · adds icons" width={960} height={640}>
+        <ArtB />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="vrail" title="C · Vertical rail" subtitle="Tabs become a left-side rail inside the card. Scales to many tabs, supports grouping (e.g. 'Details' vs 'Risk'), and pairs naturally with rich summaries. Costs ~200px of horizontal space.">
+      <DCArtboard id="c" label="Vertical sidebar tabs" width={1100} height={640}>
+        <ArtC />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="cards" title="D · Information-rich tab cards" subtitle="Each tab is a small dashboard card with a count and a one-line summary — the tabs themselves answer 'do I need to look here?' Trades vertical space for at-a-glance scanability. Great for ops/support pages.">
+      <DCArtboard id="d" label="Tab cards with summaries" width={1080} height={640}>
+        <ArtD />
+      </DCArtboard>
+    </DCSection>
+
+    <DCSection id="scroll" title="E · Section stack with sticky jump nav" subtitle="No tabs at all — every section lives on the page, with a sticky one-line jump nav that highlights as you scroll. Best when sections are short and someone usually needs to see more than one. Worse when sections are long.">
+      <DCArtboard id="e" label="Anchor scroll · sticky jump nav" width={960} height={780}>
+        <ArtE />
+      </DCArtboard>
+    </DCSection>
+
+  </DesignCanvas>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vehicle — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --side-bg:#f4f4f5;--canvas:#fff;--ink:#15171a;--ink-2:#4a4f57;
+    --muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;
+    --hover:#ebebed;--field-bg:#fafafa;
+    --brand:#ef3a3a;--brand-tint-2:#fbe7e7;
+    --ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;
+    --info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;
+    --t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);
+  }
+  [data-theme="dark"]{
+    --side-bg:#18191c;--canvas:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;
+    --muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;
+    --hover:#25272b;--field-bg:#131418;
+    --brand:#ff5757;--ok:#4cc38a;--warn:#e0a64a;--info:#7aa6ff;--turo:#a78bff;
+    --ok-tint:#173025;--warn-tint:#2e2418;--info-tint:#1c2638;--turo-tint:#231a3d;--brand-tint-2:#2a1718;
+  }
+  *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  button{background:none;border:0;cursor:pointer;padding:0;font:inherit;color:inherit;}
+  a{text-decoration:none;color:inherit;}
+
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-med);}
+  .app[data-collapsed="true"]{--side-w:56px;}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;}
+  .logo-mark{width:22px;height:22px;}.logo-word{font-weight:700;font-size:14px;color:var(--ink);}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none;}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0;}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);}
+  .toggle:hover{background:var(--hover);color:var(--ink);}
+  .top-buttons{display:flex;gap:2px;}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px;}
+  .nav-section{margin-bottom:8px;}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted);}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden;}
+  .nav-item:hover{background:var(--hover);color:var(--ink);}
+  .nav-item:hover .icon{color:var(--ink);}
+  .nav-item.is-active{background:var(--canvas);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05);}
+  .nav-item.is-active .icon{color:var(--ink);}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0;}
+  .app[data-collapsed="true"] .nav-item .label{display:none;}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2);}
+
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:5;}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line);}
+  .crumb-cur{color:var(--ink);font-weight:500;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:background var(--t-fast);}
+  .btn:hover{background:var(--hover);}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink);}
+  .btn-primary:hover{background:#2a2d33;}
+  .btn-quiet{border-color:transparent;background:transparent;color:var(--ink-2);}
+  .btn-quiet:hover{background:var(--field-bg);color:var(--ink);}
+  .btn-danger{color:var(--brand);}
+  .btn-danger:hover{background:var(--brand-tint-2);}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2);}
+  .icon-btn:hover{background:var(--hover);}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px;}
+
+  /* Page layout — matches Bookings/Fleet pattern */
+  .page{padding:22px 28px 80px;max-width:1280px;}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:8px;}
+  .head-left{display:flex;gap:18px;align-items:center;min-width:0;}
+  .v-thumb{width:88px;height:64px;border-radius:10px;background-size:cover;background-position:center;background-color:var(--field-bg);border:1px solid var(--line);flex-shrink:0;cursor:pointer;position:relative;overflow:hidden;transition:transform var(--t-fast);}
+  .v-thumb:hover{transform:scale(1.02);}
+  .v-thumb .pcount{position:absolute;right:5px;bottom:5px;background:rgba(0,0,0,.6);color:#fff;font-size:9.5px;font-weight:600;padding:2px 5px;border-radius:99px;}
+  .v-title{display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .v-name{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin:0;line-height:1.15;}
+  .v-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+  .v-meta .vplate{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);background:var(--field-bg);border:1px solid var(--line-2);padding:1.5px 6px;border-radius:4px;font-size:11px;font-weight:600;}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;background:var(--field-bg);color:var(--ink-2);border:1px solid var(--line-2);}
+  .pill .dot{width:6px;height:6px;border-radius:99px;background:var(--muted);}
+  .pill.s-on{color:var(--ok);background:var(--ok-tint);border-color:transparent;}.pill.s-on .dot{background:var(--ok);}
+  .pill.s-mx{color:var(--warn);background:var(--warn-tint);border-color:transparent;}.pill.s-mx .dot{background:var(--warn);}
+  .pill.src-direct{color:var(--brand);background:var(--brand-tint-2);border-color:transparent;}
+  .pill.src-turo{color:var(--turo);background:var(--turo-tint);border-color:transparent;}
+  .head-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:18px 0 0;border:1px solid var(--line);border-radius:12px;background:var(--canvas);overflow:hidden;}
+  .kpi{padding:14px 18px;border-right:1px solid var(--line-2);}
+  .kpi:last-child{border-right:0;}
+  .kpi .lab{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.01em;}
+  .kpi .val{font-size:22px;font-weight:700;letter-spacing:-0.015em;font-variant-numeric:tabular-nums;margin-top:4px;}
+  .kpi .val .un{font-size:13px;color:var(--muted);font-weight:500;margin-left:1px;}
+  .kpi .sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .kpi .sub .up{color:var(--ok);font-weight:600;}.kpi .sub .down{color:var(--brand);font-weight:600;}
+
+  /* Tabs */
+  .tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);margin:22px 0 0;position:sticky;top:56px;background:var(--canvas);z-index:3;}
+  .tab{height:38px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;display:flex;align-items:center;gap:6px;}
+  .tab:hover{color:var(--ink);}
+  .tab.is-on{color:var(--ink);}
+  .tab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px;}
+  .tab .count{font-size:10.5px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2);}
+
+  /* Cards */
+  .grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:18px;}
+  @media (max-width:1100px){.grid-2{grid-template-columns:1fr;}}
+  .card{background:var(--canvas);border:1px solid var(--line);border-radius:12px;}
+  .card+ .card{margin-top:14px;}
+  .card-h{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 11px;border-bottom:1px solid var(--line-2);}
+  .card-h h3{font-size:13.5px;font-weight:700;margin:0;letter-spacing:-0.005em;}
+  .card-h .more{display:flex;gap:6px;align-items:center;}
+  .link{font-size:12px;font-weight:600;color:var(--ink-2);}
+  .link:hover{color:var(--ink);text-decoration:underline;}
+  .card-b{padding:14px 16px;}
+  .card-stack>*+*{margin-top:14px;}
+
+  /* Detail rows */
+  .drow{display:grid;grid-template-columns:130px 1fr;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:12.5px;}
+  .drow:last-child{border-bottom:0;}
+  .drow .k{color:var(--muted);}
+  .drow .v{color:var(--ink);font-weight:500;text-align:right;}
+  .drow .v .vplate{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;background:var(--field-bg);border:1px solid var(--line-2);padding:2px 6px;border-radius:5px;font-size:11.5px;font-weight:600;}
+  .drow .v.mono{font-family:ui-monospace,monospace;font-size:11.5px;letter-spacing:.01em;}
+
+  /* Mini timeline */
+  .timeline{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;}
+  .tl-day{aspect-ratio:1/2.4;border-radius:4px;background:var(--field-bg);border:1px solid var(--line-2);position:relative;cursor:pointer;}
+  .tl-day.direct{background:linear-gradient(180deg,#ef3a3a,#d52e2e);border-color:transparent;}
+  .tl-day.turo{background:linear-gradient(180deg,#8b66ff,#5d3aef);border-color:transparent;}
+  .tl-day.block{background:repeating-linear-gradient(45deg,#e2e3e6,#e2e3e6 3px,#f0f1f3 3px,#f0f1f3 6px);border-color:transparent;}
+  .tl-day.today{outline:2px solid var(--ink);outline-offset:1px;}
+  .tl-labels{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:6px;}
+  .tl-lab{font-size:9.5px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;}
+  .tl-leg{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:12px;flex-wrap:wrap;}
+  .tl-leg span{display:inline-flex;align-items:center;gap:5px;}
+  .tl-leg i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+
+  /* Bookings list */
+  .blist{display:flex;flex-direction:column;}
+  .brow{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;padding:11px 16px;border-bottom:1px solid var(--line-2);align-items:center;cursor:pointer;transition:background var(--t-fast);}
+  .brow:last-child{border-bottom:0;}
+  .brow:hover{background:var(--hover);}
+  .brow .src{width:3px;height:30px;border-radius:99px;}
+  .brow .src.direct{background:var(--brand);}
+  .brow .src.turo{background:var(--turo);}
+  .brow .bid{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .brow .bsub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+  .brow .bdates{font-size:12px;font-weight:500;color:var(--ink-2);text-align:right;}
+  .brow .bdates .dur{color:var(--muted);font-weight:400;font-size:11px;display:block;margin-top:1px;}
+  .brow .bstat{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--ink-2);min-width:80px;}
+  .brow .bstat i{width:7px;height:7px;border-radius:99px;background:var(--muted);}
+  .brow .bstat.confirmed i{background:var(--ok);}.brow .bstat.confirmed{color:var(--ok);}
+  .brow .bstat.upcoming i{background:var(--info);}.brow .bstat.upcoming{color:var(--info);}
+  .brow .bstat.completed i{background:var(--muted);}
+
+  /* Pricing strip — wider, calmer */
+  .pstrip{display:grid;grid-template-columns:repeat(3,1fr);}
+  .pcell{padding:16px 18px;border-right:1px solid var(--line-2);}
+  .pcell:last-child{border-right:0;}
+  .pcell .lab{font-size:11px;font-weight:600;color:var(--muted);}
+  .pcell .val{font-size:22px;font-weight:700;letter-spacing:-0.015em;margin-top:3px;font-variant-numeric:tabular-nums;}
+  .pcell .val .un{font-size:12px;color:var(--muted);font-weight:500;margin-left:1px;}
+  .pcell .sub{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  /* Discount table */
+  .dtab{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;font-size:12.5px;}
+  .dtab .th{background:var(--field-bg);padding:9px 12px;font-weight:600;color:var(--muted);font-size:11px;border-bottom:1px solid var(--line-2);}
+  .dtab .td{padding:10px 12px;border-bottom:1px solid var(--line-2);font-variant-numeric:tabular-nums;}
+  .dtab .tr-last .td{border-bottom:0;}
+  .dtab .pct{color:var(--ok);font-weight:600;}
+
+  /* Maintenance items */
+  .mxlist{display:flex;flex-direction:column;}
+  .mxrow{display:grid;grid-template-columns:32px 1fr auto;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-2);align-items:center;}
+  .mxrow:last-child{border-bottom:0;}
+  .mxico{width:30px;height:30px;border-radius:8px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center;}
+  .mxico.done{background:var(--ok-tint);color:var(--ok);}
+  .mxico.upc{background:var(--info-tint);color:var(--info);}
+  .mxname{font-size:12.5px;font-weight:600;}
+  .mxsub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+  .mxright{text-align:right;font-size:11.5px;color:var(--muted);}
+  .mxright .when{font-weight:600;color:var(--ink-2);font-size:12px;display:block;}
+
+  /* Photo grid */
+  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 16px;}
+  .pgrid .pimg{aspect-ratio:1/1;border-radius:8px;background-size:cover;background-position:center;background-color:var(--field-bg);cursor:pointer;transition:transform var(--t-fast);}
+  .pgrid .pimg:hover{transform:scale(1.02);}
+
+  /* Documents */
+  .docs{display:flex;flex-direction:column;}
+  .doc{display:grid;grid-template-columns:32px 1fr auto;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line-2);align-items:center;}
+  .doc:last-child{border-bottom:0;}
+  .docico{width:30px;height:36px;background:var(--field-bg);border:1px solid var(--line-2);border-radius:5px;display:grid;place-items:center;color:var(--muted);font-size:9px;font-weight:700;}
+  .docname{font-size:12.5px;font-weight:600;}.docsub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+  .docstatus{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:99px;background:var(--ok-tint);color:var(--ok);}
+  .docstatus.warn{background:var(--warn-tint);color:var(--warn);}
+
+  /* Visibility row */
+  .switch{position:relative;display:inline-block;width:34px;height:20px;}
+  .switch input{display:none;}
+  .switch span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:background var(--t-fast);cursor:pointer;}
+  .switch span::before{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:99px;transition:transform var(--t-fast);box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .switch input:checked+span{background:var(--ok);}
+  .switch input:checked+span::before{transform:translateX(14px);}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line-2);gap:12px;}
+  .toggle-row:last-child{border-bottom:0;}
+  .toggle-row .lab{font-size:12.5px;font-weight:600;}
+  .toggle-row .sub{font-size:11px;color:var(--muted);margin-top:1px;}
+
+  /* Specs grid */
+  .specs{display:grid;grid-template-columns:repeat(2,1fr);gap:0;}
+  .specs .spec{padding:11px 14px;border-right:1px solid var(--line-2);border-bottom:1px solid var(--line-2);}
+  .specs .spec:nth-child(2n){border-right:0;}
+  .specs .spec:nth-last-child(-n+2){border-bottom:0;}
+  .specs .lab{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.01em;}
+  .specs .val{font-size:13px;font-weight:600;margin-top:3px;}
+
+  /* Reviews */
+  .reviews{padding:6px 16px 14px;}
+  .review{padding:12px 0;border-bottom:1px solid var(--line-2);font-size:12.5px;}
+  .review:last-child{border-bottom:0;}
+  .rstars{color:#f4a300;letter-spacing:1px;font-size:12px;}
+  .rname{font-weight:600;font-size:11.5px;color:var(--ink-2);margin-left:8px;}
+  .rdate{font-size:11px;color:var(--muted);margin-left:auto;}
+  .rhead{display:flex;align-items:center;}
+  .rbody{color:var(--ink-2);margin-top:5px;line-height:1.55;}
+
+  /* Lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(15,17,22,.85);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(8px);}
+  .lightbox.is-on{display:flex;}
+  .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;}
+  .lightbox .close{position:absolute;top:20px;right:20px;color:#fff;width:36px;height:36px;border-radius:99px;background:rgba(255,255,255,.12);display:grid;place-items:center;}
+  .lightbox .close:hover{background:rgba(255,255,255,.22);}
+
+  .pane{display:none;}
+  .pane.is-on{display:block;}
+
+  /* Features chips */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:14px 16px;}
+
+  /* Custom price card */
+  .cprow{display:grid;grid-template-columns:1fr auto;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-2);align-items:center;}
+  .cprow:last-child{border-bottom:0;}
+  .cpprice{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .cpprice .un{color:var(--muted);font-weight:500;font-size:11.5px;}
+  .cpsub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+
+  /* Thin section header inside cards */
+  .section-head{padding:8px 16px;font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:var(--field-bg);border-bottom:1px solid var(--line-2);}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item is-active">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg>
+          <span class="label">Vehicles</span>
+        </a>
+        <a href="Bookings.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg>
+          <span class="label">Bookings</span>
+        </a>
+        <a href="Calendar.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          <span class="label">Calendar</span>
+        </a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <a href="#" class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span class="label">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <a class="crumb-home" href="Menu Experience.html"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></a>
+        <span style="color:var(--muted-2);">/</span>
+        <a href="Fleet.html" style="color:var(--muted);">Vehicles</a>
+        <span style="color:var(--muted-2);">/</span>
+        <span class="crumb-cur" id="crumbName">Tesla Model 3 LR</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <!-- Quiet page-head -->
+      <div class="page-head">
+        <div class="head-left">
+          <div class="v-thumb" id="vThumb" style="background-image:url('https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=300&q=80')">
+            <span class="pcount" id="pcCnt">12</span>
+          </div>
+          <div class="v-title">
+            <h1 class="v-name" id="hName">Tesla Model 3 Long Range</h1>
+            <div class="v-meta">
+              <span class="pill s-on" id="hStatus"><span class="dot"></span>Available</span>
+              <span class="pill src-direct">Direct</span>
+              <span class="pill src-turo">Turo</span>
+              <span style="color:var(--muted-2);">·</span>
+              <span id="hYear">2023</span>
+              <span class="vplate" id="hPlate">7HZX-432</span>
+              <span id="hLoc">SFO Lot C</span>
+              <span style="color:var(--muted-2);">·</span>
+              <span style="color:#f4a300;">★</span><span style="color:var(--ink-2);font-weight:600;"> 4.92</span>
+              <span style="color:var(--muted);">(64)</span>
+            </div>
+          </div>
+        </div>
+        <div class="head-actions">
+          <a class="btn" href="Edit Vehicle.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Edit</a>
+          <a class="btn btn-primary" href="Calendar.html">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New booking
+          </a>
+          <button class="icon-btn" title="More"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+        </div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="kpis">
+        <div class="kpi">
+          <div class="lab">Daily rate</div>
+          <div class="val">$<span id="hRate">89</span><span class="un">/d</span></div>
+          <div class="sub">$11/hr · 3-day min</div>
+        </div>
+        <div class="kpi">
+          <div class="lab">Utilization · 30d</div>
+          <div class="val"><span id="hUtil">78</span>%</div>
+          <div class="sub"><span class="up">▲ 6%</span> vs prior</div>
+        </div>
+        <div class="kpi">
+          <div class="lab">Trips · all time</div>
+          <div class="val" id="hTrips">42</div>
+          <div class="sub">12 upcoming</div>
+        </div>
+        <div class="kpi">
+          <div class="lab">Revenue · 30d</div>
+          <div class="val">$<span id="hRev">4,128</span></div>
+          <div class="sub"><span class="up">▲ $382</span> vs prior</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <nav class="tabs" id="tabs">
+        <button class="tab is-on" data-pane="overview">Overview</button>
+        <button class="tab" data-pane="pricing">Pricing</button>
+        <button class="tab" data-pane="bookings">Bookings <span class="count">42</span></button>
+        <button class="tab" data-pane="maintenance">Maintenance</button>
+        <button class="tab" data-pane="photos">Photos &amp; Docs</button>
+        <button class="tab" data-pane="reviews">Reviews <span class="count">64</span></button>
+      </nav>
+
+      <!-- ─── Overview ─── -->
+      <div class="pane is-on" data-pane="overview">
+        <div class="grid-2">
+          <div class="card-stack">
+
+            <div class="card">
+              <div class="card-h"><h3>Next 14 days</h3><a class="link" href="Calendar.html">Open calendar →</a></div>
+              <div class="card-b">
+                <div class="timeline" id="tl"></div>
+                <div class="tl-labels" id="tlLab"></div>
+                <div class="tl-leg">
+                  <span><i style="background:linear-gradient(180deg,#ef3a3a,#d52e2e)"></i>Direct</span>
+                  <span><i style="background:linear-gradient(180deg,#8b66ff,#5d3aef)"></i>Turo</span>
+                  <span><i style="background:repeating-linear-gradient(45deg,#e2e3e6,#e2e3e6 3px,#f0f1f3 3px,#f0f1f3 6px)"></i>Blocked</span>
+                  <span><i style="background:var(--field-bg);border:1px solid var(--line-2)"></i>Available</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Recent bookings</h3><button class="link" onclick="goTab('bookings')">View all →</button></div>
+              <div class="blist" id="bookList"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Pricing snapshot</h3><button class="link" onclick="goTab('pricing')">Edit pricing →</button></div>
+              <div class="pstrip">
+                <div class="pcell"><div class="lab">Daily</div><div class="val">$89<span class="un">/d</span></div><div class="sub">3-day min · 28-day max</div></div>
+                <div class="pcell"><div class="lab">Hourly</div><div class="val">$11<span class="un">/hr</span></div><div class="sub">Auto-cap to daily after 8h</div></div>
+                <div class="pcell"><div class="lab">Deposit</div><div class="val">$250</div><div class="sub">Hold released after trip</div></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="card-stack">
+
+            <div class="card">
+              <div class="card-h"><h3>Listing visibility</h3></div>
+              <div class="toggle-row"><div><div class="lab">Direct</div><div class="sub">your.fleetly.com/v/m3lr</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="toggle-row"><div><div class="lab">Turo</div><div class="sub">Auto-sync availability</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="toggle-row"><div><div class="lab">Instant book</div><div class="sub">No manual approval</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="toggle-row"><div><div class="lab">Smart pricing</div><div class="sub">Dynamic rates by demand</div></div><label class="switch"><input type="checkbox"><span></span></label></div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Vehicle details</h3><a class="link" href="Edit Vehicle.html#sec-basics">Edit</a></div>
+              <div class="card-b" style="padding:4px 16px 8px;">
+                <div class="drow"><div class="k">VIN</div><div class="v mono">5YJ3E1EA1NF391822</div></div>
+                <div class="drow"><div class="k">Plate</div><div class="v"><span class="vplate" id="dPlate">7HZX-432</span></div></div>
+                <div class="drow"><div class="k">Year</div><div class="v" id="dYear">2023</div></div>
+                <div class="drow"><div class="k">Make / Model</div><div class="v">Tesla / Model 3 LR</div></div>
+                <div class="drow"><div class="k">Color</div><div class="v">Pearl White</div></div>
+                <div class="drow"><div class="k">Mileage</div><div class="v">30,840 mi</div></div>
+                <div class="drow"><div class="k">Fuel</div><div class="v">Electric · 358 mi range</div></div>
+                <div class="drow"><div class="k">Seats</div><div class="v">5</div></div>
+                <div class="drow"><div class="k">Location</div><div class="v" id="dLoc">SFO Lot C · Bay 12</div></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Insurance</h3></div>
+              <div class="card-b" style="padding:4px 16px 8px;">
+                <div class="drow"><div class="k">Carrier</div><div class="v">Geico Commercial</div></div>
+                <div class="drow"><div class="k">Policy</div><div class="v mono">4-G-2829341</div></div>
+                <div class="drow"><div class="k">Coverage</div><div class="v">$1M / $50k</div></div>
+                <div class="drow"><div class="k">Renews</div><div class="v">Sep 12, 2026</div></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Pricing ─── -->
+      <div class="pane" data-pane="pricing">
+        <div class="grid-2">
+          <div class="card-stack">
+
+            <div class="card">
+              <div class="card-h"><h3>Base pricing</h3><a class="btn" href="Edit Vehicle.html#sec-pricing" style="height:28px;padding:0 10px;font-size:11.5px;">Edit</a></div>
+              <div class="pstrip">
+                <div class="pcell"><div class="lab">Daily</div><div class="val">$89<span class="un">/d</span></div><div class="sub">Cheaper after ~3 hrs</div></div>
+                <div class="pcell"><div class="lab">Hourly</div><div class="val">$11<span class="un">/hr</span></div><div class="sub">Cheaper for ≤ 3 hrs</div></div>
+                <div class="pcell"><div class="lab">Security deposit</div><div class="val">$250</div><div class="sub">Required at booking</div></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Length-of-trip discounts</h3><button class="link">+ Add tier</button></div>
+              <div class="card-b">
+                <div class="dtab">
+                  <div class="th">Threshold</div><div class="th">Discount</div><div class="th">Effective rate</div>
+                  <div class="td">3+ days</div><div class="td pct">−5%</div><div class="td">$84.55/d</div>
+                  <div class="td">7+ days</div><div class="td pct">−12%</div><div class="td">$78.32/d</div>
+                  <div class="td">14+ days</div><div class="td pct">−20%</div><div class="td">$71.20/d</div>
+                  <div class="td tr-last" style="border-bottom:0;">28+ days</div><div class="td pct tr-last" style="border-bottom:0;">−30%</div><div class="td tr-last" style="border-bottom:0;">$62.30/d</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Active custom prices</h3><a class="link" href="Calendar.html">Set in calendar →</a></div>
+              <div class="cprow">
+                <div><div class="cpprice">$129<span class="un"> /d</span></div><div class="cpsub">Weekends · repeats every Sat–Sun · ends Dec 31</div></div>
+                <button class="btn-quiet btn" style="height:28px;padding:0 10px;font-size:11.5px;">Edit</button>
+              </div>
+              <div class="cprow">
+                <div><div class="cpprice">$149<span class="un"> /d</span></div><div class="cpsub">Memorial Day weekend · May 22 – May 25 · one-time</div></div>
+                <button class="btn-quiet btn" style="height:28px;padding:0 10px;font-size:11.5px;">Edit</button>
+              </div>
+              <div class="cprow">
+                <div><div class="cpprice">$169<span class="un"> /d</span></div><div class="cpsub">July 4th week · Jul 1 – Jul 6 · one-time</div></div>
+                <button class="btn-quiet btn" style="height:28px;padding:0 10px;font-size:11.5px;">Edit</button>
+              </div>
+            </div>
+
+          </div>
+          <div class="card-stack">
+
+            <div class="card">
+              <div class="card-h"><h3>Booking limits</h3></div>
+              <div class="specs">
+                <div class="spec"><div class="lab">Min duration</div><div class="val">2 hrs / 3 days</div></div>
+                <div class="spec"><div class="lab">Max duration</div><div class="val">12 hrs / 28 days</div></div>
+                <div class="spec"><div class="lab">Daily miles</div><div class="val">200 mi · $0.45 over</div></div>
+                <div class="spec"><div class="lab">Buffer</div><div class="val">2 hrs between trips</div></div>
+                <div class="spec"><div class="lab">Tax profile</div><div class="val">CA Std · 8.625%</div></div>
+                <div class="spec"><div class="lab">Booking fee</div><div class="val">9% + $5</div></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>Add-ons</h3><button class="link">+ Add</button></div>
+              <div class="cprow"><div><div class="cpprice">Child seat <span class="un" style="font-weight:600;">— $9/day</span></div><div class="cpsub">Forward-facing · ages 2–5</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="cprow"><div><div class="cpprice">Pre-paid charge <span class="un" style="font-weight:600;">— $25 flat</span></div><div class="cpsub">Return without recharging</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="cprow"><div><div class="cpprice">Extra driver <span class="un" style="font-weight:600;">— $10/day</span></div><div class="cpsub">Up to 1 additional</div></div><label class="switch"><input type="checkbox"><span></span></label></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Bookings ─── -->
+      <div class="pane" data-pane="bookings">
+        <div class="card" style="margin-top:18px;">
+          <div class="card-h">
+            <h3>All bookings · 42</h3>
+            <div class="more">
+              <button class="btn" style="height:28px;padding:0 10px;font-size:11.5px;">Filter</button>
+              <button class="btn" style="height:28px;padding:0 10px;font-size:11.5px;">Export</button>
+            </div>
+          </div>
+          <div class="blist" id="bookListAll"></div>
+        </div>
+      </div>
+
+      <!-- ─── Maintenance ─── -->
+      <div class="pane" data-pane="maintenance">
+        <div class="grid-2">
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-h"><h3>Maintenance log</h3><button class="btn btn-primary" style="height:28px;padding:0 10px;font-size:11.5px;">+ Log service</button></div>
+              <div class="section-head">Upcoming</div>
+              <div class="mxlist">
+                <div class="mxrow">
+                  <div class="mxico upc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+                  <div><div class="mxname">Tire rotation</div><div class="mxsub">Due at 32,000 mi · current 30,840 mi</div></div>
+                  <div class="mxright"><span class="when">May 18</span>in 9 days</div>
+                </div>
+                <div class="mxrow">
+                  <div class="mxico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/></svg></div>
+                  <div><div class="mxname">Registration renewal</div><div class="mxsub">CA DMV · plate 7HZX-432</div></div>
+                  <div class="mxright"><span class="when">Jul 04</span>in 8 weeks</div>
+                </div>
+              </div>
+              <div class="section-head">Completed</div>
+              <div class="mxlist">
+                <div class="mxrow">
+                  <div class="mxico done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+                  <div><div class="mxname">Battery cell coolant top-up</div><div class="mxsub">Tesla Service Sunnyvale · invoice #SV-2412</div></div>
+                  <div class="mxright"><span class="when">Mar 22</span>$184.00</div>
+                </div>
+                <div class="mxrow">
+                  <div class="mxico done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+                  <div><div class="mxname">Cabin air filter</div><div class="mxsub">Self-service · receipt attached</div></div>
+                  <div class="mxright"><span class="when">Feb 09</span>$28.50</div>
+                </div>
+                <div class="mxrow">
+                  <div class="mxico done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+                  <div><div class="mxname">Annual safety inspection</div><div class="mxsub">CA · valid through Jan 2027</div></div>
+                  <div class="mxright"><span class="when">Jan 12</span>passed</div>
+                </div>
+                <div class="mxrow">
+                  <div class="mxico done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+                  <div><div class="mxname">Tire replacement (4)</div><div class="mxsub">Michelin Pilot Sport AS4 · 24,800 mi</div></div>
+                  <div class="mxright"><span class="when">Nov 03</span>$1,240.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-h"><h3>Service summary · 12 mo</h3></div>
+              <div class="card-b">
+                <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:28px;font-weight:700;letter-spacing:-0.02em;">$1,452.50</span><span style="color:var(--muted);font-size:12px;">across 4 services</span></div>
+                <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;justify-content:space-between;font-size:12px;"><span>Tires</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$1,240.00</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;"><span>Service shop</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$184.00</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;"><span>Self-service</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$28.50</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;"><span>Inspection</span><span style="font-weight:600;font-variant-numeric:tabular-nums;">$0.00</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h3>Reminders</h3><button class="link">+ Add</button></div>
+              <div class="toggle-row"><div><div class="lab">90-day service interval</div><div class="sub">Email + dashboard</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="toggle-row"><div><div class="lab">Mileage-based alerts</div><div class="sub">Every 5,000 mi</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+              <div class="toggle-row"><div><div class="lab">Insurance renewal</div><div class="sub">30 days before expiry</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Photos & Docs ─── -->
+      <div class="pane" data-pane="photos">
+        <div class="grid-2">
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-h"><h3>Photos · 12</h3><button class="btn" style="height:28px;padding:0 10px;font-size:11.5px;">+ Upload</button></div>
+              <div class="pgrid" id="pgrid"></div>
+            </div>
+          </div>
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-h"><h3>Documents</h3><button class="btn" style="height:28px;padding:0 10px;font-size:11.5px;">+ Upload</button></div>
+              <div class="docs">
+                <div class="doc">
+                  <div class="docico">PDF</div>
+                  <div><div class="docname">Vehicle registration</div><div class="docsub">CA DMV · expires Jul 04</div></div>
+                  <span class="docstatus">Valid</span>
+                </div>
+                <div class="doc">
+                  <div class="docico">PDF</div>
+                  <div><div class="docname">Insurance certificate</div><div class="docsub">Geico · #4-G-2829341</div></div>
+                  <span class="docstatus">Valid</span>
+                </div>
+                <div class="doc">
+                  <div class="docico">JPG</div>
+                  <div><div class="docname">Title</div><div class="docsub">Front + back · 3.4 MB</div></div>
+                  <span class="docstatus">Valid</span>
+                </div>
+                <div class="doc">
+                  <div class="docico">PDF</div>
+                  <div><div class="docname">Annual safety inspection</div><div class="docsub">CA · expires Jan 12, 2027</div></div>
+                  <span class="docstatus warn">Renews soon</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h3>Features</h3></div>
+              <div class="chips">
+                <span class="pill">Autopilot</span>
+                <span class="pill">AWD</span>
+                <span class="pill">Heated seats</span>
+                <span class="pill">CarPlay</span>
+                <span class="pill">Premium audio</span>
+                <span class="pill">Glass roof</span>
+                <span class="pill">USB-C × 4</span>
+                <span class="pill">Pet-friendly</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Reviews ─── -->
+      <div class="pane" data-pane="reviews">
+        <div class="grid-2">
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-h"><h3>Reviews · 64</h3><span style="font-size:11.5px;color:var(--muted);">From Direct + Turo</span></div>
+              <div class="reviews">
+                <div class="review">
+                  <div class="rhead"><span class="rstars">★★★★★</span><span class="rname">Maria L.</span><span class="rdate">Apr 28 · Direct</span></div>
+                  <div class="rbody">Great car, fast handover, super clean. Range was exactly as advertised on a road trip to Tahoe.</div>
+                </div>
+                <div class="review">
+                  <div class="rhead"><span class="rstars">★★★★★</span><span class="rname">James W.</span><span class="rdate">Apr 21 · Turo</span></div>
+                  <div class="rbody">Smooth booking. Felt brand new. Would rent again.</div>
+                </div>
+                <div class="review">
+                  <div class="rhead"><span class="rstars">★★★★☆</span><span class="rname">Priya N.</span><span class="rdate">Apr 14 · Direct</span></div>
+                  <div class="rbody">Loved the car. Charging at the depot was a little confusing on pickup, but support sorted it quickly.</div>
+                </div>
+                <div class="review">
+                  <div class="rhead"><span class="rstars">★★★★★</span><span class="rname">Daniel R.</span><span class="rdate">Apr 06 · Turo</span></div>
+                  <div class="rbody">Five stars. Pristine condition.</div>
+                </div>
+                <div class="review">
+                  <div class="rhead"><span class="rstars">★★★★★</span><span class="rname">Aisha P.</span><span class="rdate">Mar 22 · Direct</span></div>
+                  <div class="rbody">Booked for a wedding weekend. Beautifully clean inside and out, fast pickup.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-h"><h3>Rating breakdown</h3></div>
+              <div class="card-b">
+                <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:36px;font-weight:700;letter-spacing:-0.02em;">4.92</span><span style="color:#f4a300;font-size:14px;letter-spacing:1px;">★★★★★</span></div>
+                <div style="color:var(--muted);font-size:12px;margin-top:2px;">From 64 reviews</div>
+                <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;font-size:11.5px;">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;color:var(--muted);">5★</span><span style="flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;"><span style="display:block;height:100%;width:88%;background:#f4a300;"></span></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums;">56</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;color:var(--muted);">4★</span><span style="flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;"><span style="display:block;height:100%;width:11%;background:#f4a300;"></span></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums;">7</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;color:var(--muted);">3★</span><span style="flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;"><span style="display:block;height:100%;width:1.5%;background:#f4a300;"></span></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums;">1</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;color:var(--muted);">2★</span><span style="flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;"></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted-2);">0</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:20px;color:var(--muted);">1★</span><span style="flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;"></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted-2);">0</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('is-on')">
+  <button class="close" onclick="event.stopPropagation();document.getElementById('lightbox').classList.remove('is-on')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+  <img id="lbImg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">
+</div>
+
+<script>
+(function(){
+  const app=document.getElementById('app');
+  const btnTheme=document.getElementById('btnTheme');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  btnTheme.addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+
+  const VEHICLES={
+    v1:{name:'Tesla Model 3 Long Range',short:'Tesla Model 3 LR',year:2023,plate:'7HZX-432',rate:89,util:78,trips:42,rev:'4,128',loc:'SFO Lot C · Bay 12',
+        photos:['https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=900&q=80','https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=900&q=80','https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=900&q=80','https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=900&q=80']},
+    v2:{name:'Toyota RAV4 Hybrid',short:'Toyota RAV4 Hybrid',year:2024,plate:'8KMD-119',rate:99,util:64,trips:28,rev:'3,420',loc:'Mission HQ',
+        photos:['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=900&q=80']},
+    v3:{name:'Honda Civic Si',short:'Honda Civic Si',year:2022,plate:'3FYP-088',rate:79,util:52,trips:19,rev:'2,180',loc:'Oakland',
+        photos:['https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900&q=80']},
+    v4:{name:'Tesla Model Y',short:'Tesla Model Y',year:2024,plate:'9PWN-554',rate:129,util:81,trips:51,rev:'6,450',loc:'SFO Lot C',
+        photos:['https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=900&q=80']},
+    v5:{name:'BMW M340i',short:'BMW M340i',year:2023,plate:'2QRT-901',rate:149,util:42,trips:12,rev:'2,840',loc:'Palo Alto',
+        photos:['https://images.unsplash.com/photo-1549921296-3a6b5b6c7d31?w=900&q=80']},
+    v6:{name:'Ford F-150 Lightning',short:'Ford F-150 Lightning',year:2024,plate:'5VCT-770',rate:139,util:70,trips:23,rev:'4,910',loc:'Oakland',
+        photos:['https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=900&q=80']},
+    v7:{name:'Audi A4 Quattro',short:'Audi A4 Quattro',year:2022,plate:'4RGH-651',rate:109,util:31,trips:8,rev:'1,460',loc:'SFO Lot C',
+        photos:['https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=900&q=80']},
+    v8:{name:'Jeep Wrangler',short:'Jeep Wrangler',year:2023,plate:'6BNX-228',rate:119,util:67,trips:34,rev:'3,820',loc:'Mission HQ',
+        photos:['https://images.unsplash.com/photo-1626668893632-6f3a4466d109?w=900&q=80']}
+  };
+  const params=new URLSearchParams(location.search);
+  const id=params.get('id')||'v1';
+  const v=VEHICLES[id]||VEHICLES.v1;
+
+  document.title=v.short+' — Fleetly';
+  document.getElementById('crumbName').textContent=v.short;
+  document.getElementById('hName').textContent=v.name;
+  document.getElementById('hYear').textContent=v.year;
+  document.getElementById('hPlate').textContent=v.plate;
+  document.getElementById('hLoc').textContent=v.loc;
+  document.getElementById('hRate').textContent=v.rate;
+  document.getElementById('hUtil').textContent=v.util;
+  document.getElementById('hTrips').textContent=v.trips;
+  document.getElementById('hRev').textContent=v.rev;
+  document.getElementById('vThumb').style.backgroundImage='url("'+v.photos[0]+'")';
+  document.getElementById('dPlate').textContent=v.plate;
+  document.getElementById('dYear').textContent=v.year;
+  document.getElementById('dLoc').textContent=v.loc;
+
+  // Photo grid (12)
+  const photoStock=['https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=600&q=80','https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=600&q=80','https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&q=80','https://images.unsplash.com/photo-1542362567-b07e54358753?w=600&q=80','https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80','https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80','https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=80','https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'];
+  const photos12=[...v.photos,...photoStock].slice(0,12);
+  document.getElementById('pgrid').innerHTML=photos12.map(u=>`<div class="pimg" style="background-image:url('${u}')" data-url="${u}"></div>`).join('');
+  document.getElementById('pcCnt').textContent=photos12.length;
+
+  // Lightbox (thumb + photo grid)
+  const lb=document.getElementById('lightbox'),lbImg=document.getElementById('lbImg');
+  document.getElementById('vThumb').addEventListener('click',()=>{lbImg.src=v.photos[0];lb.classList.add('is-on');});
+  document.querySelectorAll('#pgrid .pimg').forEach(p=>p.addEventListener('click',()=>{lbImg.src=p.dataset.url;lb.classList.add('is-on');}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('is-on');});
+
+  // Tabs
+  document.querySelectorAll('#tabs .tab').forEach(t=>{
+    t.addEventListener('click',()=>goTab(t.dataset.pane));
+  });
+  window.goTab=function(name){
+    document.querySelectorAll('#tabs .tab').forEach(t=>t.classList.toggle('is-on',t.dataset.pane===name));
+    document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('is-on',p.dataset.pane===name));
+    history.replaceState(null,'','?'+new URLSearchParams({id,tab:name}).toString());
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  const initTab=params.get('tab');
+  if(initTab) goTab(initTab);
+
+  // 14-day timeline
+  const today=new Date();
+  const pat14=['','direct','direct','direct','','','turo','turo','','','direct','direct','block','block'];
+  let html='', labs='';
+  for(let i=0;i<14;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    html+=`<div class="tl-day ${pat14[i]||''} ${i===0?'today':''}" title="${d.toDateString()}"></div>`;
+    labs+=`<div class="tl-lab">${d.getDate()}</div>`;
+  }
+  document.getElementById('tl').innerHTML=html;
+  document.getElementById('tlLab').innerHTML=labs;
+
+  // Bookings
+  const bookings=[
+    {id:'B-2841',src:'direct',guest:'Maria Lopez',dates:'May 11 → May 14',dur:'3 days',stat:'upcoming',label:'Upcoming'},
+    {id:'B-2839',src:'turo',guest:'James W.',dates:'May 09 → May 10',dur:'1 day',stat:'confirmed',label:'In progress'},
+    {id:'B-2832',src:'direct',guest:'Priya N.',dates:'May 02 → May 05',dur:'3 days',stat:'completed',label:'Completed'},
+    {id:'B-2820',src:'turo',guest:'Daniel R.',dates:'Apr 28 → Apr 30',dur:'2 days',stat:'completed',label:'Completed'},
+    {id:'B-2811',src:'direct',guest:'Aisha P.',dates:'Apr 18 → Apr 22',dur:'4 days',stat:'completed',label:'Completed'}
+  ];
+  const renderBooking=b=>`
+    <div class="brow" onclick="location.href='Booking Details.html?id=${b.id}'">
+      <div class="src ${b.src}"></div>
+      <div><div class="bid">${b.id}</div><div class="bsub">${b.guest} · via ${b.src==='direct'?'Direct':'Turo'}</div></div>
+      <div class="bdates">${b.dates}<span class="dur">${b.dur}</span></div>
+      <div class="bstat ${b.stat}"><i></i>${b.label}</div>
+    </div>`;
+  document.getElementById('bookList').innerHTML=bookings.slice(0,4).map(renderBooking).join('');
+  document.getElementById('bookListAll').innerHTML=bookings.concat(bookings.map(b=>({...b,id:'B-2'+(parseInt(b.id.slice(2))-50),stat:'completed',label:'Completed'}))).map(renderBooking).join('');
+})();
+</script>
+</body>
+</html>

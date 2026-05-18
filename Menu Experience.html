@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Menu Experience — Fleet Console</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* Sidebar lives on the soft grey, content on white */
+    --side-bg: #f4f4f5;
+    --canvas: #ffffff;
+    --bg: #ffffff;
+    --ink: #15171a;
+    --ink-2: #4a4f57;
+    --muted: #8a9099;
+    --muted-2: #b6bcc4;
+    --line: #e8e8ea;
+    --line-2: #ededef;
+    --hover: #ebebed;
+    --active: #e0e0e3;
+    --brand: #ef3a3a;
+    --brand-tint: #fde8e8;
+    --brand-tint-2: #fbe7e7;
+    --shadow: 0 1px 2px rgba(15,18,22,.04), 0 8px 24px rgba(15,18,22,.06);
+    --shadow-pop: 0 6px 16px rgba(15,18,22,.08), 0 24px 48px rgba(15,18,22,.10);
+    --t-fast: 140ms cubic-bezier(.2,.7,.2,1);
+    --t-med: 220ms cubic-bezier(.2,.7,.2,1);
+    --t-slow: 320ms cubic-bezier(.22,.8,.18,1);
+  }
+  [data-theme="dark"] {
+    --side-bg: #18191c;
+    --canvas: #0f1012;
+    --bg: #0f1012;
+    --ink: #f3f4f6;
+    --ink-2: #c7cbd1;
+    --muted: #8b9098;
+    --muted-2: #5b6068;
+    --line: #26282d;
+    --line-2: #1f2125;
+    --hover: #25272b;
+    --active: #2f3137;
+    --brand: #ff5757;
+    --brand-tint: #3a1f20;
+    --brand-tint-2: #2a1718;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.4);
+    --shadow-pop: 0 6px 16px rgba(0,0,0,.5), 0 24px 48px rgba(0,0,0,.55);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--canvas);
+    font-size: 13.5px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+  a { text-decoration: none; color: inherit; }
+
+  /* App shell */
+  .app {
+    display: grid;
+    grid-template-columns: var(--side-w, 232px) 1fr;
+    min-height: 100vh;
+    transition: grid-template-columns var(--t-slow);
+  }
+  .app[data-collapsed="true"] { --side-w: 56px; }
+
+  /* ============ SIDEBAR ============ */
+  .side {
+    position: sticky;
+    top: 0;
+    border-right: 1px solid var(--line);
+    background: var(--side-bg);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .side-top {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex: 0 0 auto;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--brand);
+    height: 32px;
+    padding: 0 6px;
+    border-radius: 8px;
+  }
+  .logo-mark { width: 22px; height: 22px; flex: 0 0 22px; }
+  .logo-word {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+    transition: opacity var(--t-fast);
+  }
+  .app[data-collapsed="true"] .side-top { justify-content: center; padding: 0; }
+  .app[data-collapsed="true"] .logo-word { opacity: 0; width: 0; overflow: hidden; }
+  .app[data-collapsed="true"] .logo { gap: 0; padding: 0; }
+
+  .toggle {
+    width: 28px;
+    height: 28px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 6px;
+    color: var(--muted);
+    transition: background var(--t-fast), color var(--t-fast);
+  }
+  .toggle:hover { background: var(--hover); color: var(--ink); }
+  .app[data-collapsed="true"] .side-top .toggle { display: none; }
+
+  /* Floating expand chevron when collapsed */
+  .toggle-floating {
+    position: absolute;
+    top: 14px; right: -11px;
+    width: 22px; height: 22px;
+    border-radius: 999px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    display: none;
+    place-items: center;
+    z-index: 5;
+    color: var(--muted);
+    transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+  }
+  .toggle-floating:hover { background: var(--hover); color: var(--ink); }
+  .app[data-collapsed="true"] .toggle-floating { display: grid; }
+
+  /* Nav */
+  .nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 8px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .nav::-webkit-scrollbar { width: 6px; }
+  .nav::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .app[data-collapsed="true"] .nav { padding: 4px 6px 8px; }
+
+  .nav-section { margin-bottom: 8px; }
+  .nav-section-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    padding: 12px 10px 4px;
+    transition: opacity var(--t-fast), padding var(--t-med);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .nav-section:first-child .nav-section-label { padding-top: 6px; }
+
+  .app[data-collapsed="true"] .nav-section-label {
+    opacity: 0;
+    height: 0;
+    padding: 6px 0 0;
+    margin: 0 6px;
+    border-top: 1px solid var(--line-2);
+  }
+  .app[data-collapsed="true"] .nav-section:first-child .nav-section-label {
+    border-top: 0;
+  }
+
+  .nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 30px;
+    padding: 0 10px;
+    margin: 1px 0;
+    border-radius: 7px;
+    color: var(--ink-2);
+    font-weight: 500;
+    text-align: left;
+    transition: background var(--t-fast), color var(--t-fast);
+    font-size: 13px;
+  }
+  .nav-item .icon {
+    width: 16px; height: 16px; flex: 0 0 16px;
+    color: var(--muted);
+    transition: color var(--t-fast);
+  }
+  .nav-item .label {
+    flex: 1;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity var(--t-fast);
+    overflow: hidden;
+  }
+  .nav-item .badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--brand);
+    transition: opacity var(--t-fast);
+  }
+  .nav-item .chev {
+    width: 12px; height: 12px;
+    color: var(--muted-2);
+    transition: transform var(--t-med);
+  }
+
+  .nav-item:hover { background: var(--hover); color: var(--ink); }
+  .nav-item:hover .icon { color: var(--ink); }
+
+  .nav-item.is-active {
+    background: var(--bg);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15,18,22,.05);
+  }
+  [data-theme="dark"] .nav-item.is-active {
+    background: var(--active);
+    box-shadow: none;
+  }
+  .nav-item.is-active .icon { color: var(--ink); }
+  .nav-item.is-open .chev { transform: rotate(90deg); }
+
+  .app[data-collapsed="true"] .nav-item {
+    justify-content: center;
+    padding: 0;
+    width: 40px;
+    height: 32px;
+    margin: 2px auto;
+    gap: 0;
+  }
+  .app[data-collapsed="true"] .nav-item .label,
+  .app[data-collapsed="true"] .nav-item .badge,
+  .app[data-collapsed="true"] .nav-item .chev {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* Sub-items */
+  .subnav {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height var(--t-med);
+    padding-left: 26px;
+    position: relative;
+  }
+  .subnav.is-open { max-height: 200px; }
+  .subnav::before {
+    content: "";
+    position: absolute;
+    left: 18px; top: 4px; bottom: 4px;
+    width: 1px;
+    background: var(--line);
+  }
+  .sub-item {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    color: var(--muted);
+    font-size: 12.5px;
+    border-radius: 6px;
+    transition: color var(--t-fast), background var(--t-fast);
+  }
+  .sub-item:hover { color: var(--ink); background: var(--hover); }
+  .sub-item.is-active { color: var(--ink); font-weight: 600; }
+  .app[data-collapsed="true"] .subnav { display: none; }
+
+  /* Footer block */
+  .side-foot {
+    padding: 6px 8px 10px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border-top: 1px solid var(--line-2);
+  }
+  .app[data-collapsed="true"] .side-foot { padding: 6px 6px 10px; }
+
+  .get-started {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    height: 32px;
+    background: var(--brand-tint-2);
+    color: var(--brand);
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 13px;
+    margin: 4px 0 6px;
+    transition: background var(--t-fast);
+  }
+  .get-started:hover { background: var(--brand-tint); }
+  .get-started .gs-mark { width: 16px; height: 16px; flex: 0 0 16px; color: var(--brand); }
+  .get-started .gs-label { flex: 1; white-space: nowrap; transition: opacity var(--t-fast); overflow: hidden; }
+  .get-started .gs-progress {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 600;
+    transition: opacity var(--t-fast);
+  }
+  .ring { width: 14px; height: 14px; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 2.2; }
+  .ring .track { stroke: rgba(239,58,58,.22); }
+  .ring .fill { stroke: var(--brand); stroke-linecap: round; }
+
+  .app[data-collapsed="true"] .get-started {
+    justify-content: center;
+    padding: 0;
+    width: 40px;
+    height: 32px;
+    margin: 4px auto 6px;
+    gap: 0;
+  }
+  .app[data-collapsed="true"] .get-started .gs-label,
+  .app[data-collapsed="true"] .get-started .gs-progress {
+    opacity: 0; width: 0; overflow: hidden; pointer-events: none;
+  }
+
+  /* ============ TOOLTIPS ============ */
+  .tip {
+    position: fixed;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 9px;
+    background: #1a1d22;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-3px);
+    transition: opacity 110ms ease, transform 110ms ease;
+    white-space: nowrap;
+  }
+  .tip.is-show { opacity: 1; transform: translateX(0); }
+  .tip::before {
+    content: "";
+    position: absolute;
+    left: -3px; top: 50%; transform: translateY(-50%) rotate(45deg);
+    width: 6px; height: 6px;
+    background: #1a1d22;
+    border-radius: 1px;
+  }
+  .tip .tip-kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    color: #b6bcc4;
+    padding: 1px 5px;
+    border: 1px solid #3a3f46;
+    border-radius: 3px;
+    background: #25292f;
+  }
+
+  /* ============ TOPBAR ============ */
+  .top {
+    position: sticky;
+    top: 0;
+    background: var(--canvas);
+    border-bottom: 1px solid var(--line);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 4;
+  }
+  .crumbs { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+  .crumb-home {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .crumb-sep { color: var(--muted-2); }
+  .crumb-cur { color: var(--ink); font-weight: 500; font-size: 13px; }
+
+  .top-actions { display: flex; align-items: center; gap: 10px; }
+  .btn {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 600;
+    font-size: 12.5px;
+    transition: background var(--t-fast), border-color var(--t-fast);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    background: var(--canvas);
+  }
+  .btn:hover { background: var(--hover); }
+  .btn-primary { background: #15171a; color: #fff; border-color: #15171a; }
+  .btn-primary:hover { background: #2a2d33; }
+  [data-theme="dark"] .btn-primary { background: #f3f4f6; color: #15171a; border-color: #f3f4f6; }
+  [data-theme="dark"] .btn-primary:hover { background: #e1e3e7; }
+  [data-theme="dark"] .btn-primary .x { color: var(--brand); }
+  .btn-primary .x { width: 12px; height: 12px; color: var(--brand); }
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    display: grid; place-items: center;
+    color: var(--ink-2);
+    transition: background var(--t-fast);
+  }
+  .icon-btn:hover { background: var(--hover); }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 999px;
+    background: #8a9099;
+    color: #fff;
+    display: grid; place-items: center;
+    font-weight: 600;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  /* ============ MAIN ============ */
+  main { padding: 24px 28px 80px; }
+  .page-head { margin-bottom: 20px; }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .page-sub { color: var(--muted); font-size: 13px; margin: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color var(--t-fast);
+  }
+  .card:hover { border-color: var(--muted-2); }
+  .card h3 { margin: 0 0 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+  .card .stat { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .card .delta { font-size: 11.5px; color: #1f8a5b; font-weight: 600; margin-top: 2px; }
+  .card .delta.neg { color: #c0392b; }
+
+  .row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; margin-top: 12px; }
+  .panel { background: var(--canvas); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 13.5px; font-weight: 600; }
+
+  .chart { height: 160px; }
+  .chart svg { width: 100%; height: 100%; }
+
+  .alist { display: flex; flex-direction: column; }
+  .a-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-2); }
+  .a-item:last-child { border-bottom: 0; }
+  .a-dot { width: 7px; height: 7px; border-radius: 99px; background: var(--brand); flex: 0 0 7px; }
+  .a-meta { flex: 1; min-width: 0; }
+  .a-meta .t { font-size: 12.5px; font-weight: 500; }
+  .a-meta .s { font-size: 11.5px; color: var(--muted); }
+  .a-time { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+
+  /* Hint */
+  .hint {
+    position: fixed;
+    bottom: 18px; right: 18px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow-pop);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 30;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity var(--t-med), transform var(--t-med);
+    pointer-events: none;
+  }
+  .hint.is-show { opacity: 1; transform: translateY(0); }
+  .hint kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    padding: 1px 5px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--canvas);
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <aside class="side" id="side">
+    <div class="side-top">
+      <a href="#" class="logo" aria-label="Fleetly">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/>
+          <circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/>
+          <circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <button class="toggle" id="btnTheme" aria-label="Toggle theme" title="Toggle theme" style="margin-right:2px;">
+        <svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+          <line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/>
+          <line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/>
+        </svg>
+        <svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+      <button class="toggle" id="btnToggle" aria-label="Collapse menu" title="Collapse menu (⌘\)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <line x1="9" y1="4" x2="9" y2="20"/>
+        </svg>
+      </button>
+    </div>
+
+    <button class="toggle-floating" id="btnExpand" aria-label="Expand menu" title="Expand menu (⌘\)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    <nav class="nav" id="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item is-active" data-tip="Dashboard" data-kbd="D">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
+          </svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+
+        <a href="Fleet.html" class="nav-item has-sub" data-tip="Fleet">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>
+          </svg>
+          <span class="label">Fleet</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav">
+          <a href="Fleet.html" class="sub-item">Vehicles</a>
+          <a href="Add Vehicle.html" class="sub-item">Add Vehicle</a>
+          <a href="#" class="sub-item">Maintenance</a>
+          <a href="#" class="sub-item">Inspections</a>
+        </div>
+
+        <a href="Bookings.html" class="nav-item" data-tip="Bookings">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/>
+          </svg>
+          <span class="label">Bookings</span>
+        </a>
+
+        <a href="Calendar.html" class="nav-item" data-tip="Calendar">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>
+          </svg>
+          <span class="label">Calendar</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Analytics</div>
+        <a href="#" class="nav-item" data-tip="Utilization">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/>
+          </svg>
+          <span class="label">Utilization</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Revenue">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>
+          </svg>
+          <span class="label">Revenue</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Operations">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>
+          </svg>
+          <span class="label">Operations</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Customers">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15 14c2.5.2 5 1.6 5.5 4.5"/>
+          </svg>
+          <span class="label">Customers</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Forecasting">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="13" width="3.5" height="7"/><rect x="10.25" y="9" width="3.5" height="11"/><rect x="16.5" y="5" width="3.5" height="15"/>
+          </svg>
+          <span class="label">Forecasting</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Admin</div>
+        <a href="#" class="nav-item" data-tip="Integrations">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="13" x2="17.5" y2="22"/><line x1="13" y1="17.5" x2="22" y2="17.5"/>
+          </svg>
+          <span class="label">Integrations</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Locations">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/>
+          </svg>
+          <span class="label">Locations</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Tax Profiles">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 3h11l3 3v15l-2-1.5L15 21l-2-1.5L11 21l-2-1.5L7 21l-2-1.5z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/>
+          </svg>
+          <span class="label">Tax Profiles</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Promo Codes">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9z"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          </svg>
+          <span class="label">Promo Codes</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Trip Modification">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2" fill="#fff"/>
+            <line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2.2" fill="#fff"/>
+            <line x1="4" y1="17" x2="20" y2="17"/><circle cx="11" cy="17" r="2.2" fill="#fff"/>
+          </svg>
+          <span class="label">Trip Modification</span>
+        </a>
+        <a href="#" class="nav-item" data-tip="Users">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="3.5"/><path d="M4 21c.7-4 4-6 8-6s7.3 2 8 6"/>
+          </svg>
+          <span class="label">Users</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="side-foot">
+      <a href="#" class="get-started" data-tip="Get Started · 0/6">
+        <svg class="gs-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/>
+          <circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/>
+          <circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="gs-label">Get Started</span>
+        <span class="gs-progress">
+          <span>0/6</span>
+          <svg class="ring" viewBox="0 0 16 16">
+            <circle class="track" cx="8" cy="8" r="6.5"/>
+            <circle class="fill" cx="8" cy="8" r="6.5" stroke-dasharray="40.84" stroke-dashoffset="40.84"/>
+          </svg>
+        </span>
+      </a>
+
+      <a href="#" class="nav-item" data-tip="Contact Us">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a8 8 0 0 1-12 6.9L3 21l2.1-6A8 8 0 1 1 21 12z"/>
+        </svg>
+        <span class="label">Contact Us</span>
+      </a>
+      <a href="#" class="nav-item" data-tip="Website">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="12" rx="1.6"/><line x1="2" y1="20" x2="22" y2="20"/>
+        </svg>
+        <span class="label">Website</span>
+      </a>
+      <a href="#" class="nav-item" data-tip="Settings">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+        </svg>
+        <span class="label">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>
+          </svg>
+        </span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        <span class="crumb-cur">Dashboard</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn">Need Help?</button>
+        <button class="btn btn-primary">
+          <svg class="x" viewBox="0 0 24 24" fill="none">
+            <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+            <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+          </svg>
+          Upgrade
+        </button>
+        <button class="icon-btn" aria-label="Notifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+          </svg>
+        </button>
+        <div class="avatar" title="Jane Doe">JD</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-head">
+        <h1 class="page-title">Good morning, Jane</h1>
+        <p class="page-sub">Here's what's happening across your fleet today.</p>
+      </div>
+
+      <div class="grid">
+        <div class="card"><h3>Active vehicles</h3><div class="stat">128</div><div class="delta">+4 this week</div></div>
+        <div class="card"><h3>Bookings today</h3><div class="stat">42</div><div class="delta">+12% vs yesterday</div></div>
+        <div class="card"><h3>Utilization</h3><div class="stat">76%</div><div class="delta neg">−2% vs last week</div></div>
+        <div class="card"><h3>Revenue (MTD)</h3><div class="stat">$184k</div><div class="delta">+9% vs last month</div></div>
+      </div>
+
+      <div class="row">
+        <section class="panel">
+          <h2>Bookings — last 14 days</h2>
+          <div class="chart">
+            <svg viewBox="0 0 600 160" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#ef3a3a" stop-opacity=".22"/>
+                  <stop offset="100%" stop-color="#ef3a3a" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,120 L40,100 L80,110 L120,75 L160,85 L200,60 L240,72 L280,48 L320,65 L360,35 L400,52 L440,28 L480,42 L520,18 L560,32 L600,12 L600,160 L0,160 Z" fill="url(#g)"/>
+              <path d="M0,120 L40,100 L80,110 L120,75 L160,85 L200,60 L240,72 L280,48 L320,65 L360,35 L400,52 L440,28 L480,42 L520,18 L560,32 L600,12" fill="none" stroke="#ef3a3a" stroke-width="1.8"/>
+            </svg>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Recent activity</h2>
+          <div class="alist">
+            <div class="a-item"><span class="a-dot"></span><div class="a-meta"><div class="t">Booking #4821 confirmed</div><div class="s">Tesla Model 3 · Maria K.</div></div><div class="a-time">2m</div></div>
+            <div class="a-item"><span class="a-dot" style="background:#1f8a5b"></span><div class="a-meta"><div class="t">Vehicle returned</div><div class="s">Ford Transit · Lot B</div></div><div class="a-time">14m</div></div>
+            <div class="a-item"><span class="a-dot" style="background:#e0a82e"></span><div class="a-meta"><div class="t">Inspection due soon</div><div class="s">5 vehicles · this week</div></div><div class="a-time">1h</div></div>
+            <div class="a-item"><span class="a-dot" style="background:#7a5af8"></span><div class="a-meta"><div class="t">New customer signup</div><div class="s">Daniel R.</div></div><div class="a-time">3h</div></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+</div>
+
+<div class="tip" id="tip" role="tooltip"></div>
+
+<div class="hint" id="hint">
+  <span>Press <kbd>⌘</kbd> <kbd>\</kbd> to toggle the menu</span>
+</div>
+
+<script>
+(function(){
+  const app = document.getElementById('app');
+  const btnToggle = document.getElementById('btnToggle');
+  const btnExpand = document.getElementById('btnExpand');
+  const tip = document.getElementById('tip');
+  const hint = document.getElementById('hint');
+
+  const saved = localStorage.getItem('side-collapsed');
+  if (saved === '1') app.dataset.collapsed = 'true';
+
+  // Theme
+  const btnTheme = document.getElementById('btnTheme');
+  const sun = btnTheme.querySelector('.theme-sun');
+  const moon = btnTheme.querySelector('.theme-moon');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    sun.style.display = t === 'dark' ? 'none' : '';
+    moon.style.display = t === 'dark' ? '' : 'none';
+    localStorage.setItem('theme', t);
+  }
+  applyTheme(localStorage.getItem('theme') || 'light');
+  btnTheme.addEventListener('click', () => {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  function setCollapsed(v) {
+    app.dataset.collapsed = v ? 'true' : 'false';
+    localStorage.setItem('side-collapsed', v ? '1' : '0');
+    hideTip();
+    // close any open subnavs when collapsing
+    if (v) {
+      document.querySelectorAll('.subnav.is-open').forEach(s => s.classList.remove('is-open'));
+      document.querySelectorAll('.nav-item.is-open').forEach(i => i.classList.remove('is-open'));
+    }
+  }
+  btnToggle.addEventListener('click', () => setCollapsed(true));
+  btnExpand.addEventListener('click', () => setCollapsed(false));
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+      e.preventDefault();
+      setCollapsed(app.dataset.collapsed !== 'true');
+    }
+  });
+
+  document.querySelectorAll('.nav-item.has-sub').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (app.dataset.collapsed === 'true') return;
+      e.preventDefault();
+      const sub = item.nextElementSibling;
+      const open = sub.classList.toggle('is-open');
+      item.classList.toggle('is-open', open);
+    });
+  });
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (item.classList.contains('has-sub')) return;
+      const href = item.getAttribute('href');
+      if (!href || href === '#') {
+        e.preventDefault();
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('is-active'));
+        item.classList.add('is-active');
+      }
+    });
+  });
+
+  let tipTimer;
+  function showTip(target) {
+    const text = target.dataset.tip;
+    if (!text) return;
+    const kbd = target.dataset.kbd;
+    tip.innerHTML = '<span>' + text + '</span>' + (kbd ? '<span class="tip-kbd">' + kbd + '</span>' : '');
+    const r = target.getBoundingClientRect();
+    tip.style.left = (r.right + 10) + 'px';
+    tip.style.top = (r.top + r.height/2 - 13) + 'px';
+    tip.classList.add('is-show');
+  }
+  function hideTip(){ tip.classList.remove('is-show'); }
+
+  document.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      if (app.dataset.collapsed !== 'true') return;
+      clearTimeout(tipTimer);
+      tipTimer = setTimeout(() => showTip(el), 80);
+    });
+    el.addEventListener('mouseleave', () => {
+      clearTimeout(tipTimer);
+      hideTip();
+    });
+  });
+
+  if (!localStorage.getItem('hint-seen')) {
+    setTimeout(() => {
+      hint.classList.add('is-show');
+      setTimeout(() => hint.classList.remove('is-show'), 4500);
+      localStorage.setItem('hint-seen', '1');
+    }, 1200);
+  }
+})();
+</script>
+
+</body>
+</html>

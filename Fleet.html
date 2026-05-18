@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fleet — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--field-bg:#131418;--brand:#ff5757;--ok:#4cc38a;--warn:#e0a64a;--info:#7aa6ff;--turo:#a78bff;--ok-tint:#173025;--warn-tint:#2e2418;--info-tint:#1c2638;--turo-tint:#231a3d;--brand-tint-2:#2a1718;}
+  *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  button{background:none;border:0;cursor:pointer;padding:0;font:inherit;color:inherit;}a{text-decoration:none;color:inherit;}
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-med);}
+  .app[data-collapsed="true"]{--side-w:56px;}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;}
+  .logo-mark{width:22px;height:22px;}
+  .logo-word{font-weight:700;font-size:14px;color:var(--ink);}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none;}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0;}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);}
+  .toggle:hover{background:var(--hover);color:var(--ink);}
+  .top-buttons{display:flex;gap:2px;}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px;}
+  .nav-section{margin-bottom:8px;}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted);}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden;}
+  .nav-item:hover{background:var(--hover);color:var(--ink);}
+  .nav-item:hover .icon{color:var(--ink);}
+  .nav-item.is-active{background:var(--canvas);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05);}
+  .nav-item.is-active .icon{color:var(--ink);}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0;}
+  .app[data-collapsed="true"] .nav-item .label{display:none;}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2);}
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:4;}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line);}
+  .crumb-cur{color:var(--ink);font-weight:500;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);}
+  .btn:hover{background:var(--hover);}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink);}
+  .btn-primary:hover{background:#2a2d33;}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2);}
+  .icon-btn:hover{background:var(--hover);}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px;}
+
+  .page{padding:24px 28px 80px;}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap;}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin:0;}
+  .page-sub{color:var(--muted);font-size:13px;margin:6px 0 0;}
+  .head-actions{display:flex;gap:8px;align-items:center;}
+
+  .tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+  .tab{height:36px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;display:flex;align-items:center;gap:6px;}
+  .tab:hover{color:var(--ink);}
+  .tab.is-on{color:var(--ink);}
+  .tab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px;}
+  .tab .count{font-size:11px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2);}
+  .tab.is-on .count{background:var(--ink);color:var(--canvas);border-color:var(--ink);}
+
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;}
+  .search{position:relative;flex:1;min-width:240px;max-width:380px;}
+  .search input{width:100%;height:34px;padding:0 12px 0 32px;background:var(--canvas);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;}
+  .search input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06);}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);}
+  .chip-select{height:34px;padding:0 10px;border:1px solid var(--line);background:var(--canvas);border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .chip-select:hover{background:var(--hover);}
+  .seg{display:inline-flex;padding:3px;background:var(--field-bg);border:1px solid var(--line);border-radius:9px;gap:2px;}
+  .seg button{height:26px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);}
+  .seg button.is-on{background:var(--canvas);color:var(--ink);box-shadow:0 1px 2px rgba(15,18,22,.06);}
+
+  /* card grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .vcard{border:1px solid var(--line);border-radius:14px;background:var(--canvas);overflow:hidden;display:flex;flex-direction:column;transition:transform var(--t-fast),box-shadow var(--t-fast);cursor:pointer;}
+  .vcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(15,18,22,.06);}
+  .vimg{aspect-ratio:16/9;background-size:cover;background-position:center;background-color:var(--field-bg);position:relative;}
+  .vstatus{position:absolute;top:10px;left:10px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;background:var(--canvas);color:var(--ink-2);box-shadow:0 1px 2px rgba(0,0,0,.08);display:inline-flex;align-items:center;gap:5px;}
+  .vstatus .dot{width:6px;height:6px;border-radius:99px;}
+  .vstatus.s-on{color:var(--ok);}.vstatus.s-on .dot{background:var(--ok);}
+  .vstatus.s-trip{color:var(--info);}.vstatus.s-trip .dot{background:var(--info);}
+  .vstatus.s-mx{color:var(--warn);}.vstatus.s-mx .dot{background:var(--warn);}
+  .vstatus.s-off{color:var(--muted);}.vstatus.s-off .dot{background:var(--muted);}
+  .vsource{position:absolute;top:10px;right:10px;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:var(--canvas);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .vsource.both{color:var(--ink);}
+  .vsource.direct{color:var(--brand);}
+  .vsource.turo{color:var(--turo);}
+  .vbody{padding:14px 16px 16px;}
+  .vname{font-size:15px;font-weight:700;letter-spacing:-0.01em;line-height:1.2;}
+  .vmeta{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .vplate{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;}
+  .vstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-2);}
+  .vstat{display:flex;flex-direction:column;gap:2px;}
+  .vstat .lab{font-size:10.5px;font-weight:600;color:var(--muted-2);text-transform:uppercase;letter-spacing:.05em;}
+  .vstat .val{font-size:14px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .vstat .val .un{font-size:11px;color:var(--muted);font-weight:500;}
+  .util-bar{height:3px;border-radius:99px;background:var(--line);margin-top:5px;overflow:hidden;}
+  .util-fill{height:100%;background:var(--muted-2);border-radius:99px;}
+  .util-fill.high{background:var(--ok);}
+
+  /* List view */
+  .list{border:1px solid var(--line);border-radius:12px;background:var(--canvas);overflow:hidden;}
+  .list-head{display:grid;grid-template-columns:48px 1.6fr 0.9fr 0.9fr 0.9fr 0.9fr 0.7fr 32px;gap:12px;padding:9px 14px;background:var(--field-bg);border-bottom:1px solid var(--line);font-size:10.5px;font-weight:600;color:var(--muted-2);text-transform:uppercase;letter-spacing:.05em;align-items:center;}
+  .lrow{display:grid;grid-template-columns:48px 1.6fr 0.9fr 0.9fr 0.9fr 0.9fr 0.7fr 32px;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line-2);align-items:center;cursor:pointer;transition:background var(--t-fast);}
+  .lrow:last-child{border-bottom:0;}
+  .lrow:hover{background:var(--hover);}
+  .lthumb{width:48px;height:36px;border-radius:6px;background-size:cover;background-position:center;background-color:var(--field-bg);}
+  .lname{font-size:13px;font-weight:600;color:var(--ink);letter-spacing:-0.005em;}
+  .lmeta{font-size:11.5px;color:var(--muted);margin-top:1px;display:flex;gap:6px;align-items:center;}
+  .lmeta .vplate{font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);background:var(--field-bg);border:1px solid var(--line-2);padding:1px 6px;border-radius:4px;font-size:10.5px;}
+  .lstat{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .lstat .un{font-size:11px;color:var(--muted);font-weight:500;}
+  .lutil{display:flex;align-items:center;gap:8px;}
+  .lutil .lu-bar{flex:1;height:4px;border-radius:99px;background:var(--line);overflow:hidden;max-width:80px;}
+  .lutil .lu-fill{height:100%;background:var(--muted-2);border-radius:99px;}
+  .lutil .lu-fill.high{background:var(--ok);}
+  .lstatus{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;}
+  .lstatus .dot{width:6px;height:6px;border-radius:99px;}
+  .lstatus.s-on{color:var(--ok);}.lstatus.s-on .dot{background:var(--ok);}
+  .lstatus.s-trip{color:var(--info);}.lstatus.s-trip .dot{background:var(--info);}
+  .lstatus.s-mx{color:var(--warn);}.lstatus.s-mx .dot{background:var(--warn);}
+  .lstatus.s-off{color:var(--muted);}.lstatus.s-off .dot{background:var(--muted);}
+  .lsrc{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 7px;border-radius:99px;display:inline-block;}
+  .lsrc.both{background:var(--field-bg);color:var(--ink-2);border:1px solid var(--line-2);}
+  .lsrc.direct{background:var(--brand-tint-2);color:var(--brand);}
+  .lsrc.turo{background:var(--turo-tint);color:var(--turo);}
+  .lmore{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--muted);}
+  .lmore:hover{background:var(--field-bg);color:var(--ink);}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+  <aside class="side">
+    <div class="side-top">
+      <a href="#" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item is-active">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg>
+          <span class="label">Vehicles</span>
+        </a>
+        <a href="Bookings.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg>
+          <span class="label">Bookings</span>
+        </a>
+        <a href="Calendar.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          <span class="label">Calendar</span>
+        </a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <a href="#" class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span class="label">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <span style="color:var(--muted-2);">/</span>
+        <span style="color:var(--muted);">Fleet</span>
+        <span style="color:var(--muted-2);">/</span>
+        <span class="crumb-cur">Vehicles</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Vehicles</h1>
+          <p class="page-sub">12 active · 1 in maintenance · 78% fleet utilization · last 30 days</p>
+        </div>
+        <div class="head-actions">
+          <a href="Calendar.html" class="btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Calendar
+          </a>
+          <a href="Add Vehicle.html" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add vehicle
+          </a>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab is-on">All <span class="count">14</span></button>
+        <button class="tab">Available <span class="count">8</span></button>
+        <button class="tab">On trip <span class="count">5</span></button>
+        <button class="tab">Maintenance <span class="count">1</span></button>
+        <button class="tab">Drafts <span class="count">2</span></button>
+      </div>
+
+      <div class="filterbar">
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+          <input placeholder="Search make, model or plate…" />
+        </div>
+        <button class="chip-select">Source: All</button>
+        <button class="chip-select">Location: All</button>
+        <div style="flex:1;"></div>
+        <div class="seg" id="viewSeg">
+          <button class="is-on" data-view="cards">Cards</button>
+          <button data-view="list">List</button>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      <div class="list" id="list" style="display:none;">
+        <div class="list-head">
+          <div></div>
+          <div>Vehicle</div>
+          <div>Status</div>
+          <div>Source</div>
+          <div>Rate</div>
+          <div>Util · 30d</div>
+          <div>Trips</div>
+          <div></div>
+        </div>
+        <div id="listBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const app=document.getElementById('app');
+  const btnTheme=document.getElementById('btnTheme');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  btnTheme.addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+
+  const cars=[
+    {id:'v1',name:'Tesla Model 3 LR',year:2023,plate:'7HZX-432',thumb:'https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=600&q=80',status:'on',source:'both',rate:89,util:78,trips:42,loc:'SFO Lot C'},
+    {id:'v2',name:'Toyota RAV4 Hybrid',year:2024,plate:'8KMD-119',thumb:'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=80',status:'trip',source:'turo',rate:99,util:64,trips:28,loc:'Mission HQ'},
+    {id:'v3',name:'Honda Civic Si',year:2022,plate:'3FYP-088',thumb:'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80',status:'mx',source:'direct',rate:79,util:52,trips:19,loc:'Oakland'},
+    {id:'v4',name:'Tesla Model Y',year:2024,plate:'9PWN-554',thumb:'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&q=80',status:'on',source:'both',rate:129,util:81,trips:51,loc:'SFO Lot C'},
+    {id:'v5',name:'BMW M340i',year:2023,plate:'2QRT-901',thumb:'https://images.unsplash.com/photo-1549921296-3a6b5b6c7d31?w=600&q=80',status:'trip',source:'direct',rate:149,util:42,trips:12,loc:'Palo Alto'},
+    {id:'v6',name:'Ford F-150 Lightning',year:2024,plate:'5VCT-770',thumb:'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=600&q=80',status:'on',source:'both',rate:139,util:70,trips:23,loc:'Oakland'},
+    {id:'v7',name:'Audi A4 Quattro',year:2022,plate:'4RGH-651',thumb:'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=80',status:'off',source:'direct',rate:109,util:31,trips:8,loc:'SFO Lot C'},
+    {id:'v8',name:'Jeep Wrangler',year:2023,plate:'6BNX-228',thumb:'https://images.unsplash.com/photo-1626668893632-6f3a4466d109?w=600&q=80',status:'on',source:'turo',rate:119,util:67,trips:34,loc:'Mission HQ'}
+  ];
+  const stMap={on:{l:'Available',c:'s-on'},trip:{l:'On trip',c:'s-trip'},mx:{l:'Maintenance',c:'s-mx'},off:{l:'Inactive',c:'s-off'}};
+  const srcMap={both:'Both',direct:'Direct',turo:'Turo'};
+  document.getElementById('grid').innerHTML=cars.map(c=>`
+    <div class="vcard" onclick="location.href='Vehicle.html?id=${c.id}'">
+      <div class="vimg" style="background-image:url('${c.thumb}')">
+        <span class="vstatus ${stMap[c.status].c}"><span class="dot"></span>${stMap[c.status].l}</span>
+        <span class="vsource ${c.source}">${srcMap[c.source]}</span>
+      </div>
+      <div class="vbody">
+        <div class="vname">${c.name}</div>
+        <div class="vmeta"><span>${c.year}</span><span>·</span><span class="vplate">${c.plate}</span><span>·</span><span>${c.loc}</span></div>
+        <div class="vstats">
+          <div class="vstat"><div class="lab">Rate</div><div class="val">$${c.rate}<span class="un">/d</span></div></div>
+          <div class="vstat"><div class="lab">Util · 30d</div><div class="val">${c.util}%</div><div class="util-bar"><div class="util-fill ${c.util>=70?'high':''}" style="width:${c.util}%"></div></div></div>
+          <div class="vstat"><div class="lab">Trips</div><div class="val">${c.trips}</div></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('listBody').innerHTML=cars.map(c=>`
+    <div class="lrow" onclick="location.href='Vehicle.html?id=${c.id}'">
+      <div class="lthumb" style="background-image:url('${c.thumb}')"></div>
+      <div>
+        <div class="lname">${c.name}</div>
+        <div class="lmeta"><span>${c.year}</span>·<span class="vplate">${c.plate}</span>·<span>${c.loc}</span></div>
+      </div>
+      <div class="lstatus ${stMap[c.status].c}"><span class="dot"></span>${stMap[c.status].l}</div>
+      <div><span class="lsrc ${c.source}">${srcMap[c.source]}</span></div>
+      <div class="lstat">$${c.rate}<span class="un">/d</span></div>
+      <div class="lutil"><span class="lstat" style="min-width:34px;">${c.util}%</span><span class="lu-bar"><span class="lu-fill ${c.util>=70?'high':''}" style="width:${c.util}%"></span></span></div>
+      <div class="lstat">${c.trips}</div>
+      <button class="lmore" onclick="event.stopPropagation();"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+    </div>
+  `).join('');
+
+  // View toggle
+  const grid=document.getElementById('grid'),list=document.getElementById('list');
+  document.querySelectorAll('#viewSeg button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.remove('is-on'));
+      b.classList.add('is-on');
+      const v=b.dataset.view;
+      grid.style.display=v==='cards'?'':'none';
+      list.style.display=v==='list'?'':'none';
+      localStorage.setItem('fleet-view',v);
+    });
+  });
+  const saved=localStorage.getItem('fleet-view');
+  if(saved==='list'){document.querySelector('#viewSeg button[data-view="list"]').click();}
+})();
+</script>
+</body>
+</html>

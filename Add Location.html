@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Add Location — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--map-bg:#eef0f2;--map-land:#f7f8f9;--map-water:#dce5ef;--map-line:#e2e6ea;--map-road:#fff;--shadow-pop:0 6px 16px rgba(15,18,22,.08),0 24px 48px rgba(15,18,22,.10);--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d;--map-bg:#15171a;--map-land:#1a1d22;--map-water:#0f1216;--map-line:#23262b;--map-road:#2a2e34}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* App shell */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* Topbar */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb a{color:var(--muted)}.crumb a:hover{color:var(--ink)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:36px;padding:0 16px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:13px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* Page */
+  .page{max-width:640px;margin:0 auto;padding:36px 24px 140px}
+  .page-head{margin-bottom:28px}
+  .page-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .page-title{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .page-sub{color:var(--muted);margin:0;font-size:14px;line-height:1.55}
+
+  /* Sections */
+  .section{padding:24px 0;border-top:1px solid var(--line-2)}
+  .section:first-of-type{border-top:0;padding-top:0}
+  .sec-title{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 14px;letter-spacing:.01em}
+
+  /* Fields */
+  .field{margin-bottom:18px;display:block}
+  .field:last-child{margin-bottom:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row > .field{margin-bottom:0}
+  .label{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px}
+  .label .req{color:var(--brand);margin-left:2px}
+  .label .opt{font-weight:500;color:var(--muted);font-size:11.5px}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .input,.select,.textarea{width:100%;height:42px;padding:0 13px;background:var(--field);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:14px;transition:all var(--t-fast);outline:none}
+  .input::placeholder,.textarea::placeholder{color:var(--muted-2)}
+  .input:hover,.select:hover,.textarea:hover{border-color:var(--muted-2)}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  [data-theme="dark"] .input:focus,[data-theme="dark"] .select:focus,[data-theme="dark"] .textarea:focus{border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .textarea{height:auto;padding:11px 13px;min-height:88px;resize:vertical;line-height:1.5;font-family:inherit}
+  .select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+  .ipair{position:relative}
+  .ipair .pre{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;font-weight:500;pointer-events:none}
+  .ipair .suf{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;font-weight:600;pointer-events:none;letter-spacing:.04em}
+  .ipair.has-pre .input{padding-left:28px}
+  .ipair.has-suf .input{padding-right:48px}
+
+  /* Type segmented control */
+  .type-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px;background:var(--field-bg);border:1px solid var(--line);border-radius:10px}
+  .type-seg.three{grid-template-columns:repeat(3,1fr)}
+  .type-seg button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:7px;color:var(--ink-2);font-size:12px;font-weight:600;transition:all var(--t-fast);text-align:center;line-height:1.2}
+  .type-seg button:hover{color:var(--ink)}
+  .type-seg button svg{width:18px;height:18px;color:var(--muted)}
+  .type-seg button.is-on{background:var(--canvas);color:var(--ink);box-shadow:0 1px 3px rgba(15,18,22,.08)}
+  .type-seg button.is-on svg{color:var(--ink)}
+  [data-theme="dark"] .type-seg button.is-on{background:var(--active)}
+
+  /* Address search */
+  .addr-search{position:relative}
+  .addr-search .input{padding-left:38px}
+  .addr-search .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .addr-suggest{position:absolute;left:0;right:0;top:46px;background:var(--canvas);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-pop);overflow:hidden;z-index:8;opacity:0;transform:translateY(-4px);pointer-events:none;transition:all var(--t-fast)}
+  .addr-suggest.is-show{opacity:1;transform:translateY(0);pointer-events:auto}
+  .addr-suggest .sug{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;cursor:pointer;border-top:1px solid var(--line-2)}
+  .addr-suggest .sug:first-child{border-top:0}
+  .addr-suggest .sug:hover{background:var(--hover)}
+  .addr-suggest .sug-pin{width:24px;height:24px;flex:0 0 24px;border-radius:6px;background:var(--field-bg);display:grid;place-items:center;color:var(--muted);margin-top:1px}
+  .addr-suggest .sug-main{font-size:13.5px;font-weight:600;color:var(--ink)}
+  .addr-suggest .sug-main em{font-style:normal;background:color-mix(in srgb,var(--brand) 18%,transparent);font-weight:700;padding:0 2px;border-radius:2px}
+  .addr-suggest .sug-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+  /* Map */
+  .map{margin-top:10px;height:200px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--map-bg);position:relative;user-select:none}
+  .map svg{width:100%;height:100%;display:block}
+  .map .pin-handle{cursor:grab;transition:transform var(--t-fast)}
+  .map .pin-handle:active{cursor:grabbing}
+  .map .pin-handle:hover{transform:translate(0,-2px)}
+  .map .coords{position:absolute;right:10px;bottom:10px;background:color-mix(in srgb,var(--canvas) 92%,transparent);border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-size:10.5px;font-weight:600;color:var(--ink-2);font-family:ui-monospace,monospace;backdrop-filter:blur(8px)}
+  .map .drag-hint{position:absolute;left:10px;bottom:10px;background:color-mix(in srgb,var(--canvas) 92%,transparent);border:1px solid var(--line);border-radius:99px;padding:4px 10px;font-size:11px;color:var(--ink-2);font-weight:600;backdrop-filter:blur(8px);display:inline-flex;align-items:center;gap:6px}
+
+  /* Switch */
+  .switch{width:38px;height:22px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);display:inline-block;flex-shrink:0}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch.is-on{background:var(--ink)}.switch.is-on::after{transform:translateX(16px)}
+
+  /* Toggle row (24/7) */
+  .row24{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:all var(--t-fast);margin-bottom:14px}
+  .row24:hover{border-color:var(--muted-2)}
+  .row24.is-on{background:var(--field-bg);border-color:var(--ink-2)}
+  [data-theme="dark"] .row24.is-on{background:var(--hover)}
+  .row24 .meta{display:flex;align-items:center;gap:12px;min-width:0}
+  .row24 .ico{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:var(--field-bg);color:var(--ink-2);flex-shrink:0}
+  .row24.is-on .ico{background:var(--ink);color:var(--canvas)}
+  .row24 .nm{font-size:13.5px;font-weight:700}
+  .row24 .ds{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* Hours grid */
+  .hours-wrap{transition:opacity var(--t-fast),max-height var(--t-med);overflow:hidden;max-height:200px}
+  .hours-wrap.is-hidden{opacity:0;max-height:0;margin:0;padding:0;pointer-events:none}
+
+  /* Multi-select chips for linked branches */
+  .multi{position:relative}
+  .multi-trigger{width:100%;min-height:42px;padding:6px 38px 6px 10px;background:var(--field);border:1px solid var(--line);border-radius:9px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer;transition:all var(--t-fast)}
+  .multi-trigger:hover{border-color:var(--muted-2)}
+  .multi-trigger.is-focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .multi-trigger::after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:1.6px solid var(--muted);border-bottom:1.6px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .multi-placeholder{color:var(--muted-2);font-size:14px;padding:5px 4px}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 6px 0 10px;background:var(--field-bg);border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:600;color:var(--ink)}
+  .chip .ico{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:9px;font-weight:800;flex-shrink:0}
+  .chip .x{width:20px;height:20px;border-radius:99px;display:grid;place-items:center;color:var(--muted)}
+  .chip .x:hover{background:var(--hover);color:var(--ink)}
+  .multi-menu{position:absolute;left:0;right:0;top:46px;background:var(--canvas);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-pop);overflow:hidden;z-index:8;max-height:280px;overflow-y:auto;opacity:0;transform:translateY(-4px);pointer-events:none;transition:all var(--t-fast)}
+  .multi-menu.is-show{opacity:1;transform:translateY(0);pointer-events:auto}
+  .multi-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-top:1px solid var(--line-2)}
+  .multi-opt:first-child{border-top:0}
+  .multi-opt:hover{background:var(--hover)}
+  .multi-opt .cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted-2);display:grid;place-items:center;flex-shrink:0;transition:all var(--t-fast)}
+  .multi-opt .cb svg{width:10px;height:10px;color:#fff;opacity:0}
+  .multi-opt.is-on .cb{background:var(--ink);border-color:var(--ink)}
+  .multi-opt.is-on .cb svg{opacity:1}
+  .multi-opt .opt-name{font-size:13px;font-weight:600;color:var(--ink)}
+  .multi-opt .opt-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .multi-opt .opt-pin{width:24px;height:24px;border-radius:6px;background:var(--ink);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+  .multi-opt .opt-pin.t-airport{background:var(--info)}
+  .multi-opt .opt-pin.t-curbside{background:var(--warn)}
+  .multi-opt .opt-pin.t-delivery{background:var(--turo)}
+
+  /* Footer */
+  .footer{position:fixed;left:var(--side-w,232px);right:0;bottom:0;background:color-mix(in srgb,var(--canvas) 94%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 24px;display:flex;justify-content:flex-end;align-items:center;gap:10px;z-index:5;transition:left var(--t-slow)}
+  .app[data-collapsed="true"] .footer{left:56px}
+  .footer .save-state{margin-right:auto;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+
+  /* Success modal */
+  .modal-shade{position:fixed;inset:0;background:rgba(15,18,22,.4);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;opacity:0;transition:opacity var(--t-med)}
+  .modal-shade.is-show{display:grid;opacity:1}
+  .modal{background:var(--canvas);border-radius:16px;padding:32px;max-width:440px;width:90%;text-align:center;box-shadow:var(--shadow-pop);transform:scale(.95);transition:transform var(--t-med)}
+  .modal-shade.is-show .modal{transform:scale(1)}
+  .modal .check{width:56px;height:56px;border-radius:99px;background:var(--ok-tint);color:var(--ok);display:grid;place-items:center;margin:0 auto 16px}
+  .modal h2{margin:0 0 6px;font-size:18px}.modal p{margin:0 0 20px;color:var(--muted);font-size:13px}
+  .modal .actions{display:flex;gap:8px;justify-content:center}
+
+  @media (max-width:720px){
+    .type-seg{grid-template-columns:repeat(2,1fr)}
+    .field-row{grid-template-columns:1fr}
+    .footer{left:0 !important;padding:12px 16px}
+    .page{padding:24px 16px 120px}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+        <a href="Locations.html" class="nav-item is-active is-open">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+          <span class="label">Locations</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Locations.html" class="sub-item">All locations</a>
+          <a href="Add Location.html" class="sub-item is-active">Add location</a>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Locations.html">Locations</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">New location</span>
+      </div>
+      <div class="top-actions">
+        <a href="Locations.html" class="btn btn-ghost">Cancel</a>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <main class="page">
+
+      <div class="page-head">
+        <div class="page-eyebrow">New location</div>
+        <h1 class="page-title">Add a location</h1>
+        <p class="page-sub">Where customers pick up or drop off. Your first location is the default — you can add more anytime.</p>
+      </div>
+
+      <!-- ============ FORM ============ -->
+      <form id="form" onsubmit="return false;">
+
+        <!-- 1. Basics -->
+        <section class="section">
+          <div class="field">
+            <label class="label" for="name">Name<span class="req">*</span></label>
+            <input id="name" class="input" placeholder="e.g. Mission HQ, SFO Curb, Marina pickup" required />
+          </div>
+
+          <div class="field">
+            <label class="label">Type<span class="req">*</span></label>
+            <div class="type-seg three" id="typeSeg" role="radiogroup">
+              <button type="button" class="is-on" data-type="pickup">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><polyline points="6 8 12 2 18 8"/><line x1="4" y1="22" x2="20" y2="22"/></svg>
+                Pickup
+              </button>
+              <button type="button" data-type="dropoff">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><polyline points="6 12 12 18 18 12"/><line x1="4" y1="22" x2="20" y2="22"/></svg>
+                Drop-off
+              </button>
+              <button type="button" data-type="both">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 7 12 2 17 7"/><polyline points="7 17 12 22 17 17"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+                Both
+              </button>
+            </div>
+            <div class="hint" id="typeHint">Customers can pick up vehicles here. Use <b>Both</b> if the same spot handles returns too.</div>
+          </div>
+        </section>
+
+        <!-- 2. Place -->
+        <section class="section">
+          <h3 class="sec-title">Place</h3>
+
+          <div class="field">
+            <label class="label" for="addrQ">Pin location<span class="req">*</span></label>
+            <div class="addr-search">
+              <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg></span>
+              <input id="addrQ" class="input" placeholder="Search address or place…" autocomplete="off" />
+              <div class="addr-suggest" id="addrSuggest"></div>
+            </div>
+            <div class="map" id="mapWrap">
+              <svg id="mapSvg" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <rect width="800" height="200" fill="var(--map-bg)"/>
+                <path d="M0 0 H220 L210 70 L195 140 L185 200 H0 Z" fill="var(--map-water)"/>
+                <path d="M800 0 H720 L710 70 L725 140 L740 200 H800 Z" fill="var(--map-water)"/>
+                <path d="M220 0 H720 L710 70 L725 140 L740 200 H185 L195 140 L210 70 Z" fill="var(--map-land)"/>
+                <g opacity=".5"><defs><pattern id="dp" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.8" fill="var(--map-line)"/></pattern></defs><rect width="800" height="200" fill="url(#dp)"/></g>
+                <g stroke="var(--map-road)" stroke-width="5" fill="none" stroke-linecap="round" opacity=".95"><path d="M220 30 Q420 100 480 200"/><path d="M220 100 L720 100"/><path d="M220 160 L720 160"/></g>
+                <g stroke="var(--map-line)" stroke-width="1.4" fill="none" stroke-linecap="round"><path d="M220 30 Q420 100 480 200"/><path d="M220 100 L720 100"/><path d="M220 160 L720 160"/><path d="M340 50 L680 60"/><path d="M340 180 L680 180"/></g>
+                <g id="pinG" class="pin-handle" transform="translate(400,110)">
+                  <ellipse cx="0" cy="8" rx="11" ry="3.5" fill="rgba(15,18,22,.18)"/>
+                  <path d="M0,-24 C9,-24 14,-17 14,-11 C14,-2 0,13 0,13 C0,13 -14,-2 -14,-11 C-14,-17 -9,-24 0,-24 Z" fill="var(--ink)" stroke="#fff" stroke-width="2"/>
+                  <circle cx="0" cy="-12" r="4.5" fill="#fff"/>
+                </g>
+              </svg>
+              <div class="drag-hint"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/></svg>Drag to refine</div>
+              <div class="coords" id="coords">37.7600, −122.4194</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="tz">Timezone</label>
+            <select id="tz" class="select">
+              <option value="America/Los_Angeles" selected>(GMT−08:00) America / Los Angeles</option>
+              <option value="America/Denver">(GMT−07:00) America / Denver</option>
+              <option value="America/Phoenix">(GMT−07:00) America / Phoenix</option>
+              <option value="America/Chicago">(GMT−06:00) America / Chicago</option>
+              <option value="America/New_York">(GMT−05:00) America / New York</option>
+              <option value="America/Anchorage">(GMT−09:00) America / Anchorage</option>
+              <option value="Pacific/Honolulu">(GMT−10:00) Pacific / Honolulu</option>
+              <option value="America/St_Johns">(GMT−02:30) America / St Johns</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- 3. Hours -->
+        <section class="section" id="hoursSection">
+          <h3 class="sec-title">Operating hours</h3>
+
+          <div class="row24 is-on" id="row24" onclick="window.__toggle24(this)">
+            <div class="meta">
+              <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+              <div><div class="nm">Open 24 / 7</div><div class="ds">Customers can pick up and drop off at any hour.</div></div>
+            </div>
+            <span class="switch is-on"></span>
+          </div>
+
+          <div class="hours-wrap is-hidden" id="hoursWrap">
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="hOpen">Opening time</label>
+                <input id="hOpen" class="input" type="time" value="08:00" />
+              </div>
+              <div class="field">
+                <label class="label" for="hClose">Closing time</label>
+                <input id="hClose" class="input" type="time" value="19:00" />
+              </div>
+            </div>
+            <div class="hint" style="margin-top:8px">Same hours every day. You can set per-day hours later from this location's settings.</div>
+          </div>
+        </section>
+
+        <!-- 4. Fees & description -->
+        <section class="section">
+          <div class="field-row">
+            <div class="field" id="feeFieldPickup">
+              <label class="label" for="fee" id="feeLabel">Pickup fee<span class="req">*</span></label>
+              <div class="ipair has-pre has-suf">
+                <span class="pre">$</span>
+                <input id="fee" class="input" type="number" min="0" step="1" value="0" />
+                <span class="suf">USD</span>
+              </div>
+              <div class="hint">Charged once per trip. Enter <b>0</b> if free.</div>
+            </div>
+            <div class="field" id="feeFieldDropoff">
+              <label class="label" for="dfee" id="dfeeLabel">Drop-off fee <span class="opt">optional</span></label>
+              <div class="ipair has-pre has-suf">
+                <span class="pre">$</span>
+                <input id="dfee" class="input" type="number" min="0" step="1" value="0" />
+                <span class="suf">USD</span>
+              </div>
+              <div class="hint">Leave at $0 if same as pickup.</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="desc">Description <span class="opt">optional</span></label>
+            <textarea id="desc" class="textarea" placeholder="What customers see when picking this location — e.g. 'Covered lot 4 min from Terminal 2 via free AirTrain.'"></textarea>
+          </div>
+        </section>
+
+        <!-- 5. Default toggle -->
+        <section class="section">
+          <div class="row24" id="rowDefault" onclick="window.__toggleDefault(this)">
+            <div class="meta">
+              <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg></div>
+              <div><div class="nm">Use as default location</div><div class="ds" id="defaultDs">Pre-selected when adding vehicles, in customer search, and in reports.</div></div>
+            </div>
+            <span class="switch"></span>
+          </div>
+        </section>
+
+      </form>
+    </main>
+
+    <!-- Sticky footer -->
+    <div class="footer">
+      <div class="save-state">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ok)"><polyline points="20 6 9 17 4 12"/></svg>
+        Saves to draft automatically
+      </div>
+      <a href="Locations.html" class="btn btn-ghost">Cancel</a>
+      <button class="btn btn-primary" id="saveBtn">Save location</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal -->
+<div class="modal-shade" id="modal">
+  <div class="modal">
+    <div class="check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2 id="modalTitle">Location saved</h2>
+    <p id="modalBody">Mission HQ is live and ready to take bookings.</p>
+    <div class="actions">
+      <a href="Locations.html" class="btn">Back to locations</a>
+      <a href="Location Details.html" class="btn btn-primary">Open location</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== Theme / sidebar =====
+  const app=document.getElementById('app');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  document.getElementById('btnTheme').addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+  document.getElementById('btnExpand').addEventListener('click',()=>{app.dataset.collapsed='false';localStorage.setItem('side-collapsed','0');});
+
+  // ===== Type segmented control =====
+  const typeHints = {
+    pickup:  "Customers can pick up vehicles here. Use <b>Both</b> if the same spot handles returns too.",
+    dropoff: "Customers return vehicles here — e.g. a satellite drop-off near downtown.",
+    both:    "The same spot handles pickups <i>and</i> drop-offs. Most branches are <b>Both</b>."
+  };
+  let activeType = 'pickup';
+  document.querySelectorAll('#typeSeg button').forEach(b => b.addEventListener('click', ()=>{
+    document.querySelectorAll('#typeSeg button').forEach(x=>x.classList.remove('is-on'));
+    b.classList.add('is-on');
+    activeType = b.dataset.type;
+    document.getElementById('typeHint').innerHTML = typeHints[activeType];
+    // Drop-off-only mode: relabel fees + hide pickup fee
+    const pf = document.getElementById('feeLabel');
+    const df = document.getElementById('dfeeLabel');
+    if(activeType==='dropoff'){
+      pf.parentElement.parentElement.parentElement.style.display = 'none';
+    } else {
+      pf.parentElement.parentElement.parentElement.style.display = 'block';
+    }
+    if(activeType==='pickup'){
+      df.parentElement.parentElement.parentElement.style.display = 'none';
+    } else {
+      df.parentElement.parentElement.parentElement.style.display = 'block';
+    }
+  }));
+
+  // ===== Multi-select linked branches removed — placeholder no-ops to avoid breakage if referenced =====
+  const selected = new Set();
+
+  // ===== Default toggle =====
+  window.__toggleDefault = function(el){
+    const on = !el.classList.contains('is-on');
+    el.classList.toggle('is-on', on);
+    el.querySelector('.switch').classList.toggle('is-on', on);
+    document.getElementById('defaultDs').textContent = on
+      ? 'This location will be pre-selected when adding vehicles, in customer search, and in reports.'
+      : 'Pre-selected when adding vehicles, in customer search, and in reports.';
+  };
+
+  // ===== Address suggest =====
+  const addrQ = document.getElementById('addrQ');
+  const sug = document.getElementById('addrSuggest');
+  const sample = [
+    {main:'2455 Mission St', sub:'San Francisco, CA 94110', lat:37.7600, lng:-122.4194},
+    {main:'780 N McDonnell Rd', sub:'San Francisco, CA 94128 · SFO', lat:37.6213, lng:-122.3790},
+    {main:'1422 Embarcadero', sub:'Oakland, CA 94606', lat:37.7800, lng:-122.2470},
+    {main:'1 Airport Dr', sub:'Oakland, CA 94621 · OAK', lat:37.7213, lng:-122.2210},
+    {main:'95 University Ave', sub:'Palo Alto, CA 94301 · Caltrain', lat:37.4445, lng:-122.1640},
+    {main:'Pier 14', sub:'San Francisco, CA 94105 · Embarcadero', lat:37.7910, lng:-122.3895},
+    {main:'3950 Scott St', sub:'San Francisco, CA 94123 · Marina', lat:37.8000, lng:-122.4400}
+  ];
+  function highlight(s, q){
+    const i = s.toLowerCase().indexOf(q);
+    if(i<0) return s;
+    return s.slice(0,i)+'<em>'+s.slice(i,i+q.length)+'</em>'+s.slice(i+q.length);
+  }
+  function renderSug(q){
+    if(!q || q.length<2){ sug.classList.remove('is-show'); return; }
+    const qLower = q.toLowerCase();
+    const matches = sample.filter(s=> s.main.toLowerCase().includes(qLower) || s.sub.toLowerCase().includes(qLower)).slice(0,5);
+    if(!matches.length){ sug.classList.remove('is-show'); return; }
+    sug.innerHTML = matches.map((m,i)=>`
+      <div class="sug" data-i="${i}">
+        <div class="sug-pin"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg></div>
+        <div style="flex:1"><div class="sug-main">${highlight(m.main, qLower)}</div><div class="sug-sub">${m.sub}</div></div>
+      </div>
+    `).join('');
+    sug.classList.add('is-show');
+    sug.querySelectorAll('.sug').forEach(el => el.addEventListener('click', ()=>{
+      const m = matches[+el.dataset.i];
+      addrQ.value = m.main + ', ' + m.sub.split(' · ')[0];
+      document.getElementById('coords').textContent = m.lat.toFixed(4) + ', ' + m.lng.toFixed(4);
+      sug.classList.remove('is-show');
+      // suggest name if empty
+      const name = document.getElementById('name');
+      if(!name.value) name.value = m.sub.includes('·') ? m.sub.split(' · ').pop() : m.main;
+    }));
+  }
+  addrQ.addEventListener('input', e=> renderSug(e.target.value));
+  addrQ.addEventListener('focus', e=> renderSug(e.target.value));
+  document.addEventListener('click', e=>{ if(!e.target.closest('.addr-search')) sug.classList.remove('is-show'); });
+
+  // ===== Pin drag =====
+  (function(){
+    const svg = document.getElementById('mapSvg');
+    const pin = document.getElementById('pinG');
+    let dragging=false, off={x:0,y:0};
+    function pt(evt){
+      const r = svg.getBoundingClientRect();
+      return { x:((evt.clientX-r.left)/r.width)*800, y:((evt.clientY-r.top)/r.height)*200 };
+    }
+    pin.addEventListener('pointerdown', e=>{
+      dragging=true; pin.setPointerCapture(e.pointerId);
+      const cur = pin.getAttribute('transform').match(/translate\(([^,]+),([^)]+)\)/);
+      const p = pt(e);
+      off.x = p.x - parseFloat(cur[1]); off.y = p.y - parseFloat(cur[2]);
+    });
+    pin.addEventListener('pointermove', e=>{
+      if(!dragging) return;
+      const p = pt(e);
+      const x = Math.max(20, Math.min(780, p.x-off.x));
+      const y = Math.max(25, Math.min(190, p.y-off.y));
+      pin.setAttribute('transform', `translate(${x},${y})`);
+      const lat = 37.85 - (y/200)*0.20;
+      const lng = -122.50 + (x/800)*0.18;
+      document.getElementById('coords').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+    });
+    pin.addEventListener('pointerup', e=>{ dragging=false; pin.releasePointerCapture(e.pointerId); });
+  })();
+
+  // ===== 24/7 toggle =====
+  window.__toggle24 = function(el){
+    const on = !el.classList.contains('is-on');
+    el.classList.toggle('is-on', on);
+    el.querySelector('.switch').classList.toggle('is-on', on);
+    document.getElementById('hoursWrap').classList.toggle('is-hidden', on);
+  };
+
+  // ===== Save =====
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('name').value.trim();
+    if(!name){
+      document.getElementById('name').focus();
+      document.getElementById('name').style.borderColor = 'var(--brand)';
+      setTimeout(()=>{ document.getElementById('name').style.borderColor=''; }, 1500);
+      return;
+    }
+    if(activeType!=='branch' && selected.size===0){
+      // No-op — kept for safety, linked branches removed
+    }
+    const isDefault = document.getElementById('rowDefault').classList.contains('is-on');
+    document.getElementById('modalTitle').textContent = isDefault ? 'Default location saved' : 'Location saved';
+    document.getElementById('modalBody').textContent = name + (isDefault
+      ? ' is set as your default location and is ready to take bookings.'
+      : ' is ready to take bookings.');
+    document.getElementById('modal').classList.add('is-show');
+  });
+
+})();
+</script>
+
+</body>
+</html>

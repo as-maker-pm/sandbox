@@ -1,0 +1,2149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Add Vehicle — Fleetly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --side-bg: #f4f4f5;
+    --canvas: #ffffff;
+    --bg: #ffffff;
+    --ink: #15171a;
+    --ink-2: #4a4f57;
+    --muted: #8a9099;
+    --muted-2: #b6bcc4;
+    --line: #e8e8ea;
+    --line-2: #ededef;
+    --hover: #ebebed;
+    --active: #e0e0e3;
+    --field: #ffffff;
+    --field-bg: #fafafa;
+    --brand: #ef3a3a;
+    --brand-tint: #fde8e8;
+    --brand-tint-2: #fbe7e7;
+    --ok: #1f8a5b;
+    --ok-tint: #e7f4ee;
+    --warn: #c97c0d;
+    --warn-tint: #fdf2e0;
+    --shadow: 0 1px 2px rgba(15,18,22,.04), 0 8px 24px rgba(15,18,22,.06);
+    --shadow-pop: 0 6px 16px rgba(15,18,22,.08), 0 24px 48px rgba(15,18,22,.10);
+    --t-fast: 140ms cubic-bezier(.2,.7,.2,1);
+    --t-med: 220ms cubic-bezier(.2,.7,.2,1);
+    --t-slow: 320ms cubic-bezier(.22,.8,.18,1);
+  }
+  [data-theme="dark"] {
+    --side-bg: #18191c;
+    --canvas: #0f1012;
+    --bg: #0f1012;
+    --ink: #f3f4f6;
+    --ink-2: #c7cbd1;
+    --muted: #8b9098;
+    --muted-2: #5b6068;
+    --line: #26282d;
+    --line-2: #1f2125;
+    --hover: #25272b;
+    --active: #2f3137;
+    --field: #16181c;
+    --field-bg: #131418;
+    --brand: #ff5757;
+    --brand-tint: #3a1f20;
+    --brand-tint-2: #2a1718;
+    --ok: #4cc38a;
+    --ok-tint: #173025;
+    --warn: #e0a64a;
+    --warn-tint: #2e2418;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--canvas);
+    font-size: 13.5px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { background: none; border: 0; cursor: pointer; padding: 0; }
+  a { text-decoration: none; color: inherit; }
+
+  /* App shell */
+  .app {
+    display: grid;
+    grid-template-columns: var(--side-w, 232px) 1fr;
+    min-height: 100vh;
+    transition: grid-template-columns var(--t-slow);
+  }
+  .app[data-collapsed="true"] { --side-w: 56px; }
+
+  /* ============ SIDEBAR (compact, same as menu file) ============ */
+  .side {
+    position: sticky;
+    top: 0;
+    border-right: 1px solid var(--line);
+    background: var(--side-bg);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .side-top {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex: 0 0 auto;
+  }
+  .logo { display: inline-flex; align-items: center; gap: 8px; color: var(--brand); height: 32px; padding: 0 6px; border-radius: 8px; }
+  .logo-mark { width: 22px; height: 22px; flex: 0 0 22px; }
+  .logo-word { font-weight: 700; font-size: 14px; letter-spacing: -0.01em; color: var(--ink); white-space: nowrap; transition: opacity var(--t-fast); }
+  .app[data-collapsed="true"] .side-top { justify-content: center; padding: 0; }
+  .app[data-collapsed="true"] .logo-word { opacity: 0; width: 0; overflow: hidden; }
+  .app[data-collapsed="true"] .logo { gap: 0; padding: 0; }
+
+  .top-buttons { display: flex; align-items: center; gap: 2px; }
+  .toggle { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 6px; color: var(--muted); transition: background var(--t-fast), color var(--t-fast); }
+  .toggle:hover { background: var(--hover); color: var(--ink); }
+  .app[data-collapsed="true"] .side-top .top-buttons { display: none; }
+
+  .toggle-floating {
+    position: absolute;
+    top: 14px; right: -11px;
+    width: 22px; height: 22px;
+    border-radius: 999px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    display: none;
+    place-items: center;
+    z-index: 5;
+    color: var(--muted);
+    transition: background var(--t-fast), color var(--t-fast);
+  }
+  .toggle-floating:hover { background: var(--hover); color: var(--ink); }
+  .app[data-collapsed="true"] .toggle-floating { display: grid; }
+
+  .nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 8px 8px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  .nav::-webkit-scrollbar { width: 6px; }
+  .nav::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .app[data-collapsed="true"] .nav { padding: 4px 6px 8px; }
+
+  .nav-section { margin-bottom: 8px; }
+  .nav-section-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--muted-2); padding: 12px 10px 4px;
+    transition: opacity var(--t-fast), padding var(--t-med);
+    white-space: nowrap; overflow: hidden;
+  }
+  .nav-section:first-child .nav-section-label { padding-top: 6px; }
+  .app[data-collapsed="true"] .nav-section-label { opacity: 0; height: 0; padding: 6px 0 0; margin: 0 6px; border-top: 1px solid var(--line-2); }
+  .app[data-collapsed="true"] .nav-section:first-child .nav-section-label { border-top: 0; }
+
+  .nav-item {
+    position: relative; display: flex; align-items: center; gap: 10px;
+    width: 100%; height: 30px; padding: 0 10px; margin: 1px 0;
+    border-radius: 7px; color: var(--ink-2); font-weight: 500;
+    text-align: left; transition: background var(--t-fast), color var(--t-fast);
+    font-size: 13px;
+  }
+  .nav-item .icon { width: 16px; height: 16px; flex: 0 0 16px; color: var(--muted); transition: color var(--t-fast); }
+  .nav-item .label { flex: 1; white-space: nowrap; opacity: 1; transition: opacity var(--t-fast); overflow: hidden; }
+  .nav-item .chev { width: 12px; height: 12px; color: var(--muted-2); transition: transform var(--t-med); }
+  .nav-item:hover { background: var(--hover); color: var(--ink); }
+  .nav-item:hover .icon { color: var(--ink); }
+  .nav-item.is-active { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(15,18,22,.05); }
+  [data-theme="dark"] .nav-item.is-active { background: var(--active); box-shadow: none; }
+  .nav-item.is-active .icon { color: var(--ink); }
+  .nav-item.is-open .chev { transform: rotate(90deg); }
+
+  .app[data-collapsed="true"] .nav-item {
+    justify-content: center; padding: 0; width: 40px; height: 32px; margin: 2px auto; gap: 0;
+  }
+  .app[data-collapsed="true"] .nav-item .label,
+  .app[data-collapsed="true"] .nav-item .chev { opacity: 0; width: 0; overflow: hidden; pointer-events: none; }
+
+  .subnav { overflow: hidden; max-height: 0; transition: max-height var(--t-med); padding-left: 26px; position: relative; }
+  .subnav.is-open { max-height: 240px; }
+  .subnav::before { content: ""; position: absolute; left: 18px; top: 4px; bottom: 4px; width: 1px; background: var(--line); }
+  .sub-item { display: flex; align-items: center; height: 28px; padding: 0 10px; color: var(--muted); font-size: 12.5px; border-radius: 6px; transition: color var(--t-fast), background var(--t-fast); }
+  .sub-item:hover { color: var(--ink); background: var(--hover); }
+  .sub-item.is-active { color: var(--ink); font-weight: 600; }
+  .app[data-collapsed="true"] .subnav { display: none; }
+
+  .side-foot { padding: 6px 8px 10px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 1px; border-top: 1px solid var(--line-2); }
+  .app[data-collapsed="true"] .side-foot { padding: 6px 6px 10px; }
+
+  .get-started {
+    display: flex; align-items: center; gap: 10px; padding: 0 10px; height: 32px;
+    background: var(--brand-tint-2); color: var(--brand); border-radius: 7px;
+    font-weight: 600; font-size: 13px; margin: 4px 0 6px; transition: background var(--t-fast);
+  }
+  .get-started:hover { background: var(--brand-tint); }
+  .get-started .gs-mark { width: 16px; height: 16px; flex: 0 0 16px; color: var(--brand); }
+  .get-started .gs-label { flex: 1; white-space: nowrap; transition: opacity var(--t-fast); overflow: hidden; }
+  .get-started .gs-progress { display: flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; transition: opacity var(--t-fast); }
+  .ring { width: 14px; height: 14px; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 2.2; }
+  .ring .track { stroke: rgba(239,58,58,.22); }
+  .ring .fill { stroke: var(--brand); stroke-linecap: round; }
+
+  .app[data-collapsed="true"] .get-started { justify-content: center; padding: 0; width: 40px; height: 32px; margin: 4px auto 6px; gap: 0; }
+  .app[data-collapsed="true"] .get-started .gs-label,
+  .app[data-collapsed="true"] .get-started .gs-progress { opacity: 0; width: 0; overflow: hidden; pointer-events: none; }
+
+  /* ============ TOPBAR ============ */
+  .top {
+    position: sticky; top: 0; background: var(--canvas); border-bottom: 1px solid var(--line);
+    height: 56px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; z-index: 4;
+  }
+  .crumbs { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .crumb-home { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; color: var(--ink-2); border: 1px solid var(--line); }
+  .crumb-sep { color: var(--muted-2); }
+  .crumb a { color: var(--muted); transition: color var(--t-fast); }
+  .crumb a:hover { color: var(--ink); }
+  .crumb-cur { color: var(--ink); font-weight: 500; }
+
+  .top-actions { display: flex; align-items: center; gap: 10px; }
+  .btn {
+    height: 34px; padding: 0 14px; border-radius: 8px;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-weight: 600; font-size: 12.5px;
+    transition: background var(--t-fast), border-color var(--t-fast);
+    border: 1px solid var(--line); color: var(--ink); background: var(--canvas);
+  }
+  .btn:hover { background: var(--hover); }
+  .btn-ghost { border: 0; background: transparent; color: var(--muted); }
+  .btn-ghost:hover { color: var(--ink); background: var(--hover); }
+  .btn-primary { background: var(--ink); color: var(--canvas); border-color: var(--ink); }
+  .btn-primary:hover { background: #2a2d33; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-brand { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn-brand:hover { filter: brightness(1.05); }
+  .icon-btn { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; color: var(--ink-2); transition: background var(--t-fast); }
+  .icon-btn:hover { background: var(--hover); }
+  .avatar { width: 30px; height: 30px; border-radius: 999px; background: #8a9099; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 11px; cursor: pointer; }
+
+  /* ============ ADD VEHICLE LAYOUT ============ */
+  .work {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* Step rail */
+  .rail {
+    border-right: 1px solid var(--line);
+    background: var(--canvas);
+    padding: 28px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+  .rail-title {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted-2); margin: 0 0 16px;
+  }
+  .rail h1 {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+    margin: 0 0 4px;
+  }
+  .rail .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 20px; }
+
+  .progress {
+    height: 4px; background: var(--line); border-radius: 99px; overflow: hidden;
+    margin-bottom: 22px;
+  }
+  .progress-bar {
+    height: 100%; background: var(--brand); border-radius: 99px;
+    transition: width var(--t-slow);
+  }
+
+  .steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+  .step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 10px; border-radius: 8px;
+    cursor: pointer;
+    transition: background var(--t-fast);
+  }
+  .step:hover { background: var(--hover); }
+  .step.is-active { background: var(--bg); box-shadow: 0 1px 2px rgba(15,18,22,.05); }
+  [data-theme="dark"] .step.is-active { background: var(--active); box-shadow: none; }
+  .step-marker {
+    width: 22px; height: 22px; flex: 0 0 22px;
+    border-radius: 99px; border: 1.5px solid var(--line);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    background: var(--canvas);
+    transition: all var(--t-fast);
+  }
+  .step.is-active .step-marker { border-color: var(--ink); color: var(--ink); }
+  .step.is-done .step-marker {
+    background: var(--ok); border-color: var(--ok); color: #fff;
+  }
+  .step.is-done .step-marker .num { display: none; }
+  .step-meta { flex: 1; min-width: 0; }
+  .step-name { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .step.is-active .step-name { color: var(--ink); }
+  .step.is-done .step-name { color: var(--ink); }
+  .step-hint { font-size: 11.5px; color: var(--muted); }
+
+  .rail-tip {
+    margin-top: auto;
+    padding: 14px;
+    background: var(--field-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  .rail-tip svg { width: 16px; height: 16px; flex: 0 0 16px; color: var(--brand); margin-top: 2px; }
+  .rail-tip-title { font-size: 12px; font-weight: 600; margin: 0 0 2px; }
+  .rail-tip-body { font-size: 12px; color: var(--muted); margin: 0; }
+
+  /* Form pane */
+  .pane {
+    background: var(--bg);
+    padding: 36px 48px 120px;
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .pane-head { margin-bottom: 28px; }
+  .pane-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: 6px; }
+  .pane-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .pane-sub { color: var(--muted); margin: 0; font-size: 13.5px; max-width: 60ch; }
+
+  /* Field primitives */
+  .field { margin-bottom: 20px; display: block; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0; }
+  .field-row > .field { margin-bottom: 20px; }
+  .field-row.gap-tight { grid-template-columns: 2fr 1fr; }
+
+  .label {
+    display: flex; align-items: baseline; justify-content: space-between;
+    font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
+  }
+  .label .opt { font-weight: 500; color: var(--muted); font-size: 11.5px; }
+  .hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+  .ctrl, .input, .select, .textarea {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font-size: 13.5px;
+    transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+    outline: none;
+  }
+  .input:hover, .select:hover, .textarea:hover { border-color: var(--muted-2); }
+  .input:focus, .select:focus, .textarea:focus {
+    border-color: var(--ink); box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+  }
+  [data-theme="dark"] .input:focus, [data-theme="dark"] .select:focus, [data-theme="dark"] .textarea:focus {
+    border-color: var(--ink-2); box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+  }
+  .textarea { height: auto; padding: 10px 12px; min-height: 80px; resize: vertical; line-height: 1.5; }
+  .select { appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px;
+  }
+
+  /* VIN input combo */
+  .vin {
+    display: flex; gap: 8px;
+  }
+  .vin .input { flex: 1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; text-transform: uppercase; }
+  .vin .btn { flex: 0 0 auto; }
+
+  /* Decode banner */
+  .banner {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--ok-tint);
+    border: 1px solid color-mix(in srgb, var(--ok) 22%, transparent);
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12.5px;
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity var(--t-med), transform var(--t-med);
+    pointer-events: none;
+    height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; overflow: hidden; border: 0;
+  }
+  .banner.is-show {
+    opacity: 1; transform: translateY(0); pointer-events: auto;
+    height: auto; padding: 12px 14px; margin-top: 12px; border: 1px solid color-mix(in srgb, var(--ok) 22%, transparent);
+  }
+  .banner svg { width: 16px; height: 16px; color: var(--ok); flex: 0 0 16px; margin-top: 1px; }
+  .banner b { color: var(--ink); }
+  .banner .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .banner .pill {
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    padding: 2px 8px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  /* Section divider */
+  .sep {
+    height: 1px; background: var(--line); margin: 28px 0;
+  }
+  .group-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; color: var(--ink); }
+
+  /* Toggle row */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: border-color var(--t-fast), background var(--t-fast);
+  }
+  .toggle-row:hover { border-color: var(--muted-2); }
+  .toggle-row.is-on { background: var(--field-bg); border-color: var(--ink-2); }
+  [data-theme="dark"] .toggle-row.is-on { background: var(--hover); }
+  .toggle-row .meta { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .toggle-row .ti { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--field-bg); color: var(--ink-2); flex: 0 0 32px; }
+  .toggle-row.is-on .ti { background: var(--ink); color: var(--canvas); }
+  .toggle-row .name { font-size: 13px; font-weight: 600; }
+  .toggle-row .desc { font-size: 12px; color: var(--muted); }
+
+  .switch {
+    width: 36px; height: 20px;
+    background: var(--line);
+    border-radius: 99px;
+    position: relative;
+    cursor: pointer;
+    transition: background var(--t-fast);
+    flex: 0 0 36px;
+  }
+  .switch::after {
+    content: ""; position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 99px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    transition: transform var(--t-fast);
+  }
+  .switch.is-on { background: var(--ink); }
+  .switch.is-on::after { transform: translateX(16px); }
+
+  /* Photo upload */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .photo-cell {
+    aspect-ratio: 4/3;
+    border-radius: 10px;
+    border: 1px dashed var(--line);
+    background: var(--field-bg);
+    display: grid; place-items: center;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-cell:hover { border-color: var(--ink-2); color: var(--ink); }
+  .photo-cell.is-set {
+    border-style: solid;
+    border-color: var(--line);
+  }
+  .photo-cell.is-set .ph-img {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+  }
+  .photo-cell.is-set .ph-rm {
+    position: absolute; top: 6px; right: 6px;
+    width: 22px; height: 22px;
+    border-radius: 99px;
+    background: rgba(15,18,22,.6); color: #fff;
+    display: grid; place-items: center;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+    opacity: 0; transition: opacity var(--t-fast);
+  }
+  .photo-cell.is-set:hover .ph-rm { opacity: 1; }
+  .photo-cell .ph-cover {
+    position: absolute; bottom: 6px; left: 6px;
+    background: rgba(15,18,22,.7);
+    color: #fff;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    z-index: 2;
+  }
+  .photo-cell .ph-add { display: grid; place-items: center; gap: 4px; }
+  .photo-cell .ph-add svg { width: 18px; height: 18px; }
+
+  /* Pricing plan cards */
+  .plan-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 8px;
+  }
+  .plan {
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px;
+    cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast);
+    background: var(--canvas);
+  }
+  .plan:hover { border-color: var(--muted-2); }
+  .plan.is-sel { border-color: var(--ink); background: var(--field-bg); }
+  .plan-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .plan-name { font-size: 13px; font-weight: 700; }
+  .plan-radio {
+    width: 16px; height: 16px; border-radius: 99px;
+    border: 1.5px solid var(--muted-2);
+    display: grid; place-items: center;
+    transition: border-color var(--t-fast), background var(--t-fast);
+  }
+  .plan.is-sel .plan-radio { border-color: var(--ink); background: var(--ink); }
+  .plan.is-sel .plan-radio::after { content: ""; width: 6px; height: 6px; background: var(--canvas); border-radius: 99px; }
+  .plan-desc { font-size: 12px; color: var(--muted); }
+
+  /* Price input with currency */
+  .price-input {
+    position: relative;
+  }
+  .price-input .input { padding-left: 30px; }
+  .price-input .cur {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 13px; font-weight: 500;
+    pointer-events: none;
+  }
+  .price-input .per {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 12px; pointer-events: none;
+  }
+
+  /* Trip extras list */
+  .extras-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .extras-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .extra {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--canvas);
+    transition: border-color var(--t-fast);
+  }
+  .extra:hover { border-color: var(--muted-2); }
+  .extra .ex-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--field-bg); display: grid; place-items: center; color: var(--ink-2); flex: 0 0 32px; }
+  .extra .ex-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .extra .ex-price { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .extra .ex-period { font-size: 12px; color: var(--muted); margin-left: 4px; font-weight: 400; }
+  .extra .ex-rm {
+    width: 28px; height: 28px; border-radius: 6px; color: var(--muted);
+    display: grid; place-items: center;
+    transition: background var(--t-fast), color var(--t-fast);
+  }
+  .extra .ex-rm:hover { background: var(--brand-tint); color: var(--brand); }
+
+  .extra-add {
+    display: grid;
+    grid-template-columns: 32px 1fr 110px 100px 38px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    background: var(--field-bg);
+  }
+  .extra-add .ea-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--canvas); display: grid; place-items: center; color: var(--muted); }
+  .extra-add input, .extra-add select { height: 34px; font-size: 13px; }
+  .extra-add .add {
+    height: 34px; width: 38px;
+    background: var(--ink); color: var(--canvas);
+    border-radius: 7px;
+    display: grid; place-items: center;
+  }
+  .extra-add .add:hover { background: #2a2d33; }
+  .extra-add .add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ============ Pricing extensions ============ */
+  .seg {
+    display: inline-flex; padding: 3px; background: var(--field-bg);
+    border: 1px solid var(--line); border-radius: 9px; gap: 2px;
+  }
+  .seg button {
+    height: 28px; padding: 0 12px; border-radius: 6px;
+    font-size: 12.5px; font-weight: 600; color: var(--muted);
+    transition: background var(--t-fast), color var(--t-fast);
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button.is-on { background: var(--canvas); color: var(--ink); box-shadow: 0 1px 2px rgba(15,18,22,.06); }
+  [data-theme="dark"] .seg button.is-on { background: var(--active); box-shadow: none; }
+
+  .rate-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+  .rate-card {
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px;
+    cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast);
+    background: var(--canvas); position: relative;
+  }
+  .rate-card:hover { border-color: var(--muted-2); }
+  .rate-card.is-on { border-color: var(--ink); background: var(--field-bg); }
+  .rate-card .rc-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+  }
+  .rate-card .rc-name { font-size: 13px; font-weight: 700; }
+  .rate-card .rc-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .rate-card .rc-body { display: none; }
+  .rate-card.is-on .rc-body { display: block; }
+
+  .compare-banner {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 12px 14px; border-radius: 10px;
+    background: var(--field-bg); border: 1px dashed var(--line);
+    font-size: 12.5px; color: var(--ink-2);
+    margin-top: 10px;
+  }
+  .compare-banner svg { width: 16px; height: 16px; color: var(--ink); flex: 0 0 16px; margin-top: 2px; }
+  .compare-banner b { color: var(--ink); }
+
+  /* Discount tier rows */
+  .tier-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .tier {
+    display: grid;
+    grid-template-columns: 70px 1fr 80px 110px 38px;
+    gap: 8px; align-items: center;
+    padding: 8px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--canvas);
+  }
+  .tier .badge {
+    height: 30px; border-radius: 7px; background: var(--field-bg); border: 1px solid var(--line-2);
+    color: var(--muted); font-size: 11.5px; font-weight: 600;
+    display: grid; place-items: center; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .tier-from { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; }
+  .tier-from input { width: 100%; }
+  .tier input, .tier select { height: 30px; font-size: 13px; }
+  .tier .ex-rm { width: 30px; height: 30px; }
+  .tier-add {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 12px; border-radius: 8px;
+    border: 1px dashed var(--line); color: var(--muted); font-size: 12.5px; font-weight: 600;
+    transition: color var(--t-fast), border-color var(--t-fast);
+  }
+  .tier-add:hover { color: var(--ink); border-color: var(--ink-2); }
+
+  /* Profile-style select with link */
+  .profile-row { display: flex; gap: 8px; align-items: stretch; }
+  .profile-row .select { flex: 1; }
+  .profile-row .btn-link {
+    height: 38px; padding: 0 12px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--canvas);
+    font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background var(--t-fast);
+  }
+  .profile-row .btn-link:hover { background: var(--hover); color: var(--ink); }
+
+  .profile-summary {
+    margin-top: 8px; padding: 10px 12px;
+    background: var(--field-bg); border: 1px solid var(--line-2); border-radius: 8px;
+    font-size: 12px; color: var(--muted);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .profile-summary .pf-rows { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .profile-summary .pf-rows span b { color: var(--ink); font-weight: 600; }
+
+  /* Min/max range pair */
+  .range-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px;
+    align-items: end;
+  }
+  .range-row .dash { height: 38px; display: grid; place-items: center; color: var(--muted-2); font-weight: 700; padding-bottom: 0; }
+
+  /* Locations multi-select chips */
+  .loc-list { display: flex; flex-direction: column; gap: 6px; }
+  .loc {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--canvas);
+    cursor: pointer;
+    transition: border-color var(--t-fast), background var(--t-fast);
+  }
+  .loc:hover { border-color: var(--muted-2); }
+  .loc.is-on { border-color: var(--ink); background: var(--field-bg); }
+  [data-theme="dark"] .loc.is-on { background: var(--hover); }
+  .loc .loc-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--field-bg); color: var(--ink-2);
+    display: grid; place-items: center; flex: 0 0 32px;
+  }
+  .loc.is-on .loc-icon { background: var(--ink); color: var(--canvas); }
+  .loc-meta { flex: 1; min-width: 0; }
+  .loc-name { font-size: 13px; font-weight: 600; }
+  .loc-addr { font-size: 12px; color: var(--muted); }
+  .loc-tags { display: flex; gap: 6px; }
+  .loc-tag {
+    font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 99px;
+    background: var(--field-bg); border: 1px solid var(--line-2); color: var(--muted);
+  }
+  .loc-tag.tag-pickup.is-active { background: var(--ok-tint); border-color: color-mix(in srgb, var(--ok) 24%, transparent); color: var(--ok); }
+  .loc-tag.tag-dropoff.is-active { background: var(--brand-tint-2); border-color: color-mix(in srgb, var(--brand) 24%, transparent); color: var(--brand); }
+  .check-box {
+    width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--muted-2);
+    display: grid; place-items: center; flex: 0 0 20px;
+    transition: background var(--t-fast), border-color var(--t-fast);
+  }
+  .check-box svg { width: 12px; height: 12px; color: #fff; opacity: 0; }
+  .loc.is-on .check-box { background: var(--ink); border-color: var(--ink); }
+  .loc.is-on .check-box svg { opacity: 1; }
+
+  /* Buffer pill picker */
+  .pill-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .pill-pick button {
+    height: 32px; padding: 0 14px; border-radius: 99px;
+    border: 1px solid var(--line); background: var(--canvas);
+    font-size: 12.5px; font-weight: 500; color: var(--ink-2);
+    transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+  }
+  .pill-pick button:hover { border-color: var(--muted-2); }
+  .pill-pick button.is-on { background: var(--ink); border-color: var(--ink); color: var(--canvas); }
+
+  /* Review block (step 5) */
+  .review-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;
+  }
+  .review-card {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--canvas);
+  }
+  .review-card.full { grid-column: 1 / -1; }
+  .review-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .review-head h3 { font-size: 13px; font-weight: 700; margin: 0; }
+  .review-head .edit-link { font-size: 12px; color: var(--brand); font-weight: 600; }
+  .review-head .edit-link:hover { text-decoration: underline; }
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 12.5px; border-bottom: 1px dashed var(--line-2); }
+  .kv:last-child { border-bottom: 0; }
+  .kv .k { color: var(--muted); }
+  .kv .v { color: var(--ink); font-weight: 500; text-align: right; max-width: 60%; word-break: break-word; }
+
+  .pub {
+    margin-top: 24px;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: var(--field-bg);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .pub .ptxt h3 { margin: 0 0 4px; font-size: 14px; }
+  .pub .ptxt p { margin: 0; font-size: 12.5px; color: var(--muted); }
+
+  /* Sticky footer */
+  .footer {
+    position: sticky;
+    bottom: 0;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+    padding: 14px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 0 -48px -120px;
+  }
+  .footer .save-state { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .footer .save-state svg { width: 14px; height: 14px; color: var(--ok); }
+  .footer .actions { display: flex; gap: 10px; }
+
+  /* Step content fade */
+  .step-content {
+    animation: fadeIn 320ms cubic-bezier(.22,.8,.18,1);
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Success modal */
+  .modal-shade {
+    position: fixed; inset: 0;
+    background: rgba(15,18,22,.4);
+    backdrop-filter: blur(4px);
+    display: none;
+    place-items: center;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity var(--t-med);
+  }
+  .modal-shade.is-show { display: grid; opacity: 1; }
+  .modal {
+    background: var(--canvas);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-pop);
+    transform: scale(.95);
+    transition: transform var(--t-med);
+  }
+  .modal-shade.is-show .modal { transform: scale(1); }
+  .modal .check {
+    width: 56px; height: 56px;
+    border-radius: 99px;
+    background: var(--ok-tint);
+    color: var(--ok);
+    display: grid; place-items: center;
+    margin: 0 auto 16px;
+  }
+  .modal h2 { margin: 0 0 6px; font-size: 18px; }
+  .modal p { margin: 0 0 20px; color: var(--muted); font-size: 13px; }
+  .modal .actions { display: flex; gap: 8px; justify-content: center; }
+
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" id="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo" aria-label="Fleetly">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/>
+          <circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/>
+          <circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme" aria-label="Toggle theme" title="Toggle theme">
+          <svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+            <line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/>
+            <line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/>
+          </svg>
+          <svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+          </svg>
+        </button>
+        <button class="toggle" id="btnToggle" aria-label="Collapse menu" title="Collapse menu (⌘\)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <line x1="9" y1="4" x2="9" y2="20"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="toggle-floating" id="btnExpand" aria-label="Expand menu" title="Expand menu (⌘\)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    <nav class="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
+          </svg>
+          <span class="label">Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item is-active is-open has-sub">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>
+          </svg>
+          <span class="label">Fleet</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Add Vehicle.html" class="sub-item is-active">Add Vehicle</a>
+          <a href="Fleet.html" class="sub-item">Vehicles</a>
+          <a href="#" class="sub-item">Maintenance</a>
+          <a href="#" class="sub-item">Inspections</a>
+        </div>
+        <a href="Bookings.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/>
+          </svg>
+          <span class="label">Bookings</span>
+        </a>
+        <a href="Calendar.html" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>
+          </svg>
+          <span class="label">Calendar</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Analytics</div>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/>
+          </svg>
+          <span class="label">Utilization</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>
+          </svg>
+          <span class="label">Revenue</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15 14c2.5.2 5 1.6 5.5 4.5"/>
+          </svg>
+          <span class="label">Customers</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Admin</div>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="13" x2="17.5" y2="22"/><line x1="13" y1="17.5" x2="22" y2="17.5"/>
+          </svg>
+          <span class="label">Integrations</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/>
+          </svg>
+          <span class="label">Locations</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="3.5"/><path d="M4 21c.7-4 4-6 8-6s7.3 2 8 6"/>
+          </svg>
+          <span class="label">Users</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="side-foot">
+      <a href="#" class="get-started">
+        <svg class="gs-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/>
+          <circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/>
+          <circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="gs-label">Get Started</span>
+        <span class="gs-progress">
+          <span>0/6</span>
+          <svg class="ring" viewBox="0 0 16 16">
+            <circle class="track" cx="8" cy="8" r="6.5"/>
+            <circle class="fill" cx="8" cy="8" r="6.5" stroke-dasharray="40.84" stroke-dashoffset="40.84"/>
+          </svg>
+        </span>
+      </a>
+      <a href="#" class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+        </svg>
+        <span class="label">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>
+          </svg>
+        </span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        <span class="crumb"><a href="#">Fleet</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        <span class="crumb-cur">Add Vehicle</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost">Save & exit</button>
+        <button class="btn">Need Help?</button>
+        <button class="icon-btn" aria-label="Notifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/>
+          </svg>
+        </button>
+        <div class="avatar" title="Jane Doe">JD</div>
+      </div>
+    </header>
+
+    <div class="work">
+      <!-- ============ STEP RAIL ============ -->
+      <aside class="rail">
+        <div class="rail-title">New listing</div>
+        <h1>Add a vehicle</h1>
+        <div class="sub">6 quick steps. We'll save as you go.</div>
+
+        <div class="progress"><div class="progress-bar" id="progressBar" style="width:16.6%"></div></div>
+
+        <ol class="steps" id="steps">
+          <li class="step is-active" data-step="1">
+            <div class="step-marker"><span class="num">1</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Vehicle</div><div class="step-hint">VIN, make, model</div></div>
+          </li>
+          <li class="step" data-step="2">
+            <div class="step-marker"><span class="num">2</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Specs &amp; features</div><div class="step-hint">Body, fuel, options</div></div>
+          </li>
+          <li class="step" data-step="3">
+            <div class="step-marker"><span class="num">3</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Photos</div><div class="step-hint">Cover + gallery</div></div>
+          </li>
+          <li class="step" data-step="4">
+            <div class="step-marker"><span class="num">4</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Pricing &amp; extras</div><div class="step-hint">Daily rate, add-ons</div></div>
+          </li>
+          <li class="step" data-step="5">
+            <div class="step-marker"><span class="num">5</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Rules &amp; locations</div><div class="step-hint">Limits, pickup, buffers</div></div>
+          </li>
+          <li class="step" data-step="6">
+            <div class="step-marker"><span class="num">6</span><svg class="check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="step-meta"><div class="step-name">Review &amp; publish</div><div class="step-hint">Final check</div></div>
+          </li>
+        </ol>
+
+        <div class="rail-tip" id="railTip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.5" r=".8" fill="currentColor"/></svg>
+          <div>
+            <div class="rail-tip-title" id="tipTitle">VIN saves you time</div>
+            <p class="rail-tip-body" id="tipBody">Decode the 17-character VIN and we'll auto-fill make, model, year and trim.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ FORM PANE ============ -->
+      <div class="pane">
+
+        <!-- STEP 1 -->
+        <section class="step-content" data-pane="1">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 1 of 5</div>
+            <h1 class="pane-title">Tell us about the vehicle</h1>
+            <p class="pane-sub">Start with the VIN — we'll decode it and pre-fill the rest. Manual entry is fine if you don't have one handy.</p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="vin">VIN <span class="opt">17 characters</span></label>
+            <div class="vin">
+              <input id="vin" class="input" placeholder="e.g. 1HGCM82633A004352" maxlength="17" />
+              <button class="btn btn-primary" id="decodeBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 12 3 21 6"/><path d="M3 6v12l9 3 9-3V6"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+                Decode
+              </button>
+            </div>
+            <div class="hint">Found on the dashboard near the windshield or inside the driver's door frame.</div>
+            <div class="banner" id="decodeBanner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <div>
+                <b>Auto-filled from VIN.</b> Review the values below — you can still edit them.
+                <div class="pills">
+                  <span class="pill">Tesla</span>
+                  <span class="pill">Model 3 Long Range</span>
+                  <span class="pill">2023</span>
+                  <span class="pill">VIN: 1HGCM82633A004352</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="make">Make</label>
+              <input id="make" class="input" placeholder="e.g. Tesla" />
+            </div>
+            <div class="field">
+              <label class="label" for="model">Model</label>
+              <input id="model" class="input" placeholder="e.g. Model 3" />
+            </div>
+          </div>
+
+          <div class="field-row gap-tight">
+            <div class="field">
+              <label class="label" for="trim">Trim <span class="opt">optional</span></label>
+              <input id="trim" class="input" placeholder="e.g. Long Range AWD" />
+            </div>
+            <div class="field">
+              <label class="label" for="year">Manufacture year</label>
+              <select id="year" class="select">
+                <option value="">Select…</option>
+                <option>2025</option><option>2024</option><option selected>2023</option><option>2022</option><option>2021</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="regYear">Registration year <span class="opt">optional — only if different from manufacture year</span></label>
+            <select id="regYear" class="select">
+              <option value="">Same as manufacture year</option>
+              <option>2025</option><option>2024</option><option>2023</option><option>2022</option>
+            </select>
+            <div class="hint">Used for documents and insurance lookups when registration date differs from build year.</div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="plate">License plate</label>
+            <input id="plate" class="input" placeholder="e.g. 7HZX-432" style="font-family: ui-monospace, monospace; letter-spacing: .05em; text-transform: uppercase;" />
+            <div class="hint">Visible to renters for pickup identification.</div>
+          </div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section class="step-content" data-pane="2" style="display:none;">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 2 of 5</div>
+            <h1 class="pane-title">Specs &amp; features</h1>
+            <p class="pane-sub">Filters and search rely on these. Be accurate — guests will filter your listing out if anything is wrong.</p>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="body">Body type</label>
+              <select id="body" class="select">
+                <option>Sedan</option><option>SUV</option><option>Hatchback</option><option>Coupe</option><option>Convertible</option><option>Pickup</option><option>Van</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="seats">Seats</label>
+              <select id="seats" class="select">
+                <option>2</option><option>4</option><option selected>5</option><option>7</option><option>8</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="trans">Transmission</label>
+              <select id="trans" class="select">
+                <option>Automatic</option><option>Manual</option><option>CVT</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="fuel">Fuel type</label>
+              <select id="fuel" class="select">
+                <option>Electric</option><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Plug-in hybrid</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="doors">Doors</label>
+              <select id="doors" class="select">
+                <option>2</option><option selected>4</option><option>5</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="luggage">Luggage capacity</label>
+              <select id="luggage" class="select">
+                <option>1 small bag</option><option selected>2 large bags</option><option>3 large bags</option><option>4+ large bags</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+          <div class="group-title">Features</div>
+
+          <div id="features">
+            <!-- features rendered by JS -->
+          </div>
+        </section>
+
+        <!-- STEP 3 -->
+        <section class="step-content" data-pane="3" style="display:none;">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 3 of 5</div>
+            <h1 class="pane-title">Photos</h1>
+            <p class="pane-sub">First photo is the cover. Listings with 5+ photos get 3× more bookings.</p>
+          </div>
+
+          <div class="photo-grid" id="photoGrid">
+            <!-- rendered by JS -->
+          </div>
+
+          <div class="hint" style="margin-top: 14px;">JPG or PNG, max 8 MB each. Drag to reorder. The first slot is your cover image — choose a clean exterior 3/4 shot in good light.</div>
+        </section>
+
+        <!-- STEP 4 -->
+        <section class="step-content" data-pane="4" style="display:none;">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 4 of 6</div>
+            <h1 class="pane-title">Pricing &amp; extras</h1>
+            <p class="pane-sub">Set base rates, discount tiers, deposit and the tax / booking-fee profiles to apply at checkout.</p>
+          </div>
+
+          <!-- Pricing type -->
+          <div class="extras-head" style="margin-bottom:10px;">
+            <div>
+              <div class="group-title" style="margin-bottom:2px;">Pricing type</div>
+              <div class="hint" style="margin:0;">Enable one or both. When both are on, checkout charges whichever is cheaper for the trip length.</div>
+            </div>
+          </div>
+
+          <div class="rate-cards">
+            <div class="rate-card is-on" id="rcDaily">
+              <div class="rc-head">
+                <div class="rc-name">Daily rate</div>
+                <div class="switch is-on" id="swDaily"></div>
+              </div>
+              <div class="rc-desc">Charged per 24h. Best for trips of 1+ days.</div>
+              <div class="rc-body">
+                <div class="field" style="margin-bottom:0;">
+                  <label class="label" for="dayRate">Base daily price</label>
+                  <div class="price-input">
+                    <span class="cur">$</span>
+                    <input id="dayRate" class="input" type="number" value="89" placeholder="0" />
+                    <span class="per">/ day</span>
+                  </div>
+                  <div class="hint">Similar vehicles in your area: $72–$110.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rate-card is-on" id="rcHourly">
+              <div class="rc-head">
+                <div class="rc-name">Hourly rate</div>
+                <div class="switch is-on" id="swHourly"></div>
+              </div>
+              <div class="rc-desc">Charged per hour. Best for short errands.</div>
+              <div class="rc-body">
+                <div class="field" style="margin-bottom:0;">
+                  <label class="label" for="hourRate">Base hourly price</label>
+                  <div class="price-input">
+                    <span class="cur">$</span>
+                    <input id="hourRate" class="input" type="number" value="14" placeholder="0" />
+                    <span class="per">/ hour</span>
+                  </div>
+                  <div class="hint">Min $8 to cover platform fees.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare-banner" id="rateCompare">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4 M12 18v4 M4.9 4.9l2.8 2.8 M16.3 16.3l2.8 2.8 M2 12h4 M18 12h4 M4.9 19.1l2.8-2.8 M16.3 7.7l2.8-2.8"/></svg>
+            <div>
+              <b>Auto-cap enabled.</b> Hourly $14 × <b>7h</b> = $98 — exceeds daily $89, so a 7h+ trip is automatically billed at the daily rate. Crossover: <b>~6.4 hours</b>.
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Custom discounts -->
+          <div class="extras-head" style="margin-bottom:10px;">
+            <div>
+              <div class="group-title" style="margin-bottom:2px;">Custom discounts</div>
+              <div class="hint" style="margin:0;">Reward longer bookings. Tiers stack as the trip grows — the highest matching tier wins.</div>
+            </div>
+            <div class="seg" id="discScope">
+              <button class="is-on" data-scope="days">By days</button>
+              <button data-scope="hours">By hours</button>
+            </div>
+          </div>
+
+          <div class="tier-list" id="tiersDays" data-scope="days"></div>
+          <div class="tier-list" id="tiersHours" data-scope="hours" style="display:none;"></div>
+          <button class="tier-add" id="addTierBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add tier
+          </button>
+
+          <div class="sep"></div>
+
+          <!-- Security deposit -->
+          <div class="toggle-row is-on" id="depositToggle" style="margin-bottom:12px;">
+            <div class="meta">
+              <div class="ti">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/><path d="M9 12h6 M12 9v6"/></svg>
+              </div>
+              <div>
+                <div class="name">Security deposit <span class="opt" style="font-weight:500;color:var(--muted);font-size:11.5px;">optional</span></div>
+                <div class="desc">Authorized at pickup, refunded after return inspection.</div>
+              </div>
+            </div>
+            <div class="switch is-on" id="swDeposit"></div>
+          </div>
+          <div class="field" id="depositField" style="margin-left:0;">
+            <div class="price-input" style="max-width:240px;">
+              <span class="cur">$</span>
+              <input id="deposit" class="input" type="number" value="500" />
+              <span class="per">held</span>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Mileage -->
+          <div class="group-title">Mileage allowance</div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="km">Miles included per day</label>
+              <div class="price-input">
+                <input id="km" class="input" type="number" value="150" />
+                <span class="per">mi / day</span>
+              </div>
+              <div class="hint">Renters get this much driving per booked day, free.</div>
+            </div>
+            <div class="field">
+              <label class="label" for="overFee">Overage fee</label>
+              <div class="price-input">
+                <span class="cur">$</span>
+                <input id="overFee" class="input" type="number" step="0.05" value="0.35" />
+                <span class="per">/ mi over</span>
+              </div>
+              <div class="hint">Charged automatically on return based on odometer reading.</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Tax & Booking fee profiles -->
+          <div class="group-title">Tax &amp; booking fees</div>
+
+          <div class="field">
+            <label class="label" for="taxProfile">Tax profile</label>
+            <div class="profile-row">
+              <select id="taxProfile" class="select">
+                <option value="default">Default — Standard sales tax (8.875%)</option>
+                <option value="ca-airport">California airport — 8.5% + 11.11% concession</option>
+                <option value="ny-city">New York City — 8.875% + 6% rental tax</option>
+                <option value="tx-base">Texas — 6.25% motor vehicle</option>
+                <option value="exempt">Tax exempt (B2B)</option>
+              </select>
+              <a class="btn-link" href="#" title="Manage tax profiles">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                Manage
+              </a>
+            </div>
+            <div class="profile-summary" id="taxSummary">
+              <div class="pf-rows">
+                <span>Base rate <b>8.875%</b></span>
+                <span>Compounding <b>No</b></span>
+                <span>Applies to <b>Subtotal + extras</b></span>
+              </div>
+              <a href="#" style="color:var(--brand);font-weight:600;text-decoration:none;">View profile →</a>
+            </div>
+            <div class="hint">Profiles are configured in Admin → Tax profiles. Changes there propagate automatically.</div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="feeProfile">Booking fee profile</label>
+            <div class="profile-row">
+              <select id="feeProfile" class="select">
+                <option value="default">Default — Platform standard ($3 + 4%)</option>
+                <option value="econ">Economy — $1.50 flat</option>
+                <option value="premium">Premium — $5 + 6%</option>
+                <option value="weekend">Weekend uplift — $4 + 5%</option>
+                <option value="none">No booking fee</option>
+              </select>
+              <a class="btn-link" href="#" title="Manage booking fee profiles">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+                Manage
+              </a>
+            </div>
+            <div class="profile-summary" id="feeSummary">
+              <div class="pf-rows">
+                <span>Flat <b>$3.00</b></span>
+                <span>Percentage <b>4%</b></span>
+                <span>Min <b>$3.00</b> · Max <b>$25.00</b></span>
+              </div>
+              <a href="#" style="color:var(--brand);font-weight:600;text-decoration:none;">View profile →</a>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Trip extras -->
+          <div class="extras-head">
+            <div>
+              <div class="group-title" style="margin-bottom: 2px;">Trip extras</div>
+              <div class="hint" style="margin: 0;">Optional add-ons renters can include during checkout. Each one is a direct revenue line.</div>
+            </div>
+          </div>
+
+          <div class="extras-list" id="extrasList">
+            <!-- rendered by JS -->
+          </div>
+
+          <div class="extra-add">
+            <div class="ea-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+            <input id="newExtraName" class="input" placeholder="Add an extra (e.g. Child seat)" style="height:34px;" />
+            <div class="price-input">
+              <span class="cur" style="left:10px;font-size:12px;">$</span>
+              <input id="newExtraPrice" class="input" type="number" placeholder="0" style="height:34px;padding-left:24px;" />
+            </div>
+            <select id="newExtraPeriod" class="select" style="height:34px;">
+              <option value="day">/ day</option>
+              <option value="trip">/ trip</option>
+            </select>
+            <button class="add" id="addExtraBtn" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- STEP 5 — Rules & locations -->
+        <section class="step-content" data-pane="5" style="display:none;">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 5 of 6</div>
+            <h1 class="pane-title">Rules &amp; locations</h1>
+            <p class="pane-sub">Booking limits, where guests can pick up and drop off, and how much breathing room you need between trips.</p>
+          </div>
+
+          <!-- Min/max booking length -->
+          <div class="group-title">Booking length</div>
+
+          <div class="field">
+            <label class="label">Days</label>
+            <div class="range-row">
+              <div class="price-input">
+                <input id="minDays" class="input" type="number" value="1" min="0" />
+                <span class="per">min days</span>
+              </div>
+              <div class="dash">–</div>
+              <div class="price-input">
+                <input id="maxDays" class="input" type="number" value="30" min="0" />
+                <span class="per">max days</span>
+              </div>
+            </div>
+            <div class="hint">Set max to <b>0</b> for no upper limit. Most owners cap at 30 to keep insurance simple.</div>
+          </div>
+
+          <div class="field">
+            <label class="label">Hours <span class="opt">applies when hourly rate is on</span></label>
+            <div class="range-row">
+              <div class="price-input">
+                <input id="minHours" class="input" type="number" value="2" min="0" />
+                <span class="per">min hours</span>
+              </div>
+              <div class="dash">–</div>
+              <div class="price-input">
+                <input id="maxHours" class="input" type="number" value="12" min="0" />
+                <span class="per">max hours</span>
+              </div>
+            </div>
+            <div class="hint">A trip longer than max hours rolls into the daily rate automatically.</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Locations -->
+          <div class="extras-head" style="margin-bottom:10px;">
+            <div>
+              <div class="group-title" style="margin-bottom:2px;">Pickup &amp; dropoff locations</div>
+              <div class="hint" style="margin:0;">Where this vehicle is available. Tap a card to enable it, then tag it as a pickup, dropoff, or both.</div>
+            </div>
+            <a href="#" class="btn-link" style="height:32px;font-size:12px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New location
+            </a>
+          </div>
+
+          <div class="loc-list" id="locList">
+            <!-- rendered by JS -->
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- Booking buffer -->
+          <div class="group-title">Buffer between bookings</div>
+          <p class="hint" style="margin:-6px 0 12px;">Block the calendar for this much time after every trip — for cleaning, fueling, or inspection.</p>
+
+          <div class="pill-pick" id="bufferPicker">
+            <button data-buf="0">No buffer</button>
+            <button data-buf="30" class="is-on">30 min</button>
+            <button data-buf="60">1 hour</button>
+            <button data-buf="120">2 hours</button>
+            <button data-buf="240">4 hours</button>
+            <button data-buf="1440">1 day</button>
+            <button data-buf="custom">Custom…</button>
+          </div>
+
+          <div class="field" id="customBufferField" style="margin-top:14px;display:none;max-width:260px;">
+            <div class="price-input">
+              <input id="customBuffer" class="input" type="number" value="90" min="0" />
+              <span class="per">minutes</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 6 -->
+        <section class="step-content" data-pane="6" style="display:none;">
+          <div class="pane-head">
+            <div class="pane-eyebrow">Step 6 of 6</div>
+            <h1 class="pane-title">Review &amp; publish</h1>
+            <p class="pane-sub">Quick check before your vehicle goes live. You can publish now or save it as a draft.</p>
+          </div>
+
+          <div class="review-grid" id="reviewGrid">
+            <!-- rendered by JS -->
+          </div>
+
+          <div class="pub">
+            <div class="ptxt">
+              <h3>Ready to publish?</h3>
+              <p>Your listing will appear in search within 5 minutes. You can pause or delete it anytime.</p>
+            </div>
+            <button class="btn btn-brand" id="publishBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Publish vehicle
+            </button>
+          </div>
+        </section>
+
+        <!-- ============ STICKY FOOTER ============ -->
+        <div class="footer">
+          <div class="save-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="savedState">Saved as draft · just now</span>
+          </div>
+          <div class="actions">
+            <button class="btn" id="backBtn" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Back
+            </button>
+            <button class="btn btn-primary" id="nextBtn">
+              Continue
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Success modal -->
+<div class="modal-shade" id="modal">
+  <div class="modal">
+    <div class="check">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Your vehicle is live!</h2>
+    <p>The 2023 Tesla Model 3 is now visible to renters in your area. We'll email you when the first booking comes in.</p>
+    <div class="actions">
+      <button class="btn" onclick="document.getElementById('modal').classList.remove('is-show')">Add another</button>
+      <a href="Menu Experience.html" class="btn btn-primary">View dashboard</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const app = document.getElementById('app');
+
+  // Theme
+  const btnTheme = document.getElementById('btnTheme');
+  const sun = btnTheme.querySelector('.theme-sun');
+  const moon = btnTheme.querySelector('.theme-moon');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    sun.style.display = t === 'dark' ? 'none' : '';
+    moon.style.display = t === 'dark' ? '' : 'none';
+    localStorage.setItem('theme', t);
+  }
+  applyTheme(localStorage.getItem('theme') || 'light');
+  btnTheme.addEventListener('click', () => {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  // Sidebar collapse
+  const btnToggle = document.getElementById('btnToggle');
+  const btnExpand = document.getElementById('btnExpand');
+  const saved = localStorage.getItem('side-collapsed');
+  if (saved === '1') app.dataset.collapsed = 'true';
+  function setCollapsed(v) {
+    app.dataset.collapsed = v ? 'true' : 'false';
+    localStorage.setItem('side-collapsed', v ? '1' : '0');
+  }
+  btnToggle.addEventListener('click', () => setCollapsed(true));
+  btnExpand.addEventListener('click', () => setCollapsed(false));
+  window.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+      e.preventDefault();
+      setCollapsed(app.dataset.collapsed !== 'true');
+    }
+  });
+
+  // ============ Step state ============
+  let current = 1;
+  const total = 6;
+  const completed = new Set();
+
+  const tips = {
+    1: { title: 'VIN saves you time', body: "Decode the 17-character VIN and we'll auto-fill make, model, year and trim." },
+    2: { title: 'Be accurate with specs', body: 'Renters filter by transmission, fuel and seats. Wrong specs = cancelled bookings.' },
+    3: { title: 'Photos sell listings', body: 'Cover photo is everything. Use a 3/4 exterior shot in natural light. Aim for 6+ photos.' },
+    4: { title: 'Pricing logic is automatic', body: 'Enable both daily and hourly — checkout always picks the cheaper of the two for the trip length.' },
+    5: { title: 'Buffers prevent overlap', body: 'A 30-min buffer is enough for a quick clean. Add more if you handle multiple vehicles solo.' },
+    6: { title: "You're almost done", body: 'You can publish now or keep editing as a draft. Drafts auto-save.' }
+  };
+
+  function setStep(n) {
+    if (n < 1 || n > total) return;
+    if (n > current) completed.add(current);
+    current = n;
+
+    document.querySelectorAll('[data-pane]').forEach(p => {
+      p.style.display = (+p.dataset.pane === n) ? '' : 'none';
+    });
+
+    document.querySelectorAll('.step').forEach(s => {
+      const idx = +s.dataset.step;
+      s.classList.toggle('is-active', idx === n);
+      s.classList.toggle('is-done', completed.has(idx) && idx !== n);
+      const num = s.querySelector('.num');
+      const chk = s.querySelector('.check');
+      if (completed.has(idx) && idx !== n) {
+        num.style.display = 'none';
+        chk.style.display = '';
+      } else {
+        num.style.display = '';
+        chk.style.display = 'none';
+      }
+    });
+
+    document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+    document.getElementById('backBtn').style.display = n === 1 ? 'none' : '';
+    const next = document.getElementById('nextBtn');
+    if (n === total) {
+      next.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark as complete';
+    } else if (n === total - 1) {
+      next.innerHTML = 'Review &amp; publish <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    } else {
+      next.innerHTML = 'Continue <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    }
+
+    document.getElementById('tipTitle').textContent = tips[n].title;
+    document.getElementById('tipBody').textContent = tips[n].body;
+
+    if (n === 6) renderReview();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (current === total) {
+      // mark final step done and open modal
+      completed.add(current);
+      document.getElementById('modal').classList.add('is-show');
+      return;
+    }
+    setStep(current + 1);
+  });
+  document.getElementById('backBtn').addEventListener('click', () => setStep(current - 1));
+  document.querySelectorAll('.step').forEach(s => {
+    s.addEventListener('click', () => setStep(+s.dataset.step));
+  });
+
+  document.getElementById('publishBtn').addEventListener('click', () => {
+    completed.add(6);
+    document.getElementById('modal').classList.add('is-show');
+  });
+
+  // ============ Step 4: Rate cards (daily / hourly toggle) ============
+  function bindRateToggle(swId, cardId, otherSwId) {
+    const sw = document.getElementById(swId);
+    const card = document.getElementById(cardId);
+    sw.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Don't allow turning both off
+      const other = document.getElementById(otherSwId);
+      if (sw.classList.contains('is-on') && !other.classList.contains('is-on')) return;
+      const on = sw.classList.toggle('is-on');
+      card.classList.toggle('is-on', on);
+      updateRateCompare();
+    });
+  }
+  bindRateToggle('swDaily', 'rcDaily', 'swHourly');
+  bindRateToggle('swHourly', 'rcHourly', 'swDaily');
+
+  function updateRateCompare() {
+    const cmp = document.getElementById('rateCompare');
+    const dOn = document.getElementById('swDaily').classList.contains('is-on');
+    const hOn = document.getElementById('swHourly').classList.contains('is-on');
+    if (!dOn || !hOn) { cmp.style.display = 'none'; return; }
+    cmp.style.display = '';
+    const d = +document.getElementById('dayRate').value || 0;
+    const h = +document.getElementById('hourRate').value || 0;
+    const cross = h > 0 ? (d / h).toFixed(1) : '—';
+    cmp.querySelector('div').innerHTML =
+      `<b>Auto-cap enabled.</b> Hourly $${h} × <b>${Math.ceil(+cross)}h</b> = $${(h*Math.ceil(+cross)).toFixed(0)} — ` +
+      `at this point a longer trip is automatically billed at the daily rate. Crossover: <b>~${cross} hours</b>.`;
+  }
+  document.getElementById('dayRate').addEventListener('input', updateRateCompare);
+  document.getElementById('hourRate').addEventListener('input', updateRateCompare);
+
+  // ============ Step 4: Discount tiers ============
+  const tiers = {
+    days: [
+      { from: 3, disc: 5 },
+      { from: 7, disc: 12 },
+      { from: 14, disc: 20 }
+    ],
+    hours: [
+      { from: 4, disc: 5 },
+      { from: 8, disc: 10 }
+    ]
+  };
+  let discScope = 'days';
+  function renderTiers() {
+    ['days','hours'].forEach(scope => {
+      const box = document.getElementById('tiers' + scope[0].toUpperCase() + scope.slice(1));
+      box.innerHTML = '';
+      tiers[scope].forEach((t, i) => {
+        const row = document.createElement('div');
+        row.className = 'tier';
+        row.innerHTML = `
+          <div class="badge">Tier ${i+1}</div>
+          <div class="tier-from">From <input class="input" type="number" data-scope="${scope}" data-i="${i}" data-k="from" value="${t.from}" /></div>
+          <div class="price-input">
+            <input class="input" type="number" data-scope="${scope}" data-i="${i}" data-k="disc" value="${t.disc}" />
+            <span class="per" style="font-size:11px;">% off</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);">${scope === 'days' ? '+ days' : '+ hours'}</div>
+          <button class="ex-rm" data-rm-scope="${scope}" data-rm-i="${i}" title="Remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        `;
+        box.appendChild(row);
+      });
+    });
+    document.querySelectorAll('.tier input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        tiers[inp.dataset.scope][+inp.dataset.i][inp.dataset.k] = +inp.value;
+      });
+    });
+    document.querySelectorAll('[data-rm-scope]').forEach(b => {
+      b.addEventListener('click', () => {
+        tiers[b.dataset.rmScope].splice(+b.dataset.rmI, 1);
+        renderTiers();
+      });
+    });
+  }
+  renderTiers();
+
+  document.querySelectorAll('#discScope button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#discScope button').forEach(x => x.classList.remove('is-on'));
+      b.classList.add('is-on');
+      discScope = b.dataset.scope;
+      document.getElementById('tiersDays').style.display  = discScope === 'days'  ? '' : 'none';
+      document.getElementById('tiersHours').style.display = discScope === 'hours' ? '' : 'none';
+    });
+  });
+
+  document.getElementById('addTierBtn').addEventListener('click', () => {
+    const arr = tiers[discScope];
+    const last = arr[arr.length - 1];
+    const next = last
+      ? { from: last.from + (discScope === 'days' ? 7 : 4), disc: Math.min(50, last.disc + 5) }
+      : { from: discScope === 'days' ? 3 : 4, disc: 5 };
+    arr.push(next);
+    renderTiers();
+  });
+
+  // ============ Step 4: Deposit toggle ============
+  const swDeposit = document.getElementById('swDeposit');
+  const depTog = document.getElementById('depositToggle');
+  const depField = document.getElementById('depositField');
+  swDeposit.addEventListener('click', () => {
+    const on = swDeposit.classList.toggle('is-on');
+    depTog.classList.toggle('is-on', on);
+    depField.style.display = on ? '' : 'none';
+  });
+
+  // ============ Step 4: Profile summaries ============
+  const taxProfiles = {
+    'default': ['Base rate <b>8.875%</b>', 'Compounding <b>No</b>', 'Applies to <b>Subtotal + extras</b>'],
+    'ca-airport': ['Base rate <b>8.5%</b>', 'Concession <b>11.11%</b>', 'Applies to <b>Subtotal</b>'],
+    'ny-city': ['Sales tax <b>8.875%</b>', 'Rental tax <b>6%</b>', 'Applies to <b>Subtotal + fees</b>'],
+    'tx-base': ['Motor vehicle <b>6.25%</b>', 'Compounding <b>No</b>', 'Applies to <b>Subtotal</b>'],
+    'exempt': ['Tax <b>0%</b>', 'Requires <b>B2B docs</b>', '']
+  };
+  const feeProfiles = {
+    'default': ['Flat <b>$3.00</b>', 'Percentage <b>4%</b>', 'Min <b>$3.00</b> · Max <b>$25.00</b>'],
+    'econ':    ['Flat <b>$1.50</b>', 'Percentage <b>0%</b>', ''],
+    'premium': ['Flat <b>$5.00</b>', 'Percentage <b>6%</b>', 'Min <b>$5.00</b> · Max <b>$40.00</b>'],
+    'weekend': ['Flat <b>$4.00</b>', 'Percentage <b>5%</b>', 'Fri–Sun only'],
+    'none':    ['No booking fee', '', '']
+  };
+  function renderSummary(id, items) {
+    const box = document.getElementById(id).querySelector('.pf-rows');
+    box.innerHTML = items.filter(Boolean).map(t => `<span>${t}</span>`).join('');
+  }
+  document.getElementById('taxProfile').addEventListener('change', (e) => renderSummary('taxSummary', taxProfiles[e.target.value]));
+  document.getElementById('feeProfile').addEventListener('change', (e) => renderSummary('feeSummary', feeProfiles[e.target.value]));
+
+  // ============ Step 5: Locations ============
+  const locations = [
+    { id: 'sfo', name: 'SFO Airport — Lot C', addr: '780 N McDonnell Rd, San Francisco, CA', pickup: true,  dropoff: true,  on: true  },
+    { id: 'mish', name: 'Mission HQ',           addr: '2440 Mission St, San Francisco, CA',  pickup: true,  dropoff: true,  on: true  },
+    { id: 'oak',  name: 'Oakland — Jack London', addr: '101 Broadway, Oakland, CA',           pickup: true,  dropoff: false, on: false },
+    { id: 'pa',   name: 'Palo Alto — University',addr: '500 University Ave, Palo Alto, CA',   pickup: true,  dropoff: true,  on: false },
+    { id: 'sj',   name: 'San José — Downtown',   addr: '150 W San Carlos St, San Jose, CA',   pickup: false, dropoff: true,  on: false }
+  ];
+  const locList = document.getElementById('locList');
+  function renderLocations() {
+    locList.innerHTML = '';
+    locations.forEach((l, i) => {
+      const row = document.createElement('div');
+      row.className = 'loc' + (l.on ? ' is-on' : '');
+      row.innerHTML = `
+        <div class="check-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="loc-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+        </div>
+        <div class="loc-meta">
+          <div class="loc-name">${l.name}</div>
+          <div class="loc-addr">${l.addr}</div>
+        </div>
+        <div class="loc-tags">
+          <button class="loc-tag tag-pickup ${l.pickup && l.on ? 'is-active' : ''}" data-i="${i}" data-k="pickup">Pickup</button>
+          <button class="loc-tag tag-dropoff ${l.dropoff && l.on ? 'is-active' : ''}" data-i="${i}" data-k="dropoff">Dropoff</button>
+        </div>
+      `;
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.loc-tag')) return;
+        l.on = !l.on;
+        renderLocations();
+      });
+      locList.appendChild(row);
+    });
+    locList.querySelectorAll('.loc-tag').forEach(t => {
+      t.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const l = locations[+t.dataset.i];
+        if (!l.on) { l.on = true; }
+        l[t.dataset.k] = !l[t.dataset.k];
+        if (!l.pickup && !l.dropoff) l.on = false;
+        renderLocations();
+      });
+    });
+  }
+  renderLocations();
+
+  // ============ Step 5: Buffer picker ============
+  let bufferMin = 30;
+  document.querySelectorAll('#bufferPicker button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#bufferPicker button').forEach(x => x.classList.remove('is-on'));
+      b.classList.add('is-on');
+      const v = b.dataset.buf;
+      const cf = document.getElementById('customBufferField');
+      if (v === 'custom') {
+        cf.style.display = '';
+        bufferMin = +document.getElementById('customBuffer').value || 0;
+      } else {
+        cf.style.display = 'none';
+        bufferMin = +v;
+      }
+    });
+  });
+  document.getElementById('customBuffer').addEventListener('input', (e) => {
+    bufferMin = +e.target.value || 0;
+  });
+
+  // ============ Step 1: VIN decoder ============
+  const vinInput = document.getElementById('vin');
+  const decodeBtn = document.getElementById('decodeBtn');
+  const banner = document.getElementById('decodeBanner');
+  decodeBtn.addEventListener('click', () => {
+    decodeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite;"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg> Decoding…';
+    setTimeout(() => {
+      document.getElementById('make').value = 'Tesla';
+      document.getElementById('model').value = 'Model 3';
+      document.getElementById('trim').value = 'Long Range AWD';
+      document.getElementById('year').value = '2023';
+      vinInput.value = vinInput.value || '1HGCM82633A004352';
+      banner.classList.add('is-show');
+      decodeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Decoded';
+      setTimeout(() => {
+        decodeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 12 3 21 6"/><path d="M3 6v12l9 3 9-3V6"/><line x1="12" y1="9" x2="12" y2="21"/></svg> Decode again';
+      }, 1500);
+    }, 700);
+  });
+
+  // ============ Step 2: Features ============
+  const featureList = [
+    { id: 'ac', name: 'Air conditioning', desc: 'Climate control system', icon: 'M12 2v4 M5 5l3 3 M2 12h4 M5 19l3-3 M12 22v-4 M19 19l-3-3 M22 12h-4 M19 5l-3 3' },
+    { id: 'gps', name: 'GPS navigation', desc: 'Built-in map and routing', icon: 'M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z' },
+    { id: 'bluetooth', name: 'Bluetooth audio', desc: 'Wireless phone pairing', icon: 'M7 7l10 10-5 5V2l5 5L7 17' },
+    { id: 'usb', name: 'USB charging', desc: 'Front and rear ports', icon: 'M5 12h14 M9 6l-4 6 4 6 M15 6l4 6-4 6' },
+    { id: 'sunroof', name: 'Sunroof', desc: 'Panoramic glass roof', icon: 'M3 9h18 M3 9a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4 M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9' },
+    { id: 'autopilot', name: 'Driver assist', desc: 'Lane-keep, adaptive cruise', icon: 'M3 12h4l2-7 4 14 2-7h6' },
+    { id: 'apple', name: 'Apple CarPlay', desc: 'Wireless or wired', icon: 'M12 8a4 4 0 1 0 0 8 M12 4v4 M12 16v4' },
+    { id: 'rear', name: 'Rear-view camera', desc: 'Backing assist with guides', icon: 'M3 7h3l2-3h8l2 3h3v12H3z M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' }
+  ];
+  const featureBox = document.getElementById('features');
+  featureList.forEach(f => {
+    const isOn = ['ac', 'bluetooth', 'usb', 'rear'].includes(f.id);
+    const row = document.createElement('div');
+    row.className = 'toggle-row' + (isOn ? ' is-on' : '');
+    row.innerHTML = `
+      <div class="meta">
+        <div class="ti">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${f.icon}"/></svg>
+        </div>
+        <div>
+          <div class="name">${f.name}</div>
+          <div class="desc">${f.desc}</div>
+        </div>
+      </div>
+      <div class="switch ${isOn ? 'is-on' : ''}" data-feat="${f.id}"></div>
+    `;
+    featureBox.appendChild(row);
+    const sw = row.querySelector('.switch');
+    sw.addEventListener('click', () => {
+      const on = sw.classList.toggle('is-on');
+      row.classList.toggle('is-on', on);
+    });
+  });
+
+  // ============ Step 3: Photos ============
+  const samplePhotos = [
+    'https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&q=80',
+    'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&q=80',
+    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&q=80',
+    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=80'
+  ];
+  const photoGrid = document.getElementById('photoGrid');
+  let photos = [samplePhotos[0], samplePhotos[1], samplePhotos[2]];
+  function renderPhotos() {
+    photoGrid.innerHTML = '';
+    for (let i = 0; i < 8; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'photo-cell' + (photos[i] ? ' is-set' : '');
+      if (photos[i]) {
+        cell.innerHTML = `
+          ${i === 0 ? '<div class="ph-cover">Cover</div>' : ''}
+          <button class="ph-rm" data-i="${i}" title="Remove">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div class="ph-img" style="background-image:url('${photos[i]}')"></div>
+        `;
+      } else {
+        cell.innerHTML = `
+          <div class="ph-add">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Add photo</span>
+          </div>
+        `;
+        cell.addEventListener('click', () => {
+          const next = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
+          photos[i] = next;
+          renderPhotos();
+        });
+      }
+      photoGrid.appendChild(cell);
+    }
+    photoGrid.querySelectorAll('.ph-rm').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        photos[+b.dataset.i] = null;
+        renderPhotos();
+      });
+    });
+  }
+  renderPhotos();
+
+  // ============ Step 4: Pricing plans ============
+  document.querySelectorAll('.plan').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.plan').forEach(x => x.classList.remove('is-sel'));
+      p.classList.add('is-sel');
+    });
+  });
+
+  // ============ Step 4: Extras ============
+  const extraIcons = {
+    seat: '<rect x="6" y="4" width="12" height="10" rx="2"/><path d="M6 14v4 M18 14v4 M9 18h6"/>',
+    wifi: '<path d="M2 9a16 16 0 0 1 20 0 M5 13a11 11 0 0 1 14 0 M8.5 16.5a6 6 0 0 1 7 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/>',
+    km: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+    insur: '<path d="M12 3l8 4v6c0 5-4 8-8 8s-8-3-8-8V7z"/><polyline points="9 12 11 14 15 10"/>',
+    fuel: '<path d="M3 21V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v15 M3 12h9 M15 8l3-3 3 3v9a3 3 0 0 1-3 3"/>',
+    tag: '<path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9z"/><circle cx="8.5" cy="8.5" r="1.5"/>'
+  };
+  let extras = [
+    { icon: 'seat', name: 'Child seat', price: 8, period: 'day' },
+    { icon: 'wifi', name: 'Mobile Wi-Fi hotspot', price: 12, period: 'day' },
+    { icon: 'km', name: 'Unlimited km', price: 25, period: 'day' },
+    { icon: 'insur', name: 'Premium insurance', price: 45, period: 'trip' }
+  ];
+  const extrasList = document.getElementById('extrasList');
+  function renderExtras() {
+    extrasList.innerHTML = '';
+    extras.forEach((e, i) => {
+      const row = document.createElement('div');
+      row.className = 'extra';
+      row.innerHTML = `
+        <div class="ex-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${extraIcons[e.icon] || extraIcons.tag}</svg></div>
+        <div class="ex-name">${e.name}</div>
+        <div class="ex-price">$${e.price}<span class="ex-period">/ ${e.period}</span></div>
+        <button class="ex-rm" data-i="${i}" title="Remove">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6 M10 11v6 M14 11v6 M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      `;
+      extrasList.appendChild(row);
+    });
+    extrasList.querySelectorAll('.ex-rm').forEach(b => {
+      b.addEventListener('click', () => {
+        extras.splice(+b.dataset.i, 1);
+        renderExtras();
+      });
+    });
+  }
+  renderExtras();
+
+  const newName = document.getElementById('newExtraName');
+  const newPrice = document.getElementById('newExtraPrice');
+  const newPeriod = document.getElementById('newExtraPeriod');
+  const addBtn = document.getElementById('addExtraBtn');
+  function syncAddBtn() {
+    addBtn.disabled = !(newName.value.trim() && +newPrice.value > 0);
+  }
+  newName.addEventListener('input', syncAddBtn);
+  newPrice.addEventListener('input', syncAddBtn);
+  addBtn.addEventListener('click', () => {
+    if (addBtn.disabled) return;
+    extras.push({ icon: 'tag', name: newName.value.trim(), price: +newPrice.value, period: newPeriod.value });
+    newName.value = ''; newPrice.value = '';
+    syncAddBtn();
+    renderExtras();
+  });
+
+  // ============ Step 5: Review ============
+  function renderReview() {
+    const get = id => document.getElementById(id).value;
+    const make = get('make') || '—';
+    const model = get('model') || '—';
+    const year = get('year') || '—';
+    const trim = get('trim') || '—';
+    const plate = get('plate') || '—';
+    const vin = get('vin') || '—';
+    const features = [...document.querySelectorAll('.switch.is-on')].map(s => s.dataset.feat);
+    const featNames = {
+      ac:'AC', gps:'GPS', bluetooth:'Bluetooth', usb:'USB charging',
+      sunroof:'Sunroof', autopilot:'Driver assist', apple:'CarPlay', rear:'Rear cam'
+    };
+    const featLabels = features.map(f => featNames[f] || f).join(', ') || 'None selected';
+
+    const dOn = document.getElementById('swDaily').classList.contains('is-on');
+    const hOn = document.getElementById('swHourly').classList.contains('is-on');
+    const depOn = document.getElementById('swDeposit').classList.contains('is-on');
+    const taxLabel = document.getElementById('taxProfile').selectedOptions[0].text;
+    const feeLabel = document.getElementById('feeProfile').selectedOptions[0].text;
+    const tierStr = (arr, suf) => arr.length ? arr.map(t => `${t.from}+ ${suf}: ${t.disc}%`).join(' · ') : 'None';
+    const onLocs = locations.filter(l => l.on);
+    const locStr = onLocs.length ? onLocs.map(l => l.name.split(' — ')[0]).join(', ') : 'None selected';
+    const bufLabel = bufferMin === 0 ? 'No buffer' : (bufferMin >= 1440 ? (bufferMin/1440)+' day(s)' : (bufferMin >= 60 ? (bufferMin/60)+'h' : bufferMin+' min'));
+    const minD = document.getElementById('minDays').value, maxD = document.getElementById('maxDays').value;
+    const minH = document.getElementById('minHours').value, maxH = document.getElementById('maxHours').value;
+
+    document.getElementById('reviewGrid').innerHTML = `
+      <div class="review-card">
+        <div class="review-head"><h3>Vehicle</h3><a class="edit-link" data-go="1">Edit</a></div>
+        <div class="kv"><span class="k">Make &amp; model</span><span class="v">${make} ${model}</span></div>
+        <div class="kv"><span class="k">Trim</span><span class="v">${trim}</span></div>
+        <div class="kv"><span class="k">Year</span><span class="v">${year}</span></div>
+        <div class="kv"><span class="k">Plate</span><span class="v">${plate}</span></div>
+        <div class="kv"><span class="k">VIN</span><span class="v" style="font-family:ui-monospace,monospace;font-size:11.5px;">${vin}</span></div>
+      </div>
+      <div class="review-card">
+        <div class="review-head"><h3>Specs &amp; features</h3><a class="edit-link" data-go="2">Edit</a></div>
+        <div class="kv"><span class="k">Body</span><span class="v">${get('body')}</span></div>
+        <div class="kv"><span class="k">Seats / Doors</span><span class="v">${get('seats')} / ${get('doors')}</span></div>
+        <div class="kv"><span class="k">Transmission</span><span class="v">${get('trans')}</span></div>
+        <div class="kv"><span class="k">Fuel</span><span class="v">${get('fuel')}</span></div>
+        <div class="kv"><span class="k">Features</span><span class="v">${featLabels}</span></div>
+      </div>
+      <div class="review-card full">
+        <div class="review-head"><h3>Photos</h3><a class="edit-link" data-go="3">Edit</a></div>
+        <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;">
+          ${photos.filter(Boolean).map(p => `<div style="aspect-ratio:4/3;border-radius:6px;background:url('${p}') center/cover var(--field-bg);"></div>`).join('')}
+          ${photos.filter(Boolean).length === 0 ? '<div class="kv" style="grid-column:1/-1;"><span class="k">No photos added yet.</span></div>' : ''}
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-head"><h3>Pricing</h3><a class="edit-link" data-go="4">Edit</a></div>
+        <div class="kv"><span class="k">Daily rate</span><span class="v">${dOn ? '$'+get('dayRate')+' / day' : '— off'}</span></div>
+        <div class="kv"><span class="k">Hourly rate</span><span class="v">${hOn ? '$'+get('hourRate')+' / hr' : '— off'}</span></div>
+        <div class="kv"><span class="k">Auto-cap</span><span class="v">${dOn && hOn ? 'Cheaper of the two' : 'N/A'}</span></div>
+        <div class="kv"><span class="k">Discounts (days)</span><span class="v">${tierStr(tiers.days,'d')}</span></div>
+        <div class="kv"><span class="k">Discounts (hours)</span><span class="v">${tierStr(tiers.hours,'h')}</span></div>
+        <div class="kv"><span class="k">Security deposit</span><span class="v">${depOn ? '$'+get('deposit') : 'Off'}</span></div>
+        <div class="kv"><span class="k">Mileage</span><span class="v">${get('km')} mi/day · $${(+get('overFee')).toFixed(2)}/mi over</span></div>
+      </div>
+      <div class="review-card">
+        <div class="review-head"><h3>Taxes &amp; fees</h3><a class="edit-link" data-go="4">Edit</a></div>
+        <div class="kv"><span class="k">Tax profile</span><span class="v">${taxLabel}</span></div>
+        <div class="kv"><span class="k">Booking fee profile</span><span class="v">${feeLabel}</span></div>
+        <div class="kv"><span class="k">Trip extras</span><span class="v">${extras.length} added</span></div>
+      </div>
+      <div class="review-card full">
+        <div class="review-head"><h3>Rules &amp; locations</h3><a class="edit-link" data-go="5">Edit</a></div>
+        <div class="kv"><span class="k">Booking length (days)</span><span class="v">${minD}–${maxD == 0 ? '∞' : maxD} days</span></div>
+        <div class="kv"><span class="k">Booking length (hours)</span><span class="v">${minH}–${maxH == 0 ? '∞' : maxH} hours</span></div>
+        <div class="kv"><span class="k">Locations</span><span class="v">${locStr}</span></div>
+        <div class="kv"><span class="k">Buffer between bookings</span><span class="v">${bufLabel}</span></div>
+      </div>
+    `;
+    document.querySelectorAll('.edit-link').forEach(l => {
+      l.addEventListener('click', (e) => { e.preventDefault(); setStep(+l.dataset.go); });
+    });
+  }
+
+  // Inject keyframes for spinner
+  const sty = document.createElement('style');
+  sty.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+  document.head.appendChild(sty);
+})();
+</script>
+
+</body>
+</html>

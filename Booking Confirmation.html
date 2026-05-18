@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Booking #13214 — Trailhead Rentals</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#0f1a14;
+    --ink-2:#3a4a40;
+    --muted:#6b7a72;
+    --muted-2:#9aa6a0;
+    --line:#e5ebe6;
+    --line-2:#eef2ed;
+    --bg:#ffffff;
+    --canvas:#fbfbf8;
+    --field:#f7f8f4;
+
+    --brand:#3a7d44;          /* deeper, warmer green */
+    --brand-ink:#1f4a28;
+    --brand-tint:#e9f2e8;
+    --brand-tint-2:#f3f8f0;
+    --brand-accent:#f0b429;   /* sun accent from the logo dot */
+
+    --ok:#2f7a3d;
+    --ok-tint:#e7f1e6;
+    --warn:#a8580d;
+    --warn-tint:#fbeed3;
+    --warn-2:#d4a017;
+    --warn-tint-2:#fcf4dd;
+    --danger:#b3321b;
+    --danger-tint:#fbe5df;
+
+    --t-fast:140ms cubic-bezier(.2,.7,.2,1);
+    --t-med:240ms cubic-bezier(.2,.7,.2,1);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--canvas);color:var(--ink)}
+  body{font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  button,input,textarea{font:inherit;color:inherit}
+  button{background:none;border:0;cursor:pointer;padding:0}
+  a{text-decoration:none;color:inherit}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-feature-settings:"tnum" 1}
+
+  /* ===== Header ===== */
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:30}
+  .nav-in{max-width:1280px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:28px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em;font-size:16px;color:var(--brand-ink)}
+  .logo-mark{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center;color:#fff;position:relative}
+  .logo-mark::after{content:"";position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:99px;background:var(--brand-accent);box-shadow:0 0 0 2px #fff}
+  .nav-links{display:flex;align-items:center;gap:24px;font-size:13.5px;color:var(--ink-2);font-weight:500}
+  .nav-links a{padding:6px 0;position:relative}
+  .nav-links a:hover{color:var(--brand)}
+  .nav-spacer{flex:1}
+  .nav-side{display:flex;align-items:center;gap:10px;font-size:13.5px}
+  .nav-manage{color:var(--ink-2);font-weight:500;padding:8px 6px}
+  .nav-manage:hover{color:var(--brand)}
+
+  /* ===== Buttons ===== */
+  .btn{height:38px;padding:0 16px;border-radius:9px;display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13px;transition:all var(--t-fast);border:1px solid var(--line);background:var(--bg);color:var(--ink);white-space:nowrap}
+  .btn:hover{background:var(--brand-tint-2);border-color:var(--brand-tint)}
+  .btn svg{flex:0 0 auto}
+  .btn-brand{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-brand:hover{background:var(--brand-ink);border-color:var(--brand-ink)}
+  .btn-outline{background:transparent;border-color:var(--line);color:var(--ink-2)}
+  .btn-outline:hover{border-color:var(--ink);color:var(--ink);background:transparent}
+  .btn-ghost{border:0;background:transparent;color:var(--ink-2)}
+  .btn-ghost:hover{background:var(--brand-tint-2);color:var(--brand)}
+  .btn-sm{height:32px;padding:0 12px;font-size:12.5px;border-radius:7px}
+  .btn-block{width:100%;justify-content:center}
+
+  /* ===== Page ===== */
+  .page{max-width:1240px;margin:0 auto;padding:32px 28px 64px}
+
+  .page-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:20px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:600;font-size:13px;margin-bottom:10px;transition:gap var(--t-fast)}
+  .back:hover{gap:9px}
+  .ph-title{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0;color:var(--ink)}
+  .ph-title .id{color:var(--muted);font-weight:600}
+  .ph-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ===== Status banner ===== */
+  .banner{
+    border-radius:16px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;
+    gap:24px;margin-bottom:26px;position:relative;overflow:hidden;
+  }
+  .banner-success{
+    background:linear-gradient(110deg,#f3f8f0 0%,#e9f2e8 60%,#dde9d8 100%);
+    border:1px solid #d2e4cd;color:var(--ink);
+  }
+  .banner-pending{
+    background:linear-gradient(110deg,#fcf4dd 0%,#fbeed3 60%,#f6e2b3 100%);
+    border:1px solid #ecd9a3;color:var(--ink);
+  }
+  .banner-l{display:flex;align-items:center;gap:18px;min-width:0}
+  .banner-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:0 0 52px;background:#fff;border:1px solid rgba(0,0,0,.04)}
+  .banner-success .banner-icon{color:var(--brand)}
+  .banner-pending .banner-icon{color:var(--warn)}
+  .banner-icon svg{width:26px;height:26px}
+  .banner-text h2{margin:0 0 4px;font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .banner-text p{margin:0;color:var(--ink-2);font-size:13.5px;max-width:560px}
+  .banner-text a{color:var(--brand);font-weight:600}
+  .banner-text a:hover{text-decoration:underline}
+  .banner-r{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .banner-id{
+    text-align:right;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+    border-left:1px solid rgba(0,0,0,.08);padding-left:18px;
+  }
+  .banner-id b{display:block;color:var(--ink);font-size:22px;font-weight:700;letter-spacing:-.01em;margin-top:3px;text-transform:none;font-family:'JetBrains Mono',monospace}
+  .banner-pay{display:none}
+  .banner-pending .banner-pay{display:flex;flex-direction:column;align-items:flex-end;gap:4px;border-left:1px solid rgba(0,0,0,.08);padding-left:18px}
+  .banner-pay .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--warn)}
+  .banner-pay .amt{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--ink);font-family:'JetBrains Mono',monospace}
+  .banner-pending .banner-id{display:none}
+
+  /* ===== Layout ===== */
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px}
+  .col{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+  /* ===== Card ===== */
+  .card{
+    background:var(--bg);border:1px solid var(--line);border-radius:16px;
+    padding:24px;
+  }
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+  .card-title{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+  .card-title .id{color:var(--muted);font-weight:500}
+
+  /* ===== Vehicle row ===== */
+  .veh{display:grid;grid-template-columns:200px 1fr auto;gap:24px;align-items:center}
+  .veh-img{
+    width:200px;height:120px;border-radius:12px;background:#eaeaea center/cover no-repeat;
+    background-image:url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&q=75');
+    border:1px solid var(--line);
+  }
+  .veh-name{font-size:24px;font-weight:700;letter-spacing:-.015em;margin:0}
+  .veh-id{color:var(--muted);font-size:12.5px;margin-top:2px;font-weight:500}
+  .veh-bid{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+  .veh-bid b{display:block;font-size:14px;color:var(--ink);font-weight:600;text-transform:none;letter-spacing:0;margin-top:3px;font-family:'JetBrains Mono',monospace}
+  .veh-meta{text-align:right;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+  .veh-meta b{display:block;font-size:14px;color:var(--ink);font-weight:600;text-transform:none;letter-spacing:0;margin-top:3px}
+
+  /* ===== Driver info row ===== */
+  .driver-row{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;margin-top:18px;
+  }
+  .driver-cell{background:var(--bg);padding:14px 16px}
+  .driver-cell .k{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+  .driver-cell .v{font-size:13.5px;color:var(--ink);font-weight:500;word-break:break-word}
+
+  /* ===== Trip timeline ===== */
+  .trip{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-top:8px}
+  .trip-pt{padding:14px 16px;background:var(--field);border:1px solid var(--line);border-radius:12px}
+  .trip-pt .lab{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .trip-pt .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
+  .trip-pt.pickup .dot{background:var(--brand)}
+  .trip-pt.dropoff .dot{background:var(--brand-accent)}
+  .trip-pt .addr{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.4;margin:0 0 6px}
+  .trip-pt .when{font-size:12.5px;color:var(--muted);font-weight:500}
+  .trip-arrow{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    color:var(--brand);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  }
+  .trip-arrow svg{width:28px;height:28px}
+  .trip-arrow .pill{background:var(--brand-tint);color:var(--brand);padding:3px 9px;border-radius:99px;border:1px solid #cfe0cb}
+
+  /* ===== Invoice ===== */
+  .inv-line-veh{
+    display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center;
+    padding:12px 0;border-bottom:1px solid var(--line-2);
+  }
+  .inv-line-veh .thumb{width:60px;height:42px;border-radius:8px;background:#eaeaea center/cover;background-image:url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=200&q=70');border:1px solid var(--line)}
+  .inv-line-veh .name{font-weight:600;font-size:13.5px;color:var(--ink)}
+  .inv-line-veh .qty{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:8px}
+  .inv-line-veh .qty b{color:var(--ink);font-weight:600}
+  .inv-line-veh .amt{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:14px}
+
+  .inv-charge{
+    display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;
+    padding:11px 14px;background:var(--warn-tint-2);border:1px solid #ecd9a3;border-radius:10px;
+    margin-bottom:8px;
+  }
+  .inv-charge .ico{width:26px;height:26px;border-radius:7px;background:#fff;display:grid;place-items:center;color:var(--warn)}
+  .inv-charge .name{font-weight:600;font-size:13px;color:var(--ink)}
+  .inv-charge .when{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .inv-charge .badge-new{background:var(--warn);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:3px 7px;border-radius:99px;text-transform:uppercase}
+  .inv-charge .amt{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--ink)}
+
+  .inv-row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px}
+  .inv-row .l{color:var(--muted)}
+  .inv-row .l.strong{color:var(--ink);font-weight:600}
+  .inv-row .r{font-weight:500;font-family:'JetBrains Mono',monospace}
+  .inv-row .r.strong{font-weight:700}
+  .promo{
+    display:inline-flex;align-items:center;gap:6px;background:var(--brand-tint);color:var(--brand);
+    border:1px solid #cfe0cb;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;letter-spacing:.04em;
+    margin-left:8px;
+  }
+  .inv-divider{border-top:1px dashed var(--line);margin:6px 0}
+  .inv-divider.solid{border-top-style:solid}
+
+  .inv-total-row{
+    display:flex;justify-content:space-between;align-items:center;padding:12px 14px;
+    background:var(--field);border-radius:10px;margin-top:8px;
+  }
+  .inv-total-row.balance-due{background:#fcf4dd;border:1px solid #ecd9a3}
+  .inv-total-row.balance-paid{background:var(--brand-tint);border:1px solid #cfe0cb}
+  .inv-total-row .l{font-size:13px;font-weight:600;color:var(--ink)}
+  .inv-total-row .l small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+  .inv-total-row .r{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;display:flex;align-items:baseline;gap:6px}
+  .inv-total-row .r .cur{font-size:11px;color:var(--muted);font-weight:600}
+
+  .pay-cta{
+    margin-top:12px;display:flex;gap:10px;align-items:center;
+    padding:14px;background:var(--bg);border:1px dashed var(--warn);border-radius:12px;
+  }
+  .pay-cta .info{flex:1;font-size:12.5px;color:var(--ink-2)}
+  .pay-cta .info b{color:var(--ink)}
+
+  /* ===== Side: Checklist ===== */
+  .chk-item{display:flex;gap:14px;padding-bottom:18px;position:relative}
+  .chk-item:last-child{padding-bottom:0}
+  .chk-item::before{
+    content:"";position:absolute;left:13px;top:30px;bottom:-2px;width:2px;
+    background:repeating-linear-gradient(to bottom,var(--line) 0 4px,transparent 4px 8px);
+  }
+  .chk-item:last-child::before{display:none}
+  .chk-dot{width:28px;height:28px;border-radius:99px;flex:0 0 28px;display:grid;place-items:center;background:var(--bg);position:relative;z-index:1;border:2px solid var(--line)}
+  .chk-dot.ok{background:var(--brand);border-color:var(--brand);color:#fff}
+  .chk-dot.ok svg{width:14px;height:14px}
+  .chk-dot.pend{background:#fff;border-color:var(--warn);color:var(--warn)}
+  .chk-dot.pend::after{content:"";width:8px;height:8px;border-radius:99px;background:var(--warn)}
+  .chk-body{flex:1;min-width:0;padding-top:2px}
+  .chk-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+  .chk-status.ok{color:var(--brand)}
+  .chk-status.pend{color:var(--warn)}
+  .chk-name{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:4px;letter-spacing:-.005em}
+  .chk-desc{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+
+  /* ===== Photo upload ===== */
+  .ph-block{margin-bottom:14px}
+  .ph-block:last-child{margin-bottom:0}
+  .ph-zone{
+    border:1.5px dashed var(--line);border-radius:12px;padding:20px;text-align:center;
+    background:var(--field);transition:all var(--t-fast);
+  }
+  .ph-zone:hover{border-color:var(--brand);background:var(--brand-tint-2)}
+  .ph-zone .ico{width:36px;height:36px;border-radius:9px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;margin:0 auto 8px;color:var(--ink-2)}
+  .ph-zone .lbl{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+  .ph-zone .sub{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+  .ph-zone .sub b{color:var(--ink-2);font-weight:600}
+  .ph-zone .btn{height:34px;font-size:12.5px}
+
+  /* Tweak panel hook */
+  .tweaks-anchor{position:fixed;bottom:20px;right:20px;z-index:50}
+
+  /* ===== Modal ===== */
+  .shade{position:fixed;inset:0;background:rgba(15,26,20,.55);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:48px 20px;z-index:100;overflow-y:auto;opacity:0;transition:opacity var(--t-med)}
+  .shade.is-show{display:flex;opacity:1}
+  .modal{background:var(--bg);border-radius:18px;width:100%;max-width:580px;box-shadow:0 30px 80px rgba(0,0,0,.25);transform:scale(.96) translateY(8px);transition:transform var(--t-med);overflow:hidden;position:relative;margin:auto 0}
+  .shade.is-show .modal{transform:scale(1) translateY(0)}
+  .modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .modal-head h2{margin:0 0 4px;font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .modal-head p{margin:0;color:var(--muted);font-size:13px;max-width:460px}
+  .modal-x{width:32px;height:32px;border-radius:99px;display:grid;place-items:center;color:var(--muted);flex:0 0 32px;transition:background var(--t-fast)}
+  .modal-x:hover{background:var(--field);color:var(--ink)}
+  .modal-body{padding:22px 26px;max-height:60vh;overflow-y:auto}
+  .modal-foot{padding:16px 26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--field)}
+  .modal-foot .delta{font-size:12.5px;color:var(--muted)}
+  .modal-foot .delta b{display:block;font-size:18px;font-weight:700;color:var(--ink);font-family:'JetBrains Mono',monospace;margin-top:2px}
+  .modal-foot .delta b.refund{color:var(--brand)}
+  .modal-foot .delta b.charge{color:var(--warn)}
+  .modal-foot .acts{display:flex;gap:8px}
+
+  /* Vehicle picker */
+  .veh-current{display:flex;gap:14px;align-items:center;padding:14px;background:var(--brand-tint-2);border:1px solid #cfe0cb;border-radius:12px;margin-bottom:18px}
+  .veh-current .thumb{width:60px;height:42px;border-radius:8px;background:#eaeaea center/cover;background-image:url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=200&q=70');flex:0 0 60px}
+  .veh-current .info{flex:1;min-width:0}
+  .veh-current .info b{display:block;font-size:14px;font-weight:700}
+  .veh-current .info span{font-size:12px;color:var(--muted)}
+  .veh-current .tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);background:#fff;padding:4px 8px;border-radius:99px;border:1px solid #cfe0cb}
+
+  .vlbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:4px 0 10px}
+  .vlist{display:flex;flex-direction:column;gap:8px}
+  .vopt{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;transition:all var(--t-fast);background:var(--bg)}
+  .vopt:hover{border-color:var(--brand-ink)}
+  .vopt.is-sel{border-color:var(--brand);background:var(--brand-tint-2)}
+  .vopt .thumb{width:60px;height:42px;border-radius:8px;background:#eaeaea center/cover;flex:0 0 60px}
+  .vopt .name{font-size:14px;font-weight:700;margin:0}
+  .vopt .meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .vopt .price{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px}
+  .vopt .price small{display:block;color:var(--muted);font-weight:500;font-size:11px;margin-top:1px;font-family:'Inter',sans-serif}
+  .vopt .delta-pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;margin-top:4px}
+  .vopt .delta-pill.up{background:var(--warn-tint);color:var(--warn)}
+  .vopt .delta-pill.down{background:var(--brand-tint);color:var(--brand)}
+  .vopt .delta-pill.same{background:var(--field);color:var(--muted)}
+
+  /* Modify trip dates */
+  .date-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .date-field{padding:14px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg)}
+  .date-field .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .date-field input{width:100%;background:transparent;border:0;outline:0;font-weight:600;font-size:14px;color:var(--ink);padding:0;margin-bottom:6px}
+  .date-field input[type="time"]{font-size:13px;font-weight:500;color:var(--ink-2)}
+  .date-field:focus-within{border-color:var(--brand)}
+
+  .preset-row{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+  .preset{
+    height:30px;padding:0 12px;border-radius:99px;border:1px solid var(--line);
+    font-size:12px;font-weight:600;color:var(--ink-2);transition:all var(--t-fast);background:var(--bg);cursor:pointer
+  }
+  .preset:hover{border-color:var(--ink)}
+  .preset.is-sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .preset.reduce{color:var(--brand)}
+  .preset.reduce.is-sel{background:var(--brand);border-color:var(--brand);color:#fff}
+  .preset.extend{color:var(--warn)}
+  .preset.extend.is-sel{background:var(--warn);border-color:var(--warn);color:#fff}
+
+  .summary-box{
+    background:var(--field);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:8px;
+  }
+  .summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+  .summary-row .l{color:var(--muted)}
+  .summary-row .r{font-weight:600;font-family:'JetBrains Mono',monospace}
+  .summary-row.total{border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+  .summary-row.total .l{color:var(--ink);font-weight:700}
+  .summary-row.total .r{font-weight:700;font-size:15px}
+  .summary-row.total .r.charge{color:var(--warn)}
+  .summary-row.total .r.refund{color:var(--brand)}
+
+  /* Cancel reasons */
+  .reason-list{display:flex;flex-direction:column;gap:8px;margin:8px 0 14px}
+  .reason{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;transition:all var(--t-fast);background:var(--bg)}
+  .reason:hover{border-color:var(--ink)}
+  .reason.is-sel{border-color:var(--brand);background:var(--brand-tint-2)}
+  .reason input{margin-top:2px;accent-color:var(--brand)}
+  .reason .body{flex:1}
+  .reason .name{font-weight:600;font-size:13.5px;color:var(--ink)}
+  .reason .desc{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .refund-box{
+    border-radius:12px;padding:16px;margin-top:6px;
+    background:linear-gradient(110deg,#f3f8f0 0%,#e9f2e8 100%);border:1px solid #cfe0cb
+  }
+  .refund-box.warn{background:linear-gradient(110deg,#fcf4dd 0%,#fbeed3 100%);border-color:#ecd9a3}
+  .refund-box .head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .refund-box .head svg{flex:0 0 18px}
+  .refund-box .head h4{margin:0;font-size:14px;font-weight:700}
+  .refund-box .grid{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px}
+  .refund-box .k{color:var(--ink-2)}
+  .refund-box .v{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right}
+  .refund-box .v.big{font-size:18px;font-weight:700}
+
+  .policy-note{display:flex;gap:10px;font-size:12px;color:var(--ink-2);background:var(--field);border-radius:10px;padding:12px;margin-top:14px;line-height:1.5}
+  .policy-note svg{flex:0 0 16px;margin-top:1px;color:var(--muted)}
+  .policy-note a{color:var(--brand);font-weight:600}
+
+  /* ===== Footer ===== */
+  footer{
+    margin-top:64px;background:var(--brand-ink);color:#dde9d8;padding:48px 28px 24px;
+  }
+  .foot{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px}
+  .foot-about p{margin:14px 0 18px;font-size:13px;line-height:1.6;max-width:340px;color:#b5c8b1}
+  .foot-social{display:flex;gap:8px}
+  .foot-social a{width:32px;height:32px;border-radius:99px;background:rgba(255,255,255,.08);display:grid;place-items:center;color:#dde9d8;transition:background var(--t-fast)}
+  .foot-social a:hover{background:var(--brand-accent);color:var(--brand-ink)}
+  .foot-col h4{margin:0 0 14px;font-size:13px;font-weight:700;color:#fff;letter-spacing:.02em}
+  .foot-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#b5c8b1}
+  .foot-col a:hover{color:#fff}
+  .foot-contact li{display:flex;align-items:flex-start;gap:10px}
+  .foot-contact svg{flex:0 0 16px;margin-top:2px;color:var(--brand-accent)}
+  .foot-bot{
+    max-width:1240px;margin:36px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);
+    display:flex;justify-content:space-between;font-size:12px;color:#8fa489;flex-wrap:wrap;gap:8px;
+  }
+
+  /* ===== Variant toggle ===== */
+  .variant-bar{
+    position:sticky;top:67px;z-index:20;background:var(--ink);color:#fff;
+    padding:8px 28px;display:flex;align-items:center;justify-content:center;gap:16px;font-size:12.5px;
+  }
+  .variant-bar .lbl{color:#a8b3ad;font-weight:500}
+  .variant-bar .grp{display:inline-flex;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;gap:2px}
+  .variant-bar .grp button{
+    height:28px;padding:0 14px;border-radius:6px;color:#dde9d8;font-weight:600;font-size:12px;
+    transition:all var(--t-fast);
+  }
+  .variant-bar .grp button:hover{color:#fff}
+  .variant-bar .grp button.is-active{background:#fff;color:var(--ink)}
+  .variant-bar .hint{color:#a8b3ad;font-size:11.5px}
+
+  @media (max-width:1024px){
+    .grid{grid-template-columns:1fr}
+    .veh{grid-template-columns:160px 1fr;gap:18px}
+    .veh-meta{grid-column:2}
+    .driver-row{grid-template-columns:repeat(2,1fr)}
+    .trip{grid-template-columns:1fr;gap:10px}
+    .trip-arrow{flex-direction:row}
+    .trip-arrow svg{transform:rotate(90deg)}
+    .foot{grid-template-columns:1fr;gap:32px}
+    .nav-links{display:none}
+  }
+  @media (max-width:640px){
+    .banner{flex-direction:column;align-items:flex-start;gap:18px}
+    .banner-r{width:100%;justify-content:flex-start}
+    .ph-actions .btn span{display:none}
+    .veh{grid-template-columns:1fr}
+    .veh-img{width:100%}
+    .driver-row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- Variant toggle (demo only) -->
+<div class="variant-bar">
+  <span class="lbl">View:</span>
+  <div class="grp">
+    <button class="is-active" data-variant="success">Booking Successful</button>
+    <button data-variant="pending">Payment Due (new charges)</button>
+  </div>
+  <span class="hint">Demo toggle — not part of the real page</span>
+</div>
+
+<!-- Header -->
+<header class="nav">
+  <div class="nav-in">
+    <a href="#" class="logo">
+      <span class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 14l3-7h12l3 7"/><circle cx="7" cy="16" r="2"/><circle cx="17" cy="16" r="2"/><path d="M5 14h14"/>
+        </svg>
+      </span>
+      Trailhead
+    </a>
+    <nav class="nav-links">
+      <a href="#">About</a>
+      <a href="#">Fleet</a>
+      <a href="#">FAQs</a>
+      <a href="#">Contact</a>
+    </nav>
+    <div class="nav-spacer"></div>
+    <div class="nav-side">
+      <a href="#" class="nav-manage">Manage Bookings</a>
+      <button class="btn btn-outline">Login</button>
+      <button class="btn btn-brand">Register</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <!-- Page head -->
+  <div class="page-head">
+    <div>
+      <a href="#" class="back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to bookings
+      </a>
+      <h1 class="ph-title">Booking <span class="id mono">#13214</span></h1>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-outline" data-open="cancel">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <span>Cancel Trip</span>
+      </button>
+      <button class="btn" data-open="vehicle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Change Vehicle</span>
+      </button>
+      <button class="btn" data-open="modify">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Modify Trip</span>
+      </button>
+      <button class="btn btn-brand">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Download PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== STATUS BANNER ===== -->
+  <!-- Variant: success -->
+  <div class="banner banner-success" data-banner="success">
+    <div class="banner-l">
+      <div class="banner-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="banner-text">
+        <h2>Booking confirmed</h2>
+        <p>Confirmation sent to <a href="mailto:zaid@gmail.com">zaid@gmail.com</a>. Add this trip to your calendar or download a copy of the rental agreement below.</p>
+      </div>
+    </div>
+    <div class="banner-r">
+      <div class="banner-id">
+        Booking ID
+        <b>#13214</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant: pending -->
+  <div class="banner banner-pending" data-banner="pending" style="display:none">
+    <div class="banner-l">
+      <div class="banner-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      </div>
+      <div class="banner-text">
+        <h2>Payment due — new charges added</h2>
+        <p>A late return fee and cleaning charge were added on <b>6 May 2026</b>. Please settle the outstanding balance to avoid disruption to your account.</p>
+      </div>
+    </div>
+    <div class="banner-r">
+      <div class="banner-pay">
+        <span class="lbl">Outstanding</span>
+        <span class="amt">$135.00</span>
+      </div>
+      <button class="btn btn-brand" id="btnPayNow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Pay Now
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Two columns ===== -->
+  <div class="grid">
+    <div class="col">
+
+      <!-- Vehicle / Booking summary card -->
+      <div class="card">
+        <div class="veh">
+          <div class="veh-img" aria-label="BMW i8 photo"></div>
+          <div>
+            <div class="veh-bid">Booking ID <b>#13214</b></div>
+            <h2 class="veh-name" style="margin-top:8px">BMW i8</h2>
+            <div class="veh-id">License plate · LEE-67-889A</div>
+          </div>
+          <div class="veh-meta">
+            Booked on
+            <b>21 June 2025</b>
+          </div>
+        </div>
+
+        <div class="driver-row">
+          <div class="driver-cell">
+            <div class="k">Driver</div>
+            <div class="v">Zaid Irfan</div>
+          </div>
+          <div class="driver-cell">
+            <div class="k">Email</div>
+            <div class="v">zaid@gmail.com</div>
+          </div>
+          <div class="driver-cell">
+            <div class="k">Phone</div>
+            <div class="v">+1 (321) 213‑9874</div>
+          </div>
+          <div class="driver-cell">
+            <div class="k">Vehicle VIN</div>
+            <div class="v mono">Z812AHSD812</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location details -->
+      <div class="card">
+        <div class="card-h" style="margin-bottom:14px">
+          <h3 class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Pick-up &amp; Drop-off
+          </h3>
+          <button class="btn btn-ghost btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            View on map
+          </button>
+        </div>
+        <div class="trip">
+          <div class="trip-pt pickup">
+            <div class="lab"><span class="dot"></span>Pick up</div>
+            <p class="addr">Am Isfeld 19, 22981<br>NY, New York</p>
+            <div class="when">Tue, 02 Dec 2025 · 09:00 AM</div>
+          </div>
+          <div class="trip-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+            <span class="pill">Same day</span>
+          </div>
+          <div class="trip-pt dropoff">
+            <div class="lab"><span class="dot"></span>Drop off</div>
+            <p class="addr">Am Isfeld 19, 22981<br>NY, New York</p>
+            <div class="when">Tue, 02 Dec 2025 · 06:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice -->
+      <div class="card">
+        <div class="card-h">
+          <h3 class="card-title">
+            Invoice <span class="id mono">#3522</span>
+            <span class="badge-state" id="invBadge"></span>
+          </h3>
+          <button class="btn btn-ghost btn-sm" title="Download invoice">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+
+        <!-- Base item -->
+        <div class="inv-line-veh">
+          <div class="thumb"></div>
+          <div>
+            <div class="name">BMW i8 — LEE-67-889A</div>
+            <div class="qty"><b>2 days</b> × $25.50/day base rate</div>
+          </div>
+          <div class="amt">$51.00</div>
+        </div>
+
+        <!-- Additional charges (only in pending) -->
+        <div id="addlCharges" style="margin-top:14px;display:none">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--warn);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            Charges added after booking
+          </div>
+          <div class="inv-charge">
+            <div class="ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+            </div>
+            <div>
+              <div class="name">Late return fee</div>
+              <div class="when">Added 6 May 2026 · 2 hours over scheduled return</div>
+            </div>
+            <span class="badge-new">New</span>
+            <div class="amt">$85.00</div>
+          </div>
+          <div class="inv-charge">
+            <div class="ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-3 5-5 9-5s7 2 9 5"/><path d="M3 12c2 3 5 5 9 5s7-2 9-5"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <div>
+              <div class="name">Interior cleaning</div>
+              <div class="when">Added 6 May 2026 · Sand &amp; debris in cabin</div>
+            </div>
+            <span class="badge-new">New</span>
+            <div class="amt">$50.00</div>
+          </div>
+        </div>
+
+        <div class="inv-divider solid" style="margin-top:14px"></div>
+
+        <div class="inv-row"><div class="l">Subtotal</div><div class="r" id="invSubtotal">$52.00</div></div>
+        <div class="inv-row">
+          <div class="l">Discount <span class="promo">FLEETHQSALE</span></div>
+          <div class="r">−$2.00</div>
+        </div>
+        <div class="inv-row"><div class="l">Tax</div><div class="r">$0.00</div></div>
+
+        <div class="inv-divider"></div>
+
+        <div class="inv-row"><div class="l strong">Total</div><div class="r strong" id="invTotal">$50.99</div></div>
+        <div class="inv-row"><div class="l">Deposit paid</div><div class="r">−$40.99</div></div>
+
+        <!-- Balance row -->
+        <div class="inv-total-row balance-paid" id="balanceRow">
+          <div class="l" id="balanceLbl">Balance due
+            <small id="balanceSub">Settle on pickup or in advance</small>
+          </div>
+          <div class="r"><span class="cur">USD</span><span id="balanceAmt">$10.00</span></div>
+        </div>
+
+        <!-- Pay CTA in pending mode -->
+        <div class="pay-cta" id="payCta" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="info"><b>Action required.</b> Outstanding charges must be paid by <b>13 May 2026</b> to keep your account in good standing.</div>
+          <button class="btn btn-brand btn-sm">Pay $135.00</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== SIDE COLUMN ===== -->
+    <div class="col">
+
+      <!-- Checklist -->
+      <div class="card">
+        <div class="card-h">
+          <h3 class="card-title">Verification checklist</h3>
+          <span id="chkProg" class="mono" style="font-size:11.5px;color:var(--muted);font-weight:600">1 of 3</span>
+        </div>
+        <div id="checklist">
+          <div class="chk-item">
+            <div class="chk-dot ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="chk-body">
+              <div class="chk-status ok">Complete</div>
+              <div class="chk-name">Booking confirmed</div>
+              <div class="chk-desc">Confirmation emailed and rental agreement available.</div>
+              <button class="btn btn-sm">View rental agreement</button>
+            </div>
+          </div>
+          <div class="chk-item">
+            <div class="chk-dot pend"></div>
+            <div class="chk-body">
+              <div class="chk-status pend">Action needed</div>
+              <div class="chk-name">ID verification</div>
+              <div class="chk-desc">Upload a photo of your driver's license. Takes about 2 minutes.</div>
+              <button class="btn btn-brand btn-sm btn-block">Verify ID</button>
+            </div>
+          </div>
+          <div class="chk-item">
+            <div class="chk-dot pend"></div>
+            <div class="chk-body">
+              <div class="chk-status pend">Action needed</div>
+              <div class="chk-name">Insurance verification</div>
+              <div class="chk-desc">Upload proof of insurance covering the rental period.</div>
+              <button class="btn btn-sm btn-block">Verify insurance</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trip Photos -->
+      <div class="card">
+        <h3 class="card-title" style="margin-bottom:14px">Trip photos</h3>
+        <div class="ph-block">
+          <div class="ph-zone">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="lbl">Pre-trip photos</div>
+            <div class="sub">Document the vehicle's condition before pickup.<br><b>JPEG</b> or <b>PNG</b>, up to <b>25 MB</b></div>
+            <button class="btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Upload photos
+            </button>
+          </div>
+        </div>
+        <div class="ph-block">
+          <div class="ph-zone">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="lbl">Post-trip photos</div>
+            <div class="sub">Document the vehicle's condition after drop-off.<br><b>JPEG</b> or <b>PNG</b>, up to <b>25 MB</b></div>
+            <button class="btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Upload photos
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Need help -->
+      <div class="card" style="background:var(--brand-tint-2);border-color:#cfe0cb">
+        <h3 class="card-title" style="margin-bottom:6px">Need help?</h3>
+        <p style="margin:0 0 14px;color:var(--ink-2);font-size:13px;line-height:1.5">Our team is on call 24/7 for any rental questions or issues.</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V20a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.66-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.07 4.18 2 2 0 0 1 4 2h3.09a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            Call support
+          </button>
+          <button class="btn btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Live chat
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="foot">
+    <div class="foot-about">
+      <div class="logo" style="color:#fff">
+        <span class="logo-mark" style="background:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l3-7h12l3 7"/><circle cx="7" cy="16" r="2"/><circle cx="17" cy="16" r="2"/><path d="M5 14h14"/></svg></span>
+        Trailhead
+      </div>
+      <p>Three decades in the automotive business. Local, personal car rentals built on the trust of thousands of 5-star trips.</p>
+      <div class="foot-social">
+        <a href="#" aria-label="Twitter"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.8a8.5 8.5 0 0 1-2.4.7 4.2 4.2 0 0 0 1.8-2.3 8.4 8.4 0 0 1-2.6 1A4.1 4.1 0 0 0 12 9a11.7 11.7 0 0 1-8.5-4.3 4.1 4.1 0 0 0 1.3 5.5 4 4 0 0 1-1.9-.5v.1a4.1 4.1 0 0 0 3.3 4 4.1 4.1 0 0 1-1.9.1 4.1 4.1 0 0 0 3.8 2.9A8.3 8.3 0 0 1 2 18.6a11.7 11.7 0 0 0 6.3 1.9c7.5 0 11.7-6.3 11.7-11.7v-.5A8.3 8.3 0 0 0 22 5.8z"/></svg></a>
+        <a href="#" aria-label="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V5h-3a4 4 0 0 0-4 4v2H7v4h3v8h4v-8h3l1-4h-4V9.5A.5.5 0 0 1 14 9z"/></svg></a>
+        <a href="#" aria-label="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+      </div>
+    </div>
+    <div class="foot-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Fleet</a></li>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="#">Manage Bookings</a></li>
+      </ul>
+    </div>
+    <div class="foot-col foot-contact">
+      <h4>Contact</h4>
+      <ul>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V20a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.66-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.07 4.18 2 2 0 0 1 4 2h3.09a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>+1 (860) 674-2794</li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>hello@trailhead.com</li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>PO Box 1125, Farmington, CT 06034</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bot">
+    <span>© 2026 Trailhead Rentals. All rights reserved.</span>
+    <span>Privacy · Terms</span>
+  </div>
+</footer>
+
+<script id="__bc_main">
+document.addEventListener('DOMContentLoaded', function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+
+  // Variant toggle
+  const setVariant = (v) => {
+    $$('.variant-bar .grp button').forEach(b => b.classList.toggle('is-active', b.dataset.variant === v));
+    $('[data-banner="success"]').style.display = v === 'success' ? '' : 'none';
+    $('[data-banner="pending"]').style.display = v === 'pending' ? '' : 'none';
+    $('#addlCharges').style.display = v === 'pending' ? '' : 'none';
+    $('#payCta').style.display = v === 'pending' ? 'flex' : 'none';
+
+    if (v === 'pending') {
+      // Subtotal: 51 (base 2 days at 25.5) + 85 + 50 = 186; -2 = 184
+      $('#invSubtotal').textContent = '$186.00';
+      $('#invTotal').textContent = '$184.00';
+      $('#balanceRow').className = 'inv-total-row balance-due';
+      $('#balanceLbl').firstChild.textContent = 'Balance due ';
+      $('#balanceSub').textContent = 'Pay by 13 May 2026 to avoid disruption';
+      $('#balanceAmt').textContent = '$143.01';
+      // Invoice badge
+      $('#invBadge').innerHTML = '<span style="background:var(--warn-tint);color:var(--warn);font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:99px;text-transform:uppercase">Payment due</span>';
+    } else {
+      $('#invSubtotal').textContent = '$52.00';
+      $('#invTotal').textContent = '$50.99';
+      $('#balanceRow').className = 'inv-total-row balance-paid';
+      $('#balanceLbl').firstChild.textContent = 'Balance ';
+      $('#balanceSub').textContent = 'Fully paid · receipt emailed';
+      $('#balanceAmt').textContent = '$0.00';
+      $('#invBadge').innerHTML = '<span style="background:var(--brand-tint);color:var(--brand);font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:99px;text-transform:uppercase">Paid</span>';
+    }
+  };
+
+  $$('.variant-bar .grp button').forEach(b => b.addEventListener('click', () => setVariant(b.dataset.variant)));
+  setVariant('success');
+
+  // Pay now button
+  $('#btnPayNow')?.addEventListener('click', () => alert('Payment flow stub'));
+
+  // ===== Toast =====
+  const toast = $('#toast'), toastMsg = $('#toastMsg');
+  let toastT;
+  function showToast(msg){
+    toastMsg.textContent = msg;
+    toast.style.opacity = 1; toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toastT);
+    toastT = setTimeout(()=>{ toast.style.opacity = 0; toast.style.transform = 'translateX(-50%) translateY(20px)'; }, 2800);
+  }
+
+  // ===== Modal helpers =====
+  function openModal(name){
+    const sh = document.querySelector(`[data-modal="${name}"]`);
+    if (!sh) return;
+    sh.classList.add('is-show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    $$('.shade.is-show').forEach(s => s.classList.remove('is-show'));
+    document.body.style.overflow = '';
+  }
+  $$('[data-open]').forEach(b => b.addEventListener('click', () => openModal(b.dataset.open)));
+  $$('[data-close]').forEach(b => b.addEventListener('click', closeModal));
+  $$('.shade').forEach(s => s.addEventListener('click', e => { if (e.target === s) closeModal(); }));
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ===== Change Vehicle =====
+  const ORIG_RATE = 25.5;
+  const ORIG_DAYS = 2;
+  let selVeh = null;
+  $$('#vlist .vopt').forEach(v => v.addEventListener('click', () => {
+    $$('#vlist .vopt').forEach(x => x.classList.remove('is-sel'));
+    v.classList.add('is-sel');
+    selVeh = { id: v.dataset.vid, rate: parseFloat(v.dataset.rate), name: v.querySelector('.name').textContent };
+    const newTotal = selVeh.rate * ORIG_DAYS;
+    const oldTotal = ORIG_RATE * ORIG_DAYS;
+    const delta = newTotal - oldTotal;
+    const lbl = $('#vehFootLbl'), amt = $('#vehFootAmt');
+    const note = $('#vehDelta'), noteText = $('#vehDeltaText');
+
+    if (Math.abs(delta) < 0.01){
+      lbl.textContent = 'No price change'; amt.textContent = '$0.00'; amt.className = '';
+      note.style.display = 'none';
+    } else if (delta > 0){
+      lbl.textContent = 'Additional charge'; amt.textContent = '+$' + delta.toFixed(2); amt.className = 'charge';
+      note.style.display = 'flex';
+      noteText.innerHTML = `An additional <b>$${delta.toFixed(2)}</b> will be charged to your card ending in <b>4242</b> on confirmation.`;
+    } else {
+      lbl.textContent = 'Refund'; amt.textContent = '−$' + Math.abs(delta).toFixed(2); amt.className = 'refund';
+      note.style.display = 'flex';
+      noteText.innerHTML = `A refund of <b>$${Math.abs(delta).toFixed(2)}</b> will be issued to your card ending in <b>4242</b> within 5–10 business days.`;
+    }
+    const conf = $('#vehConfirm'); conf.disabled = false; conf.style.opacity = 1;
+  }));
+  $('#vehConfirm').addEventListener('click', () => {
+    if (!selVeh) return;
+    closeModal();
+    showToast(`Vehicle changed to ${selVeh.name}`);
+  });
+
+  // ===== Modify Trip =====
+  const dailyRate = 25.5;
+  const origPick = new Date('2025-12-02T09:00');
+  const origDrop = new Date('2025-12-03T18:00');
+  function dayDiff(a,b){ return Math.max(1, Math.ceil((b - a) / 86400000)); }
+  const origDays = dayDiff(origPick, origDrop);
+
+  function recalcMod(){
+    const pd = $('#modPickDate').value, pt = $('#modPickTime').value;
+    const dd = $('#modDropDate').value, dt = $('#modDropTime').value;
+    const np = new Date(pd + 'T' + pt);
+    const nd = new Date(dd + 'T' + dt);
+    if (isNaN(np) || isNaN(nd) || nd <= np){
+      $('#modNew').textContent = '—';
+      $('#modDeltaLbl').textContent = 'Invalid dates';
+      $('#modDeltaAmt').textContent = '—';
+      $('#modFootAmt').textContent = '—';
+      $('#modFootAmt').className = '';
+      return;
+    }
+    const newDays = dayDiff(np, nd);
+    const dDays = newDays - origDays;
+    const dCost = dDays * dailyRate;
+    $('#modOrig').textContent = origDays + (origDays === 1 ? ' day' : ' days');
+    $('#modNew').textContent = newDays + (newDays === 1 ? ' day' : ' days');
+    const lbl = $('#modDeltaLbl'), amt = $('#modDeltaAmt'), foot = $('#modFootAmt');
+    if (dDays === 0){
+      lbl.textContent = 'No change'; amt.textContent = '$0.00'; amt.className = 'r';
+      foot.textContent = '$0.00'; foot.className = '';
+    } else if (dDays > 0){
+      lbl.textContent = `Extension (+${dDays} day${dDays>1?'s':''})`;
+      amt.textContent = '+$' + dCost.toFixed(2); amt.className = 'r charge';
+      foot.textContent = '+$' + dCost.toFixed(2); foot.className = 'charge';
+    } else {
+      lbl.textContent = `Reduction (${dDays} day${dDays<-1?'s':''})`;
+      amt.textContent = '−$' + Math.abs(dCost).toFixed(2); amt.className = 'r refund';
+      foot.textContent = '−$' + Math.abs(dCost).toFixed(2); foot.className = 'refund';
+    }
+    $('#modFootLbl').textContent = dDays > 0 ? 'Additional charge' : (dDays < 0 ? 'Refund amount' : 'Net change');
+  }
+  ['modPickDate','modPickTime','modDropDate','modDropTime'].forEach(id => $('#'+id).addEventListener('change', recalcMod));
+  $$('.preset[data-days]').forEach(p => p.addEventListener('click', () => {
+    $$('.preset').forEach(x => x.classList.remove('is-sel'));
+    p.classList.add('is-sel');
+    const d = parseInt(p.dataset.days, 10);
+    const newDrop = new Date(origDrop.getTime() + d * 86400000);
+    $('#modDropDate').value = newDrop.toISOString().slice(0,10);
+    recalcMod();
+  }));
+  $('#modConfirm').addEventListener('click', () => {
+    closeModal();
+    showToast('Trip dates updated');
+  });
+  recalcMod();
+
+  // ===== Cancel =====
+  // Simulate fee scaling by reason; in reality it'd be hours-from-pickup.
+  const totalPaid = 50.99;
+  const reasons = {
+    plans:   { feePct: 0,  label: 'Free cancellation · 25+ days out' },
+    cheaper: { feePct: 0,  label: 'Free cancellation · 25+ days out' },
+    travel:  { feePct: 0,  label: 'Free cancellation · 25+ days out' },
+    other:   { feePct: 0,  label: 'Free cancellation · 25+ days out' }
+  };
+  function recalcCancel(){
+    const v = document.querySelector('input[name="r"]:checked').value;
+    const r = reasons[v];
+    const fee = totalPaid * r.feePct / 100;
+    const refund = totalPaid - fee;
+    $('#feePct').textContent = `(${r.feePct}%)`;
+    $('#feeAmt').textContent = '−$' + fee.toFixed(2);
+    $('#refundAmt').textContent = '$' + refund.toFixed(2);
+    $('#cancelFootAmt').textContent = '$' + refund.toFixed(2);
+    const box = $('#refundBox');
+    if (r.feePct >= 50){ box.classList.add('warn'); $('#refundTitle').textContent = 'Partial refund'; }
+    else { box.classList.remove('warn'); $('#refundTitle').textContent = 'Refund summary'; }
+  }
+  $$('input[name="r"]').forEach(i => i.addEventListener('change', () => {
+    $$('.reason').forEach(r => r.classList.toggle('is-sel', r.querySelector('input').checked));
+    recalcCancel();
+  }));
+  // Highlight initial selection
+  $$('.reason').forEach(r => r.classList.toggle('is-sel', r.querySelector('input').checked));
+  $('#cancelConfirm').addEventListener('click', () => {
+    closeModal();
+    showToast('Booking cancelled · refund issued');
+  });
+  recalcCancel();
+});
+</script>
+<!-- ============ MODALS ============ -->
+
+<!-- Change Vehicle -->
+<div class="shade" data-modal="vehicle">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h2>Change vehicle</h2>
+        <p>Pick a different car for your trip. The price difference will be charged or refunded automatically.</p>
+      </div>
+      <button class="modal-x" data-close>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="vlbl">Currently booked</div>
+      <div class="veh-current">
+        <div class="thumb"></div>
+        <div class="info"><b>BMW i8</b><span>LEE-67-889A · $25.50/day</span></div>
+        <span class="tag">Current</span>
+      </div>
+
+      <div class="vlbl">Available alternatives · 2 Dec 2025</div>
+      <div class="vlist" id="vlist">
+        <button type="button" class="vopt" data-vid="audi" data-rate="22">
+          <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=200&q=70')"></div>
+          <div>
+            <div class="name">Audi A4</div>
+            <div class="meta">Sedan · Auto · 5 seats</div>
+            <span class="delta-pill down">−$7.00 total</span>
+          </div>
+          <div class="price">$22.00<small>/day</small></div>
+        </button>
+        <button type="button" class="vopt" data-vid="tesla" data-rate="42">
+          <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=200&q=70')"></div>
+          <div>
+            <div class="name">Tesla Model 3</div>
+            <div class="meta">EV · Auto · 5 seats</div>
+            <span class="delta-pill up">+$33.00 total</span>
+          </div>
+          <div class="price">$42.00<small>/day</small></div>
+        </button>
+        <button type="button" class="vopt" data-vid="kia" data-rate="25.5">
+          <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=200&q=70')"></div>
+          <div>
+            <div class="name">Kia Sportage</div>
+            <div class="meta">SUV · Auto · 5 seats</div>
+            <span class="delta-pill same">No change</span>
+          </div>
+          <div class="price">$25.50<small>/day</small></div>
+        </button>
+        <button type="button" class="vopt" data-vid="merc" data-rate="68">
+          <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=200&q=70')"></div>
+          <div>
+            <div class="name">Mercedes-Benz S-Class</div>
+            <div class="meta">Luxury · Auto · 5 seats</div>
+            <span class="delta-pill up">+$85.00 total</span>
+          </div>
+          <div class="price">$68.00<small>/day</small></div>
+        </button>
+      </div>
+
+      <div class="policy-note" id="vehDelta" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 17h.01"/></svg>
+        <span id="vehDeltaText"></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="delta">
+        <span id="vehFootLbl">Select a vehicle</span>
+        <b id="vehFootAmt">—</b>
+      </div>
+      <div class="acts">
+        <button class="btn" data-close>Cancel</button>
+        <button class="btn btn-brand" id="vehConfirm" disabled style="opacity:.5">Confirm change</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modify Trip -->
+<div class="shade" data-modal="modify">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h2>Modify trip dates</h2>
+        <p>Extend or shorten your rental period. Daily rate of <b>$25.50</b> applies to additions; refunds prorate the deposit.</p>
+      </div>
+      <button class="modal-x" data-close>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="vlbl">Trip duration</div>
+      <div class="date-grid">
+        <div class="date-field">
+          <div class="lbl">Pick up</div>
+          <input type="date" id="modPickDate" value="2025-12-02">
+          <input type="time" id="modPickTime" value="09:00">
+        </div>
+        <div class="date-field">
+          <div class="lbl">Drop off</div>
+          <input type="date" id="modDropDate" value="2025-12-03">
+          <input type="time" id="modDropTime" value="18:00">
+        </div>
+      </div>
+
+      <div class="vlbl" style="margin-top:6px">Quick adjust</div>
+      <div class="preset-row">
+        <button type="button" class="preset reduce" data-days="-1">− 1 day</button>
+        <button type="button" class="preset" data-days="0">No change</button>
+        <button type="button" class="preset extend" data-days="1">+ 1 day</button>
+        <button type="button" class="preset extend" data-days="2">+ 2 days</button>
+        <button type="button" class="preset extend" data-days="3">+ 3 days</button>
+        <button type="button" class="preset extend" data-days="7">+ 1 week</button>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row"><div class="l">Original duration</div><div class="r" id="modOrig">2 days</div></div>
+        <div class="summary-row"><div class="l">New duration</div><div class="r" id="modNew">2 days</div></div>
+        <div class="summary-row"><div class="l">Daily rate</div><div class="r">$25.50</div></div>
+        <div class="summary-row total">
+          <div class="l" id="modDeltaLbl">No change</div>
+          <div class="r" id="modDeltaAmt">$0.00</div>
+        </div>
+      </div>
+
+      <div class="policy-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 17h.01"/></svg>
+        <span>Free changes up to 24 hours before pick-up. <a href="#">See full policy</a></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="delta">
+        <span id="modFootLbl">Net change</span>
+        <b id="modFootAmt">$0.00</b>
+      </div>
+      <div class="acts">
+        <button class="btn" data-close>Cancel</button>
+        <button class="btn btn-brand" id="modConfirm">Confirm change</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Booking -->
+<div class="shade" data-modal="cancel">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h2>Cancel booking</h2>
+        <p>You're about to cancel <b class="mono">#13214</b> · BMW i8 on 2 Dec 2025. This action can't be undone.</p>
+      </div>
+      <button class="modal-x" data-close>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="vlbl">Reason for cancelling</div>
+      <div class="reason-list" id="reasonList">
+        <label class="reason"><input type="radio" name="r" value="plans" checked><div class="body"><div class="name">Plans changed</div><div class="desc">No longer need the vehicle on these dates.</div></div></label>
+        <label class="reason"><input type="radio" name="r" value="cheaper"><div class="body"><div class="name">Found a better option</div><div class="desc">Booked a different vehicle elsewhere.</div></div></label>
+        <label class="reason"><input type="radio" name="r" value="travel"><div class="body"><div class="name">Travel cancelled</div><div class="desc">Trip itself is no longer happening.</div></div></label>
+        <label class="reason"><input type="radio" name="r" value="other"><div class="body"><div class="name">Other reason</div><div class="desc">Tell us more so we can improve.</div></div></label>
+      </div>
+
+      <div class="refund-box" id="refundBox">
+        <div class="head">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 4 3 12 11 12"/></svg>
+          <h4 id="refundTitle">Refund summary</h4>
+        </div>
+        <div class="grid">
+          <div class="k">Total paid</div><div class="v">$50.99</div>
+          <div class="k">Cancellation fee <small id="feePct" style="color:var(--muted);font-weight:500;font-family:Inter">(0%)</small></div><div class="v" id="feeAmt">−$0.00</div>
+          <div class="k" style="font-weight:700;color:var(--ink)">Refund to card ····4242</div><div class="v big" id="refundAmt">$50.99</div>
+        </div>
+      </div>
+
+      <div class="policy-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 17h.01"/></svg>
+        <span>Refunds typically arrive within 5–10 business days. Charges already paid for additional services are non-refundable.</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="delta">
+        <span>Refund amount</span>
+        <b class="refund" id="cancelFootAmt">$50.99</b>
+      </div>
+      <div class="acts">
+        <button class="btn" data-close>Keep booking</button>
+        <button class="btn" style="background:var(--danger);color:#fff;border-color:var(--danger)" id="cancelConfirm">Cancel booking</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;font-size:13px;font-weight:500;z-index:200;opacity:0;pointer-events:none;transition:all var(--t-med);display:flex;align-items:center;gap:8px;box-shadow:0 12px 30px rgba(0,0,0,.25)">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7fd49a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Saved</span>
+</div>
+
+</body>
+</html>

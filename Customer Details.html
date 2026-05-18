@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zaid Irfan · Customer — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+  .app[data-collapsed="true"] .logo-word{display:none}.app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}.toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}.app[data-collapsed="true"] .top-buttons{display:none}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:4}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb a{color:var(--muted)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-success{background:#22c55e;color:#fff;border-color:#22c55e}.btn-success:hover{filter:brightness(1.05)}
+  .btn-warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .btn-danger-ghost{color:var(--brand)}.btn-danger-ghost:hover{background:var(--brand-tint);border-color:#f4cdcd}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  .page{padding:20px 28px 60px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;max-width:1480px;margin:0 auto}
+  .col-main{display:flex;flex-direction:column;gap:20px;min-width:0}
+  .col-side{display:flex;flex-direction:column;gap:20px}
+
+  /* HERO HEADER */
+  .hero{background:var(--canvas);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center}
+  .havatar{width:72px;height:72px;border-radius:999px;color:#fff;display:grid;place-items:center;font-weight:700;font-size:22px;flex:0 0 72px;position:relative;background:oklch(0.62 0.14 10)}
+  .havatar .vshield{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:99px;background:var(--ok);color:#fff;display:grid;place-items:center;border:3px solid var(--canvas)}
+  .havatar .vshield svg{width:10px;height:10px}
+  .hname{margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hbadge{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:99px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--ok-tint);color:var(--ok)}
+  .hbadge.warn{background:var(--warn-tint);color:var(--warn)}
+  .hbadge.brand{background:var(--brand-tint);color:var(--brand)}
+  .hbadge svg{width:11px;height:11px}
+  .hmeta{color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:14px}
+  .hmeta span{display:inline-flex;align-items:center;gap:5px}
+  .hmeta svg{width:12px;height:12px}
+  .hmeta b{color:var(--ink);font-weight:600}
+  .hero-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  .hero-actions .row{display:flex;gap:6px}
+
+  /* STAT BAND */
+  .statband{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .sb{background:var(--canvas);padding:14px 18px}
+  .sb .l{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+  .sb .v{font-size:20px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .sb .v .s{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+  .sb .sub{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:500}
+  .sb .sub.up{color:var(--ok)}.sb .sub.down{color:var(--brand)}
+
+  /* CARD */
+  .card{background:var(--canvas);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+  .card-title{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+  .card-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
+
+  /* TABS */
+  .stabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:-4px -22px 18px;padding:0 22px;overflow-x:auto}
+  .stab{height:40px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .stab .ct{font-size:11px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2)}
+  .stab.is-on{color:var(--ink)}
+  .stab.is-on .ct{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+  .stab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+  .pane{display:none}.pane.is-on{display:block;animation:fadeIn .2s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  /* BOOKING ROWS (trip history) */
+  .booking{display:grid;grid-template-columns:64px 1fr auto;gap:16px;padding:16px 0;border-bottom:1px solid var(--line-2);align-items:center;cursor:pointer;transition:background var(--t-fast);margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:10px}
+  .booking:hover{background:var(--field-bg)}
+  .booking:last-child{border-bottom:0}
+  .bk-thumb{width:64px;height:48px;border-radius:8px;background:#0f1012 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48' fill='none' stroke='%23ffffff44' stroke-width='1.5'%3E%3Cpath d='M8 30l4-10a4 4 0 0 1 3.8-2.8h32.4A4 4 0 0 1 52 20l4 10'/%3E%3Cpath d='M8 30v6h2v3h8v-3h28v3h8v-3h2v-6'/%3E%3Ccircle cx='16' cy='32' r='2.5'/%3E%3Ccircle cx='48' cy='32' r='2.5'/%3E%3C/svg%3E") center/40px no-repeat;display:grid;place-items:center}
+  [data-theme="dark"] .bk-thumb{background-color:#1a1c20}
+  .bk-thumb.green{background-color:oklch(0.45 0.08 150)}
+  .bk-thumb.blue{background-color:oklch(0.4 0.1 240)}
+  .bk-thumb.red{background-color:oklch(0.45 0.12 25)}
+  .bk-thumb.purple{background-color:oklch(0.42 0.1 290)}
+  .bk-thumb.amber{background-color:oklch(0.5 0.1 60)}
+  .bk-main{min-width:0}
+  .bk-row1{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:5px}
+  .bk-id{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--muted);font-weight:600}
+  .bk-veh{font-weight:600;font-size:13.5px;color:var(--ink)}
+  .bk-plate{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .bk-row2{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .bk-row2 span{display:inline-flex;align-items:center;gap:4px}
+  .bk-row2 svg{width:11px;height:11px}
+  .bk-row2 b{color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums}
+  .bk-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
+  .bk-total{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+  .bk-pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600}
+  .bk-pill .d{width:7px;height:7px;border-radius:99px;background:currentColor}
+  .s-confirmed{color:var(--info)}.s-completed{color:var(--muted)}.s-active{color:var(--ok)}.s-cancelled{color:var(--brand)}.s-pending{color:var(--warn)}
+
+  /* VERIFICATION CARDS */
+  .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .vcard{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--canvas);display:flex;flex-direction:column;gap:10px;position:relative}
+  .vcard.ok{border-color:#cce7d8}
+  [data-theme="dark"] .vcard.ok{border-color:#235b3e}
+  .vcard.warn{border-color:#f4d9a3}
+  .vcard.danger{border-color:#f4cdcd}
+  .vcard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .vc-ico{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2);background:var(--field-bg);flex:0 0 36px}
+  .vcard.ok .vc-ico{background:var(--ok-tint);color:var(--ok)}
+  .vcard.warn .vc-ico{background:var(--warn-tint);color:var(--warn)}
+  .vcard.danger .vc-ico{background:var(--brand-tint);color:var(--brand)}
+  .vc-title{font-size:14px;font-weight:700;line-height:1.2}
+  .vc-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .vc-pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:99px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+  .vc-pill svg{width:11px;height:11px}
+  .vc-pill.ok{background:var(--ok-tint);color:var(--ok)}
+  .vc-pill.warn{background:var(--warn-tint);color:var(--warn)}
+  .vc-pill.danger{background:var(--brand-tint);color:var(--brand)}
+  .vc-pill.na{background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+  .vc-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px}
+  .vc-kv .k{color:var(--muted)}.vc-kv .v{color:var(--ink);font-weight:500;text-align:right;word-break:break-word}
+  .vc-doc{margin-top:6px;padding:10px;background:var(--field-bg);border:1px dashed var(--line);border-radius:8px;display:flex;align-items:center;gap:10px;font-size:12px}
+  .vc-doc .di{width:30px;height:30px;border-radius:6px;background:var(--canvas);border:1px solid var(--line);display:grid;place-items:center;color:var(--brand);flex:0 0 30px}
+  .vc-doc b{display:block;color:var(--ink);font-weight:600}
+  .vc-doc .dm{color:var(--muted);font-size:11px;margin-top:1px}
+  .vc-doc .da{margin-left:auto;display:flex;gap:4px}
+  .vc-doc .da button{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--muted)}
+  .vc-doc .da button:hover{background:var(--hover);color:var(--ink)}
+  .vc-actions{display:flex;gap:6px;margin-top:auto;padding-top:6px}
+
+  /* PAYMENTS */
+  .pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:linear-gradient(135deg,#1f2330 0%,#15171a 100%);color:#fff;position:relative;overflow:hidden;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
+  .pcard.alt{background:linear-gradient(135deg,#2a5fb8 0%,#1a3d80 100%)}
+  .pcard.def::after{content:"DEFAULT";position:absolute;top:12px;right:14px;font-size:9px;font-weight:700;letter-spacing:.08em;background:rgba(255,255,255,.18);padding:3px 8px;border-radius:99px}
+  .pcard .num{font-family:ui-monospace,monospace;font-size:15px;letter-spacing:.06em;font-weight:600}
+  .pcard .brand-name{font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+  .pcard .holder{font-size:11px;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-bottom:2px}
+  .pcard .pcr{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+  .pcard .name{font-size:13px;font-weight:600}
+  .pcard .exp{font-size:11px;opacity:.7;margin-top:2px}
+
+  /* TX TABLE */
+  .tx{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line-2);font-size:13px}
+  .tx:first-child{border-top:0}
+  .tx-ico{width:30px;height:30px;border-radius:8px;background:var(--field-bg);color:var(--ink-2);display:grid;place-items:center}
+  .tx-ico.in{background:var(--ok-tint);color:var(--ok)}.tx-ico.out{background:var(--brand-tint);color:var(--brand)}
+  .tx-ico svg{width:14px;height:14px}
+  .tx-name{font-weight:600;font-size:13px}
+  .tx-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .tx-amt{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+  .tx-amt.out{color:var(--brand)}
+  .tx-stat{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+  /* NOTES */
+  .note-add{padding:12px;background:var(--field-bg);border:1px solid var(--line);border-radius:10px;margin-bottom:14px}
+  .note-add textarea{width:100%;min-height:64px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--canvas);color:var(--ink);resize:vertical;font-size:13px;outline:none;font-family:inherit}
+  .note-add textarea:focus{border-color:var(--ink)}
+  .note-add .acts{display:flex;gap:6px;justify-content:space-between;align-items:center;margin-top:8px}
+  .note-add .acts .tags{display:flex;gap:5px}
+  .tg{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--canvas);border:1px solid var(--line);color:var(--ink-2);cursor:pointer}
+  .tg.on{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+  .note{padding:14px 0;border-bottom:1px solid var(--line-2);display:flex;gap:12px}
+  .note:last-child{border-bottom:0}
+  .note-av{width:30px;height:30px;border-radius:99px;color:#fff;display:grid;place-items:center;font-weight:700;font-size:11px;flex:0 0 30px}
+  .note-body{flex:1;min-width:0}
+  .note-head{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:4px;flex-wrap:wrap}
+  .note-head b{color:var(--ink);font-weight:600}
+  .note-head .time{color:var(--muted)}
+  .note-tag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px}
+  .note-tag.flag{background:var(--brand-tint);color:var(--brand)}
+  .note-tag.compliment{background:var(--ok-tint);color:var(--ok)}
+  .note-tag.internal{background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+  .note-text{font-size:13px;color:var(--ink-2);line-height:1.55}
+
+  /* SIDE CARDS */
+  .sum-grid{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:12.5px}
+  .sum-grid .k{color:var(--muted)}.sum-grid .v{color:var(--ink);font-weight:500;text-align:right;word-break:break-word}
+
+  .risk-meter{display:flex;align-items:center;gap:14px;padding:6px 0 12px}
+  .rm-circle{position:relative;width:80px;height:80px;flex:0 0 80px}
+  .rm-circle svg{width:80px;height:80px;transform:rotate(-90deg)}
+  .rm-circle .num{position:absolute;inset:0;display:grid;place-items:center;font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .rm-info .lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .rm-info .val{font-size:15px;font-weight:700;color:var(--ok);margin-top:2px}
+  .rm-info .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+  .factor{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:7px 0;border-top:1px solid var(--line-2)}
+  .factor:first-child{border-top:0}
+  .factor .fl{display:flex;align-items:center;gap:8px;color:var(--ink-2)}
+  .factor .fl svg{width:13px;height:13px;color:var(--muted)}
+  .factor .fr{font-weight:600}
+  .factor .fr.ok{color:var(--ok)}.factor .fr.warn{color:var(--warn)}.factor .fr.bad{color:var(--brand)}
+
+  .timeline{display:flex;flex-direction:column;gap:0}
+  .tl-item{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line-2);font-size:12.5px}
+  .tl-item:first-child{border-top:0}
+  .tl-ico{width:24px;height:24px;border-radius:99px;background:var(--field-bg);color:var(--ink-2);display:grid;place-items:center;flex:0 0 24px}
+  .tl-ico svg{width:11px;height:11px}
+  .tl-ico.ok{background:var(--ok-tint);color:var(--ok)}
+  .tl-ico.brand{background:var(--brand-tint);color:var(--brand)}
+  .tl-ico.warn{background:var(--warn-tint);color:var(--warn)}
+  .tl-ico.info{background:var(--info-tint);color:var(--info)}
+  .tl-body{flex:1;min-width:0}
+  .tl-title{font-weight:600;color:var(--ink);font-size:12.5px}
+  .tl-meta{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+  /* Modal */
+  .modal-shade{position:fixed;inset:0;background:rgba(15,18,22,.5);backdrop-filter:blur(4px);display:none;place-items:center;z-index:100;opacity:0;transition:opacity var(--t-med);padding:20px}
+  .modal-shade.is-show{display:grid;opacity:1}
+  .modal{background:var(--canvas);border-radius:14px;padding:28px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.2);transform:scale(.96);transition:transform var(--t-med);max-height:92vh;overflow:auto;position:relative}
+  .modal-shade.is-show .modal{transform:scale(1)}
+  .modal h2{margin:0 0 6px;font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .modal .sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+  .modal-x{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:99px;display:grid;place-items:center;color:var(--muted)}
+  .modal-x:hover{background:var(--hover);color:var(--ink)}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .input,.select,.textarea{width:100%;height:38px;padding:0 12px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .textarea{height:auto;padding:10px 12px;min-height:80px;resize:vertical;font-family:inherit}
+  .select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--canvas);padding:10px 16px;border-radius:99px;font-size:12.5px;font-weight:500;z-index:200;opacity:0;pointer-events:none;transition:all var(--t-med);display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  .toast.is-show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{color:#4cc38a;width:14px;height:14px}
+
+  @media (max-width:1100px){.page{grid-template-columns:1fr}.statband{grid-template-columns:repeat(2,1fr)}.vgrid,.pay-grid{grid-template-columns:1fr}.hero{grid-template-columns:auto 1fr}.hero-actions{grid-column:1/-1;flex-direction:row;justify-content:flex-start;align-items:center}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg><svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item is-active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb"><a href="Customers.html">Customers</a></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">Zaid Irfan</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost">Message</button>
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <!-- MAIN COLUMN -->
+      <div class="col-main">
+        <!-- HERO -->
+        <div class="hero">
+          <div class="havatar">ZI<span class="vshield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+          <div>
+            <h1 class="hname">Zaid Irfan
+              <span class="hbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+              <span style="font-size:13px;color:var(--muted);font-weight:500;display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:99px;background:var(--brand)"></span>Direct customer</span>
+            </h1>
+            <div class="hmeta">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><polyline points="4 7 12 13 20 7"/></svg>zaid@gmail.com</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.1 1A19 19 0 0 1 2 4.1 1 1 0 0 1 3 3h4.09a1 1 0 0 1 1 .75l1 4a1 1 0 0 1-.27 1L6.91 10.91a16 16 0 0 0 6.18 6.18l2.16-1.91a1 1 0 0 1 1-.27l4 1a1 1 0 0 1 .75 1z"/></svg>+1 (321) 213-9874</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/></svg>New York, NY</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>Customer since <b>Aug 2023</b></span>
+              <span style="color:var(--ink-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><b>ID: #C-1042</b></span>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <div class="row"><button class="btn btn-primary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New booking</button><button class="btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><polyline points="4 7 12 13 20 7"/></svg>Email</button></div>
+            <div class="row"><button class="btn btn-sm">Edit profile</button><button class="btn btn-sm">Merge…</button><button class="btn btn-sm btn-danger-ghost">Blocklist</button></div>
+          </div>
+        </div>
+
+        <!-- STAT BAND -->
+        <div class="statband">
+          <div class="sb"><div class="l">Total trips</div><div class="v">8 <span class="s">completed</span></div><div class="sub up">+2 vs last year</div></div>
+          <div class="sb"><div class="l">Lifetime spend</div><div class="v">$1,840</div><div class="sub up">$230 avg / trip</div></div>
+          <div class="sb"><div class="l">Avg rating</div><div class="v">4.9<span class="s">★ of 5</span></div><div class="sub">7 hosts rated</div></div>
+          <div class="sb"><div class="l">Cancellation rate</div><div class="v">12%<span class="s"></span></div><div class="sub">1 of 8 trips</div></div>
+          <div class="sb"><div class="l">Last activity</div><div class="v" style="font-size:15px">Today</div><div class="sub">Refund settled</div></div>
+        </div>
+
+        <!-- TABBED CARD -->
+        <div class="card">
+          <div class="stabs" id="stabs">
+            <button class="stab is-on" data-pane="trips">Bookings & Trips <span class="ct">8</span></button>
+            <button class="stab" data-pane="verif">Verifications <span class="ct">5/5</span></button>
+            <button class="stab" data-pane="pay">Payments <span class="ct">12</span></button>
+            <button class="stab" data-pane="notes">Notes <span class="ct">3</span></button>
+            <button class="stab" data-pane="comms">Communication</button>
+          </div>
+
+          <!-- TRIPS PANE -->
+          <div class="pane is-on" data-pane="trips">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+              <div style="display:flex;gap:4px;font-size:12px">
+                <button class="btn btn-sm" style="background:var(--field-bg);border:0;font-weight:600">All (8)</button>
+                <button class="btn btn-sm btn-ghost">Upcoming (1)</button>
+                <button class="btn btn-sm btn-ghost">Completed (6)</button>
+                <button class="btn btn-sm btn-ghost">Cancelled (1)</button>
+              </div>
+              <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export history</button>
+            </div>
+
+            <div class="booking" onclick="location.href='Booking Details - Cancelled.html'">
+              <div class="bk-thumb red"></div>
+              <div class="bk-main">
+                <div class="bk-row1"><span class="bk-id">#13214</span><span class="bk-veh">KIA Sportage</span><span class="bk-plate">LEE-67-889A</span></div>
+                <div class="bk-row2">
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg><b>29 Jun – 6 Jul '25</b></span>
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>7 days</span>
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/></svg>Manhattan</span>
+                </div>
+              </div>
+              <div class="bk-right"><div class="bk-total">$50.99</div><span class="bk-pill s-cancelled"><span class="d"></span>Cancelled · refunded</span></div>
+            </div>
+
+            <div class="booking" onclick="location.href='Booking Details.html'">
+              <div class="bk-thumb blue"></div>
+              <div class="bk-main">
+                <div class="bk-row1"><span class="bk-id">#13190</span><span class="bk-veh">BMW X5</span><span class="bk-plate">LXR-44-820B</span></div>
+                <div class="bk-row2">
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg><b>18 May – 25 May '26</b></span>
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>7 days · upcoming</span>
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/></svg>Brooklyn</span>
+                </div>
+              </div>
+              <div class="bk-right"><div class="bk-total">$612.00</div><span class="bk-pill s-confirmed"><span class="d"></span>Confirmed</span></div>
+            </div>
+
+            <div class="booking">
+              <div class="bk-thumb green"></div>
+              <div class="bk-main">
+                <div class="bk-row1"><span class="bk-id">#12977</span><span class="bk-veh">Toyota RAV4</span><span class="bk-plate">JHK-22-110C</span></div>
+                <div class="bk-row2">
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg><b>4 Mar – 8 Mar '26</b></span>
+                  <span>4 days · 312 mi</span>
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.5 17 14.5 18 21.5 12 18 6 21.5 7 14.5 2 9.5 9 8.5 12 2"/></svg>5.0 left for host</span>
+                </div>
+              </div>
+              <div class="bk-right"><div class="bk-total">$284.00</div><span class="bk-pill s-completed"><span class="d"></span>Completed</span></div>
+            </div>
+
+            <div class="booking">
+              <div class="bk-thumb amber"></div>
+              <div class="bk-main">
+                <div class="bk-row1"><span class="bk-id">#12734</span><span class="bk-veh">Honda Civic</span><span class="bk-plate">PRT-91-554F</span></div>
+                <div class="bk-row2">
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg><b>20 Dec – 22 Dec '25</b></span>
+                  <span>2 days · 145 mi</span>
+                  <span>5.0 left for host</span>
+                </div>
+              </div>
+              <div class="bk-right"><div class="bk-total">$118.00</div><span class="bk-pill s-completed"><span class="d"></span>Completed</span></div>
+            </div>
+
+            <div class="booking">
+              <div class="bk-thumb purple"></div>
+              <div class="bk-main">
+                <div class="bk-row1"><span class="bk-id">#12455</span><span class="bk-veh">Tesla Model 3</span><span class="bk-plate">TSL-08-100E</span></div>
+                <div class="bk-row2">
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg><b>9 Oct – 12 Oct '25</b></span>
+                  <span>3 days · 220 mi</span>
+                  <span>4.5 — late return</span>
+                </div>
+              </div>
+              <div class="bk-right"><div class="bk-total">$340.00</div><span class="bk-pill s-completed"><span class="d"></span>Completed</span></div>
+            </div>
+
+            <div class="booking">
+              <div class="bk-thumb green"></div>
+              <div class="bk-main">
+                <div class="bk-row1"><span class="bk-id">#12101</span><span class="bk-veh">Ford Explorer</span><span class="bk-plate">EXP-72-014A</span></div>
+                <div class="bk-row2">
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg><b>22 Jul – 30 Jul '25</b></span>
+                  <span>8 days · 612 mi</span>
+                  <span>5.0 host rating</span>
+                </div>
+              </div>
+              <div class="bk-right"><div class="bk-total">$498.00</div><span class="bk-pill s-completed"><span class="d"></span>Completed</span></div>
+            </div>
+
+            <div style="margin-top:14px;text-align:center"><button class="btn btn-sm btn-ghost">Show 2 older trips</button></div>
+          </div>
+
+          <!-- VERIFICATIONS PANE -->
+          <div class="pane" data-pane="verif">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+              <div>
+                <div style="font-size:14px;font-weight:700">5 of 5 checks passed</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">Last verified 14 Apr 2025 · re-verification due in 7 months</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>Re-run all checks</button>
+                <button class="btn btn-sm btn-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Approve manually</button>
+              </div>
+            </div>
+
+            <div class="vgrid">
+              <!-- ID -->
+              <div class="vcard ok">
+                <div class="vcard-head">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div class="vc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h5M14 14h3"/></svg></div>
+                    <div><div class="vc-title">Government ID</div><div class="vc-meta">Passport · USA</div></div>
+                  </div>
+                  <span class="vc-pill ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+                </div>
+                <div class="vc-kv">
+                  <div class="k">Full name</div><div class="v">Zaid Mohammed Irfan</div>
+                  <div class="k">Date of birth</div><div class="v">14 Aug 1992 (32)</div>
+                  <div class="k">Document #</div><div class="v">•••• •••2 4471</div>
+                  <div class="k">Expires</div><div class="v">22 Mar 2031</div>
+                </div>
+                <div class="vc-doc"><div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><b>passport_front.pdf</b><div class="dm">1.2 MB · Onfido · 14 Apr 2025</div></div><div class="da"><button><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button></div></div>
+              </div>
+
+              <!-- License -->
+              <div class="vcard ok">
+                <div class="vcard-head">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div class="vc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M13 10h6M13 14h4"/></svg></div>
+                    <div><div class="vc-title">Driver's license</div><div class="vc-meta">New York State · Class D</div></div>
+                  </div>
+                  <span class="vc-pill ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+                </div>
+                <div class="vc-kv">
+                  <div class="k">License #</div><div class="v">NY-•••• 3318</div>
+                  <div class="k">Issued</div><div class="v">04 May 2019</div>
+                  <div class="k">Expires</div><div class="v">14 Aug 2028</div>
+                  <div class="k">Restrictions</div><div class="v">None</div>
+                  <div class="k">DMV record</div><div class="v" style="color:var(--ok)">Clean · 0 points</div>
+                </div>
+                <div class="vc-doc"><div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div><div><b>license_front_back.jpg</b><div class="dm">3.4 MB · Onfido · 14 Apr 2025</div></div><div class="da"><button><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+              </div>
+
+              <!-- Insurance -->
+              <div class="vcard ok">
+                <div class="vcard-head">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div class="vc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+                    <div><div class="vc-title">Personal insurance</div><div class="vc-meta">GEICO · Auto policy</div></div>
+                  </div>
+                  <span class="vc-pill ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+                </div>
+                <div class="vc-kv">
+                  <div class="k">Carrier</div><div class="v">GEICO</div>
+                  <div class="k">Policy #</div><div class="v">•••• 0188-A</div>
+                  <div class="k">Coverage</div><div class="v">100/300/100</div>
+                  <div class="k">Valid until</div><div class="v">31 Aug 2026</div>
+                </div>
+                <div class="vc-doc"><div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><b>insurance_card.pdf</b><div class="dm">280 KB · uploaded by customer</div></div><div class="da"><button><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+              </div>
+
+              <!-- Address -->
+              <div class="vcard ok">
+                <div class="vcard-head">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div class="vc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21H3V9.5z"/><path d="M9 21v-8h6v8"/></svg></div>
+                    <div><div class="vc-title">Address proof</div><div class="vc-meta">Utility bill · Con Edison</div></div>
+                  </div>
+                  <span class="vc-pill ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+                </div>
+                <div class="vc-kv">
+                  <div class="k">Address</div><div class="v">Am Isfeld 19, NY 22981</div>
+                  <div class="k">Issued</div><div class="v">07 Mar 2025</div>
+                  <div class="k">Match score</div><div class="v" style="color:var(--ok)">98% match</div>
+                </div>
+              </div>
+
+              <!-- Background -->
+              <div class="vcard ok" style="grid-column:span 2">
+                <div class="vcard-head">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div class="vc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg></div>
+                    <div><div class="vc-title">Background & sanctions screening</div><div class="vc-meta">Checkr · Identity, criminal, OFAC, PEP</div></div>
+                  </div>
+                  <span class="vc-pill ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Clear</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-size:12.5px">
+                  <div><div style="color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:4px">Identity</div><div style="color:var(--ok);font-weight:600;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Match</div></div>
+                  <div><div style="color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:4px">Criminal</div><div style="color:var(--ok);font-weight:600;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Clear</div></div>
+                  <div><div style="color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:4px">OFAC / sanctions</div><div style="color:var(--ok);font-weight:600;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>No hit</div></div>
+                  <div><div style="color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:4px">PEP / Adverse</div><div style="color:var(--ok);font-weight:600;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>No hit</div></div>
+                </div>
+                <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Report ID: <span style="font-family:ui-monospace,monospace">ck_3F2Bz4VqLpMx</span> · Completed in 14 minutes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAYMENTS PANE -->
+          <div class="pane" data-pane="pay">
+            <div style="margin-bottom:18px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <h3 style="margin:0;font-size:14px;font-weight:700">Cards on file</h3>
+                <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add card</button>
+              </div>
+              <div class="pay-grid">
+                <div class="pcard def">
+                  <div><div class="brand-name">Visa</div><div class="num">•••• •••• •••• 4471</div></div>
+                  <div class="pcr"><div><div class="holder">Cardholder</div><div class="name">Zaid M. Irfan</div></div><div><div class="holder">Expires</div><div class="exp">07 / 28</div></div></div>
+                </div>
+                <div class="pcard alt">
+                  <div><div class="brand-name">Mastercard</div><div class="num">•••• •••• •••• 8820</div></div>
+                  <div class="pcr"><div><div class="holder">Cardholder</div><div class="name">Z. Irfan</div></div><div><div class="holder">Expires</div><div class="exp">11 / 26</div></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="margin:0 0 10px;font-size:14px;font-weight:700">Recent transactions</h3>
+              <div>
+                <div class="tx"><div class="tx-ico out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10"/></svg></div><div><div class="tx-name">Refund · Booking #13214</div><div class="tx-meta">Visa •••• 4471 · 26 Jun '25</div></div><div class="tx-amt out">−$40.99</div><div class="tx-stat">Settled</div></div>
+                <div class="tx"><div class="tx-ico in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div><div class="tx-name">Balance · Booking #13214</div><div class="tx-meta">Visa •••• 4471 · 23 Jun '25</div></div><div class="tx-amt">$10.00</div><div class="tx-stat">Captured</div></div>
+                <div class="tx"><div class="tx-ico in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div><div class="tx-name">Deposit · Booking #13214</div><div class="tx-meta">Visa •••• 4471 · 21 Jun '25</div></div><div class="tx-amt">$40.99</div><div class="tx-stat">Captured</div></div>
+                <div class="tx"><div class="tx-ico in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div><div class="tx-name">Final invoice · Booking #12977</div><div class="tx-meta">Mastercard •••• 8820 · 8 Mar '26</div></div><div class="tx-amt">$284.00</div><div class="tx-stat">Captured</div></div>
+                <div class="tx"><div class="tx-ico in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div><div class="tx-name">Final invoice · Booking #12734</div><div class="tx-meta">Visa •••• 4471 · 22 Dec '25</div></div><div class="tx-amt">$118.00</div><div class="tx-stat">Captured</div></div>
+                <div class="tx"><div class="tx-ico in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div><div class="tx-name">Damage waiver · Booking #12455</div><div class="tx-meta">Visa •••• 4471 · 12 Oct '25</div></div><div class="tx-amt">$40.00</div><div class="tx-stat">Captured</div></div>
+              </div>
+              <div style="margin-top:14px;text-align:center"><button class="btn btn-sm btn-ghost">Show 6 older transactions</button></div>
+            </div>
+          </div>
+
+          <!-- NOTES PANE -->
+          <div class="pane" data-pane="notes">
+            <div class="note-add">
+              <textarea placeholder="Add a private note about this customer…"></textarea>
+              <div class="acts">
+                <div class="tags">
+                  <button class="tg on">Internal</button>
+                  <button class="tg">Compliment</button>
+                  <button class="tg">Flag</button>
+                  <button class="tg">Follow-up</button>
+                </div>
+                <button class="btn btn-sm btn-primary" id="addNote">Save note</button>
+              </div>
+            </div>
+
+            <div class="note">
+              <div class="note-av" style="background:oklch(0.62 0.14 200)">AL</div>
+              <div class="note-body">
+                <div class="note-head"><b>Ava Lambert</b><span class="time">26 Jun '25 · 11:50 AM</span><span class="note-tag internal">Internal</span></div>
+                <div class="note-text">Customer was very polite during cancellation call. Cited family emergency. Approved courtesy partial refund above policy minimum to retain goodwill.</div>
+              </div>
+            </div>
+
+            <div class="note">
+              <div class="note-av" style="background:oklch(0.62 0.14 280)">MS</div>
+              <div class="note-body">
+                <div class="note-head"><b>Maya Singh</b><span class="time">8 Mar '26 · 18:14</span><span class="note-tag compliment">Compliment</span></div>
+                <div class="note-text">Host reported Zaid returned the RAV4 in better condition than delivered — even refilled tires. Tag for VIP consideration after next trip.</div>
+              </div>
+            </div>
+
+            <div class="note">
+              <div class="note-av" style="background:oklch(0.62 0.14 10)">PK</div>
+              <div class="note-body">
+                <div class="note-head"><b>Priya Kapoor</b><span class="time">12 Oct '25 · 16:02</span><span class="note-tag internal">Internal</span></div>
+                <div class="note-text">Returned Tesla 47 minutes late on #12455 — charged late fee per policy. Customer acknowledged via app. No further action needed.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMMS PANE -->
+          <div class="pane" data-pane="comms">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:18px">
+              <div style="background:var(--canvas);padding:14px"><div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase">Emails sent</div><div style="font-size:18px;font-weight:700;margin-top:3px">14</div></div>
+              <div style="background:var(--canvas);padding:14px"><div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase">Open rate</div><div style="font-size:18px;font-weight:700;margin-top:3px">86%</div></div>
+              <div style="background:var(--canvas);padding:14px"><div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase">SMS sent</div><div style="font-size:18px;font-weight:700;margin-top:3px">8</div></div>
+              <div style="background:var(--canvas);padding:14px"><div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase">Marketing consent</div><div style="font-size:14px;font-weight:700;margin-top:3px;color:var(--ok)">Opted in</div></div>
+            </div>
+
+            <div class="timeline">
+              <div class="tl-item"><div class="tl-ico brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><polyline points="4 7 12 13 20 7"/></svg></div><div class="tl-body"><div class="tl-title">Cancellation confirmation sent</div><div class="tl-meta">Email · 26 Jun '25, 11:43 AM · Opened 4 min later</div></div></div>
+              <div class="tl-item"><div class="tl-ico info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div><div class="tl-body"><div class="tl-title">SMS · Pickup reminder for #13214</div><div class="tl-meta">29 Jun '25, 06:00 AM · Delivered (cancelled before)</div></div></div>
+              <div class="tl-item"><div class="tl-ico ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl-body"><div class="tl-title">Booking confirmation #13214</div><div class="tl-meta">Email · 21 Jun '25, 14:09 · Opened</div></div></div>
+              <div class="tl-item"><div class="tl-ico ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl-body"><div class="tl-title">Receipt for #12977</div><div class="tl-meta">Email · 8 Mar '26, 18:30 · Opened</div></div></div>
+              <div class="tl-item"><div class="tl-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.1 1A19 19 0 0 1 2 4.1 1 1 0 0 1 3 3h4.09a1 1 0 0 1 1 .75l1 4a1 1 0 0 1-.27 1L6.91 10.91a16 16 0 0 0 6.18 6.18l2.16-1.91a1 1 0 0 1 1-.27l4 1a1 1 0 0 1 .75 1z"/></svg></div><div class="tl-body"><div class="tl-title">Outbound call · Late return follow-up</div><div class="tl-meta">12 Oct '25, 16:02 · 4m 22s · by Priya Kapoor</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE COLUMN -->
+      <div class="col-side">
+        <!-- Risk score -->
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom:6px">Risk score</h3>
+          <div class="risk-meter">
+            <div class="rm-circle">
+              <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="var(--line-2)" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="var(--ok)" stroke-width="6" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="42"/></svg>
+              <div class="num">82</div>
+            </div>
+            <div class="rm-info"><div class="lbl">Trust score</div><div class="val">Low risk</div><div class="sub">8 trips · 1 cancellation</div></div>
+          </div>
+          <div class="factor"><div class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Identity verified</div><div class="fr ok">+25</div></div>
+          <div class="factor"><div class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>Tenure · 1.7 years</div><div class="fr ok">+15</div></div>
+          <div class="factor"><div class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.5 17 14.5 18 21.5 12 18 6 21.5 7 14.5 2 9.5 9 8.5 12 2"/></svg>Avg rating 4.9★</div><div class="fr ok">+22</div></div>
+          <div class="factor"><div class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/></svg>Recent cancellation</div><div class="fr warn">−5</div></div>
+          <div class="factor"><div class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>Late return × 1</div><div class="fr warn">−3</div></div>
+        </div>
+
+        <!-- Profile details -->
+        <div class="card">
+          <div class="card-head" style="margin-bottom:12px"><h3 class="card-title">Profile</h3><button class="btn btn-sm btn-ghost">Edit</button></div>
+          <div class="sum-grid">
+            <div class="k">Date of birth</div><div class="v">14 Aug 1992</div>
+            <div class="k">Age</div><div class="v">32</div>
+            <div class="k">Address</div><div class="v">Am Isfeld 19<br/>NY 22981, USA</div>
+            <div class="k">Language</div><div class="v">English, Urdu</div>
+            <div class="k">Time zone</div><div class="v">America/New_York</div>
+            <div class="k">Acquired via</div><div class="v">Google search<br/><span style="color:var(--muted);font-size:11px">"car rental new york"</span></div>
+            <div class="k">Referred by</div><div class="v">—</div>
+            <div class="k">Tags</div><div class="v" style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end"><span style="font-size:11px;padding:3px 8px;border-radius:99px;background:var(--field-bg);border:1px solid var(--line)">repeat</span><span style="font-size:11px;padding:3px 8px;border-radius:99px;background:var(--field-bg);border:1px solid var(--line)">prefers SUVs</span></div>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom:12px">Recent activity</h3>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-ico brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/></svg></div><div class="tl-body"><div class="tl-title">Cancelled booking #13214</div><div class="tl-meta">26 Jun '25 · refund $40.99</div></div></div>
+            <div class="tl-item"><div class="tl-ico info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="tl-body"><div class="tl-title">Created booking #13190 (BMW X5)</div><div class="tl-meta">23 Apr '26 · $612.00</div></div></div>
+            <div class="tl-item"><div class="tl-ico ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl-body"><div class="tl-title">Insurance re-verified</div><div class="tl-meta">14 Apr '26 · valid to Aug 2026</div></div></div>
+            <div class="tl-item"><div class="tl-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="tl-body"><div class="tl-title">Added Mastercard •••• 8820</div><div class="tl-meta">2 Mar '26</div></div></div>
+            <div class="tl-item"><div class="tl-ico ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl-body"><div class="tl-title">Trip completed · Toyota RAV4</div><div class="tl-meta">8 Mar '26 · 4 days · 5.0★</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="toastMsg">Note saved</span></div>
+
+<script>
+  const app = document.getElementById('app');
+  document.getElementById('btnToggle').onclick = () => app.dataset.collapsed = app.dataset.collapsed === 'true' ? 'false' : 'true';
+  document.getElementById('btnExpand').onclick = () => app.dataset.collapsed = 'false';
+  document.getElementById('btnTheme').onclick = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+    document.querySelector('.theme-sun').style.display = dark ? '' : 'none';
+    document.querySelector('.theme-moon').style.display = dark ? 'none' : '';
+  };
+  document.querySelectorAll('.stab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.stab').forEach(x=>x.classList.remove('is-on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('is-on'));
+    t.classList.add('is-on');
+    document.querySelector(`.pane[data-pane="${t.dataset.pane}"]`).classList.add('is-on');
+  });
+  document.querySelectorAll('.tg').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tg').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+  });
+  document.getElementById('addNote').onclick = ()=>{
+    const t = document.getElementById('toast');
+    t.classList.add('is-show'); setTimeout(()=>t.classList.remove('is-show'), 2200);
+  };
+</script>
+</body>
+</html>

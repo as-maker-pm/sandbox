@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tax profiles — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--shadow-pop:0 6px 16px rgba(15,18,22,.08),0 24px 48px rgba(15,18,22,.10);--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  /* App shell */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* Topbar */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* Page */
+  .page{padding:24px 28px 80px;max-width:1480px;margin:0 auto}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .page-sub{color:var(--muted);font-size:13px;margin:6px 0 0;max-width:62ch}
+  .head-actions{display:flex;gap:8px}
+
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .kpi{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas);position:relative}
+  .kpi-label{font-size:11.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .kpi-label svg{width:13px;height:13px;color:var(--muted-2)}
+  .kpi-val{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .kpi-val.sm{font-size:15px;line-height:1.3;padding-top:4px}
+  .kpi-val .un{font-size:13px;color:var(--muted);font-weight:500;margin-left:1px}
+  .kpi-trend{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
+  .kpi-trend.up{color:var(--ok)}.kpi-trend.dn{color:var(--brand)}
+
+  /* Filter bar */
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+  .search{position:relative;flex:1;min-width:240px;max-width:380px}
+  .search input{width:100%;height:34px;padding:0 12px 0 32px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;transition:all var(--t-fast)}
+  .search input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .chip-select{height:34px;padding:0 10px;border:1px solid var(--line);background:var(--canvas);border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .chip-select:hover{background:var(--hover)}.chip-select .v{color:var(--ink);font-weight:600}
+
+  /* Table */
+  .tbl-wrap{border:1px solid var(--line);border-radius:14px;background:var(--canvas);overflow:hidden}
+  .tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+  .tbl thead th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:14px 20px;background:var(--field-bg);border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl tbody td{padding:18px 20px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  .tbl tbody tr:last-child td{border-bottom:0}
+  .tbl tbody tr{transition:background var(--t-fast);cursor:pointer}
+  .tbl tbody tr:hover{background:var(--field-bg)}
+  .tbl tbody tr:hover .row-act{opacity:1}
+  .tbl tbody tr.is-disabled{opacity:.6}
+  .tbl tbody tr.is-disabled .tp-name{color:var(--muted)}
+
+  /* Profile cell */
+  .tp-cell{display:flex;align-items:center;gap:14px;min-width:0}
+  .tp-ico{width:38px;height:38px;border-radius:9px;background:var(--field-bg);color:var(--ink-2);display:grid;place-items:center;flex:0 0 38px;position:relative;border:1px solid var(--line-2);font-weight:800;font-size:13px}
+  .tp-ico.is-default{background:var(--brand-tint-2);color:var(--brand);border-color:color-mix(in srgb,var(--brand) 30%,transparent)}
+  .tp-ico .star{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:99px;background:var(--brand);color:#fff;display:grid;place-items:center;border:2px solid var(--canvas)}
+  .tp-ico .star svg{width:8px;height:8px;fill:currentColor}
+  .tp-info{min-width:0;flex:1}
+  .tp-name{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;line-height:1.25;letter-spacing:-.01em}
+  .tp-name .def-badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px 2px 5px;border-radius:99px;background:var(--brand-tint-2);color:var(--brand);display:inline-flex;align-items:center;gap:3px}
+  .tp-name .def-badge svg{width:9px;height:9px;fill:currentColor}
+  .tp-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.3}
+  .tp-sub b{color:var(--ink-2);font-weight:600}
+
+  /* Rate */
+  .rate{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.2}
+  .rate.muted{color:var(--muted-2);font-size:14px;font-weight:600}
+  .rate-sub{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:3px}
+
+  /* Status pill */
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:99px}
+  .pill.active{background:var(--ok-tint);color:var(--ok)}
+  .pill.active .dot{width:6px;height:6px;border-radius:99px;background:var(--ok)}
+  .pill.disabled{background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+  .pill.disabled .dot{width:6px;height:6px;border-radius:99px;background:var(--muted-2)}
+
+  /* Chip lists */
+  .chips{display:flex;flex-wrap:wrap;gap:4px;max-width:240px}
+  .chips .c{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;background:var(--field-bg);border:1px solid var(--line-2);border-radius:99px;font-size:11.5px;font-weight:500;color:var(--ink-2)}
+  .chips .c.all{background:var(--info-tint);border-color:color-mix(in srgb,var(--info) 26%,transparent);color:var(--info);font-weight:600}
+  .chips .more{font-size:11px;color:var(--muted);font-weight:500;align-self:center}
+
+  /* Component summary */
+  .comp-list{display:flex;flex-direction:column;gap:3px}
+  .comp-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px}
+  .comp-row .nm{color:var(--ink);font-weight:500}
+  .comp-row .v{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;font-family:ui-monospace,monospace;font-size:12px}
+  .comp-total{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;padding-top:4px;border-top:1px dashed var(--line-2);margin-top:3px;display:flex;justify-content:space-between;gap:8px}
+  .comp-total .lbl{font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+  /* Row actions */
+  .row-act{display:flex;gap:4px;opacity:0;transition:opacity var(--t-fast);justify-content:flex-end}
+  .row-act button{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:var(--muted)}
+  .row-act button:hover{background:var(--hover);color:var(--ink)}
+  .row-act button.danger:hover{background:var(--brand-tint-2);color:var(--brand)}
+
+  /* Empty state inside table */
+  .empty-hint{padding:40px;text-align:center;color:var(--muted);font-size:12.5px}
+
+  @media (max-width:1100px){
+    .kpis{grid-template-columns:1fr}
+    .col-locs{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+        <a href="Locations.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg><span class="label">Locations</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Finance</div>
+        <a href="Tax Profiles.html" class="nav-item is-active is-open">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14a1 1 0 0 0 1-1V4l-3 2-3-2-3 2-3-2-3 2v16a1 1 0 0 0 1 1z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <span class="label">Tax profiles</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav is-open">
+          <a href="Tax Profiles.html" class="sub-item is-active">All profiles</a>
+          <a href="Add Tax Profile.html" class="sub-item">New profile</a>
+        </div>
+        <a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="13" y2="18"/></svg><span class="label">Invoices</span></a>
+        <a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg><span class="label">Reports</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot"><a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Finance</span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">Tax profiles</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <!-- Page head -->
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Tax profiles</h1>
+          <p class="page-sub">Bundles of one or more taxes that apply automatically at checkout. The default profile applies to every new booking unless a location has its own.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+          <a href="Add Tax Profile.html" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New tax profile
+          </a>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14a1 1 0 0 0 1-1V4l-3 2-3-2-3 2-3-2-3 2v16a1 1 0 0 0 1 1z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>Total profiles</div>
+          <div class="kpi-val">6<span class="un"> · 1 default</span></div>
+          <div class="kpi-trend">5 active · 1 disabled</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>Default profile</div>
+          <div class="kpi-val sm">CA Sales Tax</div>
+          <div class="kpi-trend">Applied to 4 locations · Mission HQ, Oakland Depot…</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6H9.5a3 3 0 0 0 0 6h5a3 3 0 1 1 0 6H6"/></svg>Tax collected · 30d</div>
+          <div class="kpi-val">$24,810</div>
+          <div class="kpi-trend up">+9.2% vs prior 30d</div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filterbar">
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+          <input placeholder="Search by name, location, or component…" />
+        </div>
+        <button class="chip-select">Status: <span class="v">All</span> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="chip-select">Location: <span class="v">All</span> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="chip-select">Applicable on: <span class="v">All</span> <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+
+      <!-- Table -->
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="min-width:280px">Profile</th>
+              <th style="width:160px">Rate</th>
+              <th class="col-locs" style="width:240px">Locations</th>
+              <th style="width:110px">Status</th>
+              <th style="text-align:right;width:130px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== Theme / sidebar =====
+  const app=document.getElementById('app');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  document.getElementById('btnTheme').addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+  if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+  document.getElementById('btnToggle').addEventListener('click',()=>{app.dataset.collapsed=app.dataset.collapsed==='true'?'false':'true';localStorage.setItem('side-collapsed',app.dataset.collapsed==='true'?'1':'0');});
+  document.getElementById('btnExpand').addEventListener('click',()=>{app.dataset.collapsed='false';localStorage.setItem('side-collapsed','0');});
+
+  // ===== Data =====
+  const profiles = [
+    {
+      id:'tp1', name:'CA Sales Tax', code:'CA',
+      isDefault:true, active:true,
+      components:[ {n:'CA State Tax', t:'%', v:7.25}, {n:'County (SF)', t:'%', v:1.25} ],
+      applicable:['Subtotal','Add-ons'],
+      locations:['Mission HQ','Oakland Depot','SFO Lot C','Marina Drop-off'],
+      hint:'Default — applies to all new bookings'
+    },
+    {
+      id:'tp2', name:'SFO Airport Concession', code:'SFO',
+      isDefault:false, active:true,
+      components:[ {n:'Airport Concession Fee', t:'%', v:10}, {n:'Customer Facility Charge', t:'$', v:9} ],
+      applicable:['Subtotal','Pickup fee'],
+      locations:['SFO · Long-term Lot C'],
+      hint:''
+    },
+    {
+      id:'tp3', name:'NY Sales + MTA', code:'NY',
+      isDefault:false, active:true,
+      components:[ {n:'NY State Tax', t:'%', v:4}, {n:'NYC Local', t:'%', v:4.5}, {n:'MTA Surcharge', t:'%', v:0.375} ],
+      applicable:['Subtotal'],
+      locations:['NY \u2014 Brooklyn Hub (Draft)'],
+      hint:''
+    },
+    {
+      id:'tp4', name:'EU VAT (Standard)', code:'EU',
+      isDefault:false, active:true,
+      components:[ {n:'VAT', t:'%', v:20} ],
+      applicable:['Subtotal','Add-ons','Delivery fee'],
+      locations:[], // means "All locations"
+      hint:'Falls back when no local profile matches'
+    },
+    {
+      id:'tp5', name:'Delivery zone surcharge', code:'DLV',
+      isDefault:false, active:true,
+      components:[ {n:'City surcharge', t:'%', v:2}, {n:'Service fee', t:'$', v:5} ],
+      applicable:['Delivery fee'],
+      locations:['SF Home delivery','Peninsula delivery'],
+      hint:''
+    },
+    {
+      id:'tp6', name:'WA State (Legacy)', code:'WA',
+      isDefault:false, active:false,
+      components:[ {n:'WA State', t:'%', v:6.5} ],
+      applicable:['Subtotal'],
+      locations:[],
+      hint:'Disabled — replaced by WA Combined profile'
+    }
+  ];
+
+  // ===== Render =====
+  function fmtVal(c){ return c.t==='%' ? c.v+'%' : '$'+c.v; }
+  function totalLine(comps){
+    const pct = comps.filter(c=>c.t==='%').reduce((s,c)=>s+c.v,0);
+    const fix = comps.filter(c=>c.t==='$').reduce((s,c)=>s+c.v,0);
+    if(pct && fix) return pct.toFixed(2).replace(/\.?0+$/,'')+'% + $'+fix;
+    if(pct) return pct.toFixed(2).replace(/\.?0+$/,'')+'%';
+    if(fix) return '$'+fix;
+    return '\u2014';
+  }
+  function chipList(arr, allLabel){
+    if(!arr.length) return `<div class="chips"><span class="c all">${allLabel}</span></div>`;
+    const visible = arr.slice(0,2);
+    const rest = arr.length - visible.length;
+    return `<div class="chips">${visible.map(x=>`<span class="c">${x}</span>`).join('')}${rest?`<span class="more">+${rest}</span>`:''}</div>`;
+  }
+  function row(p){
+    const compCount = p.components.length;
+    const appliesOn = p.applicable.length<=2 ? p.applicable.join(', ') : `${p.applicable.slice(0,2).join(', ')} +${p.applicable.length-2}`;
+    return `
+      <tr class="${p.active?'':'is-disabled'}" onclick="location.href='Add Tax Profile.html?id=${p.id}'">
+        <td>
+          <div class="tp-cell">
+            <div class="tp-ico ${p.isDefault?'is-default':''}">${p.code}
+              ${p.isDefault?`<span class="star"><svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg></span>`:''}
+            </div>
+            <div class="tp-info">
+              <div class="tp-name">${p.name}${p.isDefault?`<span class="def-badge"><svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>Default</span>`:''}</div>
+              <div class="tp-sub">Applies on <b>${appliesOn}</b>${p.hint?` · ${p.hint}`:''}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="rate">${totalLine(p.components)}</div>
+          <div class="rate-sub">${compCount} component${compCount===1?'':'s'}</div>
+        </td>
+        <td class="col-locs">${chipList(p.locations,'All locations')}</td>
+        <td>
+          ${p.active
+            ? `<span class="pill active"><span class="dot"></span>Active</span>`
+            : `<span class="pill disabled"><span class="dot"></span>Disabled</span>`}
+        </td>
+        <td onclick="event.stopPropagation()">
+          <div class="row-act">
+            <button title="Edit" onclick="location.href='Add Tax Profile.html?id=${p.id}'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            <button title="Duplicate"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+            ${!p.isDefault?`<button title="Delete" class="danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6 M10 11v6 M14 11v6 M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>`:''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+  document.getElementById('tbody').innerHTML = profiles.map(row).join('');
+})();
+</script>
+</body>
+</html>

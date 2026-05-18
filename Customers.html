@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Customers — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}a{text-decoration:none;color:inherit}
+
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}
+  .logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+  .app[data-collapsed="true"] .logo-word{display:none}.app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}.toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .app[data-collapsed="true"] .top-buttons{display:none}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:4}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);transition:all var(--t-fast);white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn-ghost{border:0;background:transparent;color:var(--muted)}.btn-ghost:hover{color:var(--ink);background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{background:#2a2d33}
+  .btn-sm{height:28px;padding:0 10px;font-size:12px}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  .page{padding:24px 28px 80px;max-width:1480px;margin:0 auto}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+  .page-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);margin-bottom:4px}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .page-sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+  .head-actions{display:flex;gap:8px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .kpi{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
+  .kpi-label{font-size:11.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .kpi-label .dot{width:8px;height:8px;border-radius:99px}
+  .kpi-val{font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .kpi-trend{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
+  .kpi-trend.up{color:var(--ok)}.kpi-trend.warn{color:var(--warn)}
+
+  .tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+  .tab{height:36px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted);position:relative;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .tab:hover{color:var(--ink)}.tab.is-on{color:var(--ink)}
+  .tab.is-on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+  .tab .count{font-size:11px;font-weight:600;background:var(--field-bg);color:var(--muted);padding:1px 6px;border-radius:99px;border:1px solid var(--line-2)}
+  .tab.is-on .count{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+
+  .filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+  .search{position:relative;flex:1;min-width:240px;max-width:380px}
+  .search input{width:100%;height:34px;padding:0 12px 0 32px;background:var(--field);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;outline:none;transition:all var(--t-fast)}
+  .search input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .chip-select{height:34px;padding:0 10px;border:1px solid var(--line);background:var(--canvas);border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:all var(--t-fast)}
+  .chip-select:hover{background:var(--hover)}.chip-select .v{color:var(--ink);font-weight:600}
+  .filterbar .spacer{flex:1}
+
+  .table-wrap{border:1px solid var(--line);border-radius:12px;background:var(--canvas);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:12px 18px;border-bottom:1px solid var(--line);white-space:nowrap}
+  tbody td{padding:16px 18px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  tbody tr{transition:background var(--t-fast);cursor:pointer}
+  tbody tr:hover{background:var(--field-bg)}
+  tbody tr:last-child td{border-bottom:0}
+  th.col-cb,td.col-cb{width:42px;padding-right:0}
+  th.col-actions,td.col-actions{width:48px;text-align:right}
+  tbody tr:hover .more-btn{opacity:1}
+  .more-btn{opacity:0;width:28px;height:28px;border-radius:6px;color:var(--muted);display:grid;place-items:center;transition:all var(--t-fast)}
+  .more-btn:hover{background:var(--hover);color:var(--ink)}
+
+  .cb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--muted-2);display:inline-grid;place-items:center;background:var(--canvas)}
+  .cb svg{width:10px;height:10px;color:#fff;opacity:0}.cb.is-on{background:var(--ink);border-color:var(--ink)}.cb.is-on svg{opacity:1}
+
+  .cust-cell{display:flex;align-items:center;gap:12px}
+  .cav{width:34px;height:34px;border-radius:999px;color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:0 0 34px;position:relative}
+  .cav .star{position:absolute;right:-4px;bottom:-2px;width:16px;height:16px;background:#fbcd2b;color:#15171a;border-radius:99px;display:grid;place-items:center;border:2px solid var(--canvas);font-size:9px;font-weight:800}
+  .cname{font-weight:600;color:var(--ink);font-size:13.5px;line-height:1.2;display:flex;align-items:center;gap:6px}
+  .cname .src-dot{width:6px;height:6px;border-radius:99px}
+  .cname .src-dot.direct{background:var(--brand)}.cname .src-dot.turo{background:#5d3aef}.cname .src-dot.web{background:var(--info)}
+  .cemail{font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+
+  /* Verification combo cell */
+  .vstack{display:flex;flex-direction:column;gap:5px}
+  .vrow{display:flex;align-items:center;gap:6px;font-size:11.5px}
+  .vrow .lbl{color:var(--muted);font-weight:500;min-width:46px}
+  .vrow .v-pill{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 8px;border-radius:99px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .vrow .v-pill svg{width:10px;height:10px}
+  .v-ok{background:var(--ok-tint);color:var(--ok)}
+  .v-pend{background:var(--warn-tint);color:var(--warn)}
+  .v-no{background:var(--brand-tint);color:var(--brand)}
+  .v-na{background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+
+  .ltv{font-weight:600;font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .ltv small{display:block;color:var(--muted);font-size:11.5px;font-weight:500;margin-top:3px}
+
+  .trips{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  .trips small{display:block;color:var(--muted);font-size:11.5px;font-weight:500;margin-top:3px}
+
+  .last{font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .last small{display:block;color:var(--muted);font-size:11.5px;margin-top:3px}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+  .pill .dot{width:7px;height:7px;border-radius:99px;background:currentColor}
+  .pill.s-active{color:var(--ok)}
+  .pill.s-new{color:var(--info)}
+  .pill.s-review{color:var(--warn)}
+  .pill.s-block{color:var(--brand)}
+  .pill.s-idle{color:var(--muted)}
+
+  /* risk score */
+  .risk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600}
+  .risk .bar{width:42px;height:6px;border-radius:99px;background:var(--field-bg);overflow:hidden;border:1px solid var(--line-2)}
+  .risk .fill{height:100%;border-radius:99px}
+  .risk.low{color:var(--ok)}.risk.low .fill{background:var(--ok);width:25%}
+  .risk.med{color:var(--warn)}.risk.med .fill{background:var(--warn);width:60%}
+  .risk.high{color:var(--brand)}.risk.high .fill{background:var(--brand);width:90%}
+
+  .table-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line-2);background:var(--field-bg);font-size:12px;color:var(--muted)}
+  .pager{display:flex;gap:4px}
+  .pg{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--ink-2);font-weight:600;font-size:12px}
+  .pg:hover{background:var(--hover);color:var(--ink)}.pg.is-on{background:var(--ink);color:var(--canvas)}.pg.dis{color:var(--muted-2);cursor:not-allowed}
+
+  @media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+  <aside class="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/>
+          <circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/>
+        </svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg><svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <nav class="nav">
+      <div class="nav-section"><a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 7l2 5"/><path d="M3 12v5a1 1 0 0 0 1 1h2v-2h12v2h2a1 1 0 0 0 1-1v-5"/><circle cx="7" cy="14.5" r="1.2"/><circle cx="17" cy="14.5" r="1.2"/></svg><span class="label">Vehicles</span></a>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item is-active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/></svg><span class="label">Customers</span></a>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="label">Team</span></a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8 2 2 0 1 1-2.8 2.8 1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0 1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3 2 2 0 1 1-2.8-2.8 1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8 2 2 0 1 1 2.8-2.8 1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3 2 2 0 1 1 2.8 2.8 1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="crumb-cur">Customers</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost">Export</button>
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="page-head">
+        <div>
+          <div class="page-eyebrow">People</div>
+          <h1 class="page-title">Customers</h1>
+          <p class="page-sub">1,247 customers across all sources · 38 awaiting verification</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><polyline points="4 7 12 13 20 7"/></svg>Email campaign</button>
+          <button class="btn btn-primary" onclick="location.href='Add Customer.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add customer</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpi-label"><span class="dot" style="background:var(--ok)"></span>Verified customers</div>
+          <div class="kpi-val">1,089</div>
+          <div class="kpi-trend up">+74 this month</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><span class="dot" style="background:var(--warn)"></span>Awaiting verification</div>
+          <div class="kpi-val">38</div>
+          <div class="kpi-trend warn">12 over SLA · review now</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><span class="dot" style="background:var(--brand)"></span>Blocklisted</div>
+          <div class="kpi-val">7</div>
+          <div class="kpi-trend">3 chargebacks · 4 fraud</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><span class="dot" style="background:var(--info)"></span>Lifetime value</div>
+          <div class="kpi-val">$842K</div>
+          <div class="kpi-trend up">+$12.4K this week</div>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab is-on" data-tab="all">All <span class="count">1,247</span></button>
+        <button class="tab" data-tab="verified">Verified <span class="count">1,089</span></button>
+        <button class="tab" data-tab="pending">Pending review <span class="count">38</span></button>
+        <button class="tab" data-tab="incomplete">Incomplete docs <span class="count">94</span></button>
+        <button class="tab" data-tab="blocked">Blocklist <span class="count">7</span></button>
+        <button class="tab" data-tab="vip">VIP <span class="count">19</span></button>
+      </div>
+
+      <div class="filterbar">
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+          <input id="search" placeholder="Search name, email, phone, license…" />
+        </div>
+        <button class="chip-select">Source: <span class="v">All</span></button>
+        <button class="chip-select">Risk: <span class="v">All</span></button>
+        <button class="chip-select">Last trip: <span class="v">Anytime</span></button>
+        <button class="chip-select">Location: <span class="v">All</span></button>
+        <div class="spacer"></div>
+        <button class="chip-select"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>Sort: Last activity</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-cb"><div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div></th>
+              <th>Customer</th>
+              <th>Verification</th>
+              <th>Risk</th>
+              <th style="text-align:right">Trips</th>
+              <th style="text-align:right">Lifetime value</th>
+              <th>Last trip</th>
+              <th>Status</th>
+              <th class="col-actions"></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="table-foot">
+          <div>Showing <b>10</b> of 1,247 customers</div>
+          <div class="pager">
+            <button class="pg dis"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <button class="pg is-on">1</button>
+            <button class="pg">2</button>
+            <button class="pg">3</button>
+            <button class="pg">…</button>
+            <button class="pg">125</button>
+            <button class="pg"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const app = document.getElementById('app');
+  document.getElementById('btnToggle').onclick = () => app.dataset.collapsed = app.dataset.collapsed === 'true' ? 'false' : 'true';
+  document.getElementById('btnExpand').onclick = () => app.dataset.collapsed = 'false';
+  document.getElementById('btnTheme').onclick = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+    document.querySelector('.theme-sun').style.display = dark ? '' : 'none';
+    document.querySelector('.theme-moon').style.display = dark ? 'none' : '';
+  };
+
+  const CUSTS = [
+    {name:'Zaid Irfan',email:'zaid@gmail.com',phone:'+1 (321) 213-9874',src:'direct',star:4.9,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'low',trips:8,ltv:1840,last:'29 Jun \'25',lastSub:'Cancelled',status:'active',hue:10},
+    {name:'Avery Chen',email:'avery.chen@gmail.com',phone:'+1 (415) 555-0142',src:'web',star:null,
+      v:{id:'pend',lic:'pend',ins:'na'},risk:'med',trips:0,ltv:0,last:'—',lastSub:'New signup · 2h',status:'review',hue:200},
+    {name:'Marcus Webb',email:'mwebb@outlook.com',phone:'+1 (212) 555-1019',src:'turo',star:5.0,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'low',trips:23,ltv:6420,last:'14 May \'26',lastSub:'On trip',status:'active',hue:30,vip:true},
+    {name:'Priya Kapoor',email:'priya.k@yahoo.com',phone:'+1 (917) 555-2287',src:'direct',star:4.8,
+      v:{id:'ok',lic:'ok',ins:'pend'},risk:'low',trips:6,ltv:1290,last:'08 May \'26',lastSub:'Completed',status:'active',hue:280},
+    {name:'Diego Ortiz',email:'diego.ortiz@gmail.com',phone:'+1 (646) 555-3344',src:'direct',star:4.6,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'low',trips:14,ltv:3120,last:'02 May \'26',lastSub:'Completed',status:'active',hue:150},
+    {name:'Sofia Bianchi',email:'sofia.b@me.com',phone:'+39 333 555 891',src:'web',star:null,
+      v:{id:'no',lic:'pend',ins:'na'},risk:'high',trips:0,ltv:0,last:'—',lastSub:'ID rejected · expired',status:'review',hue:330},
+    {name:'Tomás Reyes',email:'treyes@protonmail.com',phone:'+1 (929) 555-4421',src:'turo',star:4.4,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'low',trips:3,ltv:480,last:'28 Apr \'26',lastSub:'Completed',status:'active',hue:90},
+    {name:'Riley Okafor',email:'riley.o@gmail.com',phone:'+1 (347) 555-7798',src:'direct',star:5.0,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'low',trips:31,ltv:9120,last:'14 May \'26',lastSub:'On trip',status:'active',hue:240,vip:true},
+    {name:'Kevin Yates',email:'kyates@gmail.com',phone:'+1 (718) 555-9982',src:'direct',star:2.1,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'high',trips:5,ltv:920,last:'12 Apr \'26',lastSub:'Chargeback dispute',status:'blocked',hue:20},
+    {name:'Lena Park',email:'lpark@hey.com',phone:'+1 (212) 555-6671',src:'web',star:4.7,
+      v:{id:'ok',lic:'ok',ins:'ok'},risk:'low',trips:11,ltv:2640,last:'21 Apr \'26',lastSub:'Completed',status:'active',hue:170},
+  ];
+
+  function ini(n){return n.split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase()}
+  function vp(v,label){
+    if(v==='ok') return `<span class="v-pill v-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${label}</span>`;
+    if(v==='pend') return `<span class="v-pill v-pend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>${label}</span>`;
+    if(v==='no') return `<span class="v-pill v-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>${label}</span>`;
+    return `<span class="v-pill v-na">${label}</span>`;
+  }
+  function statusCell(s){
+    if(s==='active') return `<span class="pill s-active"><span class="dot"></span>Active</span>`;
+    if(s==='review') return `<span class="pill s-review"><span class="dot"></span>Needs review</span>`;
+    if(s==='blocked') return `<span class="pill s-block"><span class="dot"></span>Blocklisted</span>`;
+    return `<span class="pill s-idle"><span class="dot"></span>Idle</span>`;
+  }
+
+  const rows = document.getElementById('rows');
+  function render(filter='all', q=''){
+    const filtered = CUSTS.filter(c=>{
+      if(filter==='verified' && c.status!=='active') return false;
+      if(filter==='pending' && c.status!=='review') return false;
+      if(filter==='incomplete' && !(c.v.ins==='pend'||c.v.ins==='na'||c.v.lic==='pend')) return false;
+      if(filter==='blocked' && c.status!=='blocked') return false;
+      if(filter==='vip' && !c.vip) return false;
+      if(q && !(c.name+' '+c.email+' '+c.phone).toLowerCase().includes(q.toLowerCase())) return false;
+      return true;
+    });
+    rows.innerHTML = filtered.map(c=>`
+      <tr onclick="location.href='Customer Details.html'">
+        <td class="col-cb" onclick="event.stopPropagation();this.querySelector('.cb').classList.toggle('is-on')">
+          <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </td>
+        <td>
+          <div class="cust-cell">
+            <div class="cav" style="background:oklch(0.62 0.14 ${c.hue})">${ini(c.name)}${c.vip?`<span class="star">★</span>`:''}</div>
+            <div><div class="cname"><span class="src-dot ${c.src}"></span>${c.name}${c.vip?` <span style="font-size:10px;color:var(--warn);font-weight:700;letter-spacing:.06em">VIP</span>`:''}</div><div class="cemail">${c.email}</div></div>
+          </div>
+        </td>
+        <td>
+          <div class="vstack">
+            <div class="vrow"><span class="lbl">ID</span>${vp(c.v.id, c.v.id==='ok'?'Verified':c.v.id==='pend'?'Pending':c.v.id==='no'?'Rejected':'—')}</div>
+            <div class="vrow"><span class="lbl">License</span>${vp(c.v.lic, c.v.lic==='ok'?'Verified':c.v.lic==='pend'?'Pending':'—')}</div>
+            <div class="vrow"><span class="lbl">Insurance</span>${vp(c.v.ins, c.v.ins==='ok'?'Verified':c.v.ins==='pend'?'Pending':'N/A')}</div>
+          </div>
+        </td>
+        <td><span class="risk ${c.risk}"><span class="bar"><span class="fill"></span></span>${c.risk==='low'?'Low':c.risk==='med'?'Medium':'High'}</span></td>
+        <td style="text-align:right" class="trips">${c.trips}${c.star!==null?`<small>${c.star}★</small>`:'<small>—</small>'}</td>
+        <td style="text-align:right" class="ltv">$${c.ltv.toLocaleString()}<small>${c.src==='direct'?'Direct':c.src==='turo'?'Turo':'Web'}</small></td>
+        <td><div class="last">${c.last}<small>${c.lastSub}</small></div></td>
+        <td>${statusCell(c.status)}</td>
+        <td class="col-actions"><button class="more-btn" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button></td>
+      </tr>
+    `).join('');
+  }
+  render();
+
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('is-on'));
+    t.classList.add('is-on');
+    render(t.dataset.tab, document.getElementById('search').value);
+  });
+  document.getElementById('search').addEventListener('input', e=>{
+    render(document.querySelector('.tab.is-on').dataset.tab, e.target.value);
+  });
+</script>
+</body>
+</html>
