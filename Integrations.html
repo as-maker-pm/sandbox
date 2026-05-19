@@ -150,10 +150,22 @@
   .connected-block .conn-name{font-size:13px;font-weight:600;color:var(--ok)}
   .connected-block .conn-sub{font-size:12px;color:var(--muted);margin-top:1px}
 
-  /* ── Credits ──────────────────────────────────────────── */
-  .credits-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--field-bg);border:1px solid var(--line);border-radius:10px;margin-bottom:16px}
-  .credits-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
-  .credits-unit{font-size:11.5px;color:var(--muted);margin-top:3px}
+  /* ── Credits meter ────────────────────────────────────── */
+  .credits-meter{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px}
+  .credits-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--line-2)}
+  .credits-stat{padding:14px 16px;display:flex;flex-direction:column;gap:3px}
+  .credits-stat+.credits-stat{border-left:1px solid var(--line-2)}
+  .credits-stat .cs-val{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+  .credits-stat .cs-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .credits-stat.cs-available .cs-val{color:var(--ok)}
+  .credits-stat.cs-used .cs-val{color:var(--ink)}
+  .credits-stat.cs-total .cs-val{color:var(--muted)}
+  .credits-bar-wrap{padding:12px 16px;background:var(--field-bg);display:flex;align-items:center;gap:10px}
+  .credits-bar-track{flex:1;height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+  .credits-bar-fill{height:100%;border-radius:99px;background:var(--ok);transition:width .4s ease}
+  .credits-bar-fill.warn{background:var(--warn)}
+  .credits-bar-fill.empty{background:var(--muted-2)}
+  .credits-bar-pct{font-size:11.5px;font-weight:600;color:var(--muted);min-width:32px;text-align:right}
   .pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
   .credit-pkg{border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;transition:all var(--t-fast);text-align:center;position:relative}
   .credit-pkg:hover{border-color:var(--ink);box-shadow:0 2px 8px rgba(15,18,22,.06)}
@@ -451,8 +463,8 @@ var INTEGRATIONS = [
 
 // ── App state ────────────────────────────────────────────────
 var ST = {
-  modivesConnected: false, modivesCredits: 0, modivesSelected: { qty: 30, price: 69 },
-  checkrConnected: false, checkrCredits: 0, checkrSelected: { qty: 30, price: 119 },
+  modivesConnected: false, modivesCredits: 0, modivesTotalPurchased: 0, modivesSelected: { qty: 30, price: 69 },
+  checkrConnected: false, checkrCredits: 0, checkrTotalPurchased: 0, checkrSelected: { qty: 30, price: 119 },
   bonzahConnected: false,
   stripeIdentityConnected: false,
   emailConfigured: false,
@@ -642,7 +654,9 @@ function drawerStripeIdentity() {
 
 function drawerCredits(provider, name, unit, pkgs) {
   var connected = provider === 'modives' ? ST.modivesConnected : ST.checkrConnected;
-  var credits = provider === 'modives' ? ST.modivesCredits : ST.checkrCredits;
+  var available = provider === 'modives' ? ST.modivesCredits : ST.checkrCredits;
+  var total = provider === 'modives' ? ST.modivesTotalPurchased : ST.checkrTotalPurchased;
+  var used = total - available;
   var selected = provider === 'modives' ? ST.modivesSelected : ST.checkrSelected;
   var html = '';
   if (!connected) {
@@ -650,11 +664,32 @@ function drawerCredits(provider, name, unit, pkgs) {
       '<span>Link your ' + name + ' account first. You\'ll be redirected to complete OAuth authorisation and then returned here to purchase credits.</span></div>';
     return html;
   }
-  html += '<div class="credits-row">' +
-    '<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">Available Credits</div>' +
-    '<div style="display:flex;align-items:baseline;gap:5px"><span class="credits-val" id="' + provider + '-credits">' + credits + '</span><span style="font-size:12px;color:var(--muted)">' + unit + ' remaining</span></div></div>' +
-    '<button class="btn btn-sm btn-ok" onclick="openCreditSection(\'' + provider + '\')">Buy More Credits</button>' +
+
+  var pct = total > 0 ? Math.round(available / total * 100) : 100;
+  var fillClass = pct <= 20 ? 'warn' : pct === 0 ? 'empty' : '';
+
+  html += '<div class="credits-meter">' +
+    '<div class="credits-stats">' +
+      '<div class="credits-stat cs-available">' +
+        '<span class="cs-val" id="' + provider + '-credits">' + available + '</span>' +
+        '<span class="cs-lbl">Available</span>' +
+      '</div>' +
+      '<div class="credits-stat cs-used">' +
+        '<span class="cs-val" id="' + provider + '-used">' + used + '</span>' +
+        '<span class="cs-lbl">Used</span>' +
+      '</div>' +
+      '<div class="credits-stat cs-total">' +
+        '<span class="cs-val" id="' + provider + '-total">' + total + '</span>' +
+        '<span class="cs-lbl">Total Purchased</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="credits-bar-wrap">' +
+      '<div class="credits-bar-track"><div class="credits-bar-fill ' + fillClass + '" id="' + provider + '-bar" style="width:' + pct + '%"></div></div>' +
+      '<span class="credits-bar-pct" id="' + provider + '-pct">' + pct + '%</span>' +
+      '<button class="btn btn-sm" onclick="void(0)" style="flex-shrink:0">Buy More</button>' +
+    '</div>' +
   '</div>';
+
   html += '<div class="section-label">Purchase Credits</div>';
   html += '<div class="pkg-grid" id="' + provider + '-pkgs">';
   pkgs.forEach(function(p, i) {
@@ -666,7 +701,7 @@ function drawerCredits(provider, name, unit, pkgs) {
     '</div>';
   });
   html += '</div>';
-  html += '<div class="buy-row"><span>Billed securely via Stripe</span>' +
+  html += '<div class="buy-row"><span style="font-size:12px;color:var(--muted)">Billed securely via Stripe</span>' +
     '<button class="btn btn-brand" id="' + provider + '-buy-btn" onclick="buyCredits(\'' + provider + '\')">' +
       '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' +
       'Purchase — $' + selected.price +
@@ -743,6 +778,9 @@ function connectOAuth(provider, name) {
   toast('Redirecting to ' + name + ' for authorisation…', 'ok');
   setTimeout(function() {
     ST[provider + 'Connected'] = true;
+    // Seed some realistic starting credits so the meter is meaningful
+    ST[provider + 'Credits'] = 30;
+    ST[provider + 'TotalPurchased'] = 42;
     setIntStatus(provider, 'connected', 'Connected');
     toast(name + ' account linked', 'ok');
     openDrawer(provider);
@@ -763,10 +801,18 @@ function buyCredits(provider) {
   var sel = provider === 'modives' ? ST.modivesSelected : ST.checkrSelected;
   toast('Redirecting to Stripe checkout for ' + sel.qty + ' credits ($' + sel.price + ')…', 'ok');
   setTimeout(function() {
-    if (provider === 'modives') ST.modivesCredits += sel.qty;
-    else ST.checkrCredits += sel.qty;
-    var el = document.getElementById(provider + '-credits');
-    if (el) el.textContent = provider === 'modives' ? ST.modivesCredits : ST.checkrCredits;
+    if (provider === 'modives') { ST.modivesCredits += sel.qty; ST.modivesTotalPurchased += sel.qty; }
+    else { ST.checkrCredits += sel.qty; ST.checkrTotalPurchased += sel.qty; }
+    var available = provider === 'modives' ? ST.modivesCredits : ST.checkrCredits;
+    var total = provider === 'modives' ? ST.modivesTotalPurchased : ST.checkrTotalPurchased;
+    var used = total - available;
+    var pct = total > 0 ? Math.round(available / total * 100) : 100;
+    var el = document.getElementById(provider + '-credits'); if (el) el.textContent = available;
+    var eu = document.getElementById(provider + '-used'); if (eu) eu.textContent = used;
+    var et = document.getElementById(provider + '-total'); if (et) et.textContent = total;
+    var bar = document.getElementById(provider + '-bar');
+    if (bar) { bar.style.width = pct + '%'; bar.className = 'credits-bar-fill' + (pct <= 20 ? ' warn' : ''); }
+    var ep = document.getElementById(provider + '-pct'); if (ep) ep.textContent = pct + '%';
     toast(sel.qty + ' credits added', 'ok');
   }, 1800);
 }
