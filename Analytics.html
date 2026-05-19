@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Analytics — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#fff;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--info:#2f6feb;--info-tint:#e6efff;--turo:#5d3aef;--turo-tint:#ece5ff;--turo-mid:#c4b5fd;--shadow-sm:0 1px 3px rgba(15,18,22,.07),0 1px 2px rgba(15,18,22,.04);--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#0f1012;--bg:#0f1012;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#26282d;--line-2:#1f2125;--hover:#25272b;--active:#2f3137;--field:#16181c;--field-bg:#131418;--brand:#ff5757;--brand-tint:#3a1f20;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--info:#7aa6ff;--info-tint:#1c2638;--turo:#a78bff;--turo-tint:#231a3d;--turo-mid:#4c3a80}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer}a{text-decoration:none;color:inherit}
+
+  /* ── Shell ── */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .toggle-floating{position:absolute;top:14px;right:-11px;width:22px;height:22px;border-radius:999px;background:var(--canvas);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);display:none;place-items:center;z-index:5;color:var(--muted)}
+  .app[data-collapsed="true"] .toggle-floating{display:grid}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  [data-theme="dark"] .nav-item.is-active{background:var(--active);box-shadow:none}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .sub-item.is-active{color:var(--ink);font-weight:600}
+  .app[data-collapsed="true"] .subnav{display:none}
+
+  /* ── Topbar ── */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* ── Buttons ── */
+  .btn{height:32px;padding:0 12px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);cursor:pointer;white-space:nowrap;transition:all var(--t-fast)}
+  .btn:hover{background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{opacity:.88}
+  .btn-sm{height:28px;padding:0 10px;font-size:11.5px;border-radius:7px}
+
+  /* ── Page ── */
+  .page{padding:0 0 80px}
+
+  /* ── Analytics toolbar ── */
+  .a-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 28px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px}
+  .a-tabs{display:flex;gap:2px;background:var(--field-bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .a-tab{height:28px;padding:0 14px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:all var(--t-fast);border:0;background:none}
+  .a-tab:hover{color:var(--ink)}
+  .a-tab.active{background:var(--canvas);color:var(--ink);font-weight:600;box-shadow:var(--shadow-sm)}
+  [data-theme="dark"] .a-tab.active{background:var(--active)}
+  .a-right{display:flex;align-items:center;gap:8px}
+  .date-pills{display:flex;gap:2px}
+  .date-pill{height:28px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:0;background:none;transition:all var(--t-fast)}
+  .date-pill:hover{color:var(--ink);background:var(--hover)}
+  .date-pill.active{color:var(--ink);font-weight:600;background:var(--hover)}
+  .src-seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .src-btn{height:28px;padding:0 12px;font-size:12px;font-weight:500;color:var(--muted);background:none;border:0;border-right:1px solid var(--line);cursor:pointer;transition:all var(--t-fast);display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .src-btn:last-child{border-right:0}
+  .src-btn:hover{color:var(--ink);background:var(--hover)}
+  .src-btn.active{background:var(--ink);color:var(--canvas);font-weight:600}
+  .src-btn.active.turo-btn{background:var(--turo);color:#fff}
+  .turo-mark{width:14px;height:14px;border-radius:3px;background:var(--turo);display:inline-grid;place-items:center;font-size:8px;font-weight:800;color:#fff;flex-shrink:0}
+  .src-btn.active .turo-mark{background:#fff;color:var(--turo)}
+  .export-btn{height:28px;padding:0 12px;border-radius:7px;font-size:12px;font-weight:600;color:var(--ink-2);border:1px solid var(--line);background:var(--canvas);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all var(--t-fast)}
+  .export-btn:hover{background:var(--hover)}
+  .divider{width:1px;height:20px;background:var(--line);flex-shrink:0}
+
+  /* ── Tab panels ── */
+  .tab-panel{padding:24px 28px;display:none}
+  .tab-panel.active{display:block}
+
+  /* ── Metric cards ── */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .metric-card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--canvas)}
+  .metric-label{font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .metric-val{font-size:26px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:6px}
+  .metric-delta{font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}
+  .delta-up{color:var(--ok)}.delta-down{color:var(--brand)}.delta-flat{color:var(--muted)}
+  .metric-card.highlight{background:var(--turo-tint);border-color:var(--turo-mid)}
+  .metric-card.highlight .metric-val{color:var(--turo)}
+
+  /* ── Chart block ── */
+  .chart-block{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px}
+  .chart-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+  .chart-title{font-size:13px;font-weight:600}
+  .chart-legend{display:flex;align-items:center;gap:14px}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+  .legend-dot{width:8px;height:8px;border-radius:99px;flex-shrink:0}
+  .chart-svg-wrap{padding:12px 16px 4px;background:var(--field-bg)}
+  .chart-svg-wrap svg{display:block;width:100%;overflow:visible}
+
+  /* ── Data table ── */
+  .data-table{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .dt-head{display:grid;gap:12px;padding:9px 16px;background:var(--field-bg);border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .dt-row{display:grid;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-2);align-items:center;transition:background var(--t-fast)}
+  .dt-row:last-child{border-bottom:0}
+  .dt-row:hover{background:var(--hover)}
+  .dt-name{font-size:13px;font-weight:600}
+  .dt-plate{font-family:ui-monospace,monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+  .util-bar-wrap{display:flex;align-items:center;gap:8px}
+  .util-bar-track{flex:1;height:5px;border-radius:99px;background:var(--line);overflow:hidden;max-width:80px}
+  .util-bar-fill{height:100%;border-radius:99px;background:var(--ok)}
+  .util-bar-val{font-size:12.5px;font-weight:700;color:var(--ok);min-width:32px}
+  .src-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
+  .src-badge.turo{background:var(--turo-tint);color:var(--turo)}
+  .src-badge.direct{background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+
+  /* ── Section split (chart + breakdown) ── */
+  .split-row{display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:20px}
+  .breakdown-block{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .breakdown-head{padding:12px 16px;border-bottom:1px solid var(--line-2);font-size:13px;font-weight:600}
+  .breakdown-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line-2)}
+  .breakdown-row:last-child{border-bottom:0}
+  .breakdown-label{font-size:12.5px;font-weight:500;flex:1}
+  .breakdown-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+  .breakdown-share{font-size:11px;color:var(--muted);min-width:36px;text-align:right}
+  .swatch{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+  /* ── Toast ── */
+  .toast-stack{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+  .toast{background:var(--ink);color:var(--canvas);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 4px 16px rgba(0,0,0,.18);animation:toastIn .18s ease}
+  .toast.ok-toast{background:#1a6b47}
+  @keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ── Chart tooltip ── */
+  .chart-tip{position:fixed;background:var(--ink);color:var(--canvas);font-size:12px;font-weight:600;padding:6px 10px;border-radius:7px;pointer-events:none;z-index:200;white-space:nowrap;display:none;transform:translate(-50%,-100%) translateY(-8px)}
+  .chart-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" data-collapsed="false">
+  <aside class="side" id="side">
+    <div class="side-top">
+      <a href="Menu Experience.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/></svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme">
+          <svg class="theme-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          <svg class="theme-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="toggle" id="btnToggle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="toggle-floating" id="btnExpand">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <nav class="nav" id="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item" data-nav="dashboard">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+          <span class="label">Dashboard</span>
+        </a>
+        <a href="Analytics.html" class="nav-item is-active" data-nav="analytics">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span class="label">Analytics</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item has-sub" data-nav="fleet">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="10" width="22" height="10" rx="2"/><path d="M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>
+          <span class="label">Fleet</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav" id="subnav-fleet">
+          <a href="Fleet.html" class="sub-item" data-nav="vehicles">Vehicles</a>
+          <a href="Add Vehicle.html" class="sub-item" data-nav="add-vehicle">Add Vehicle</a>
+          <a href="#" class="sub-item">Maintenance</a>
+          <a href="#" class="sub-item">Inspections</a>
+        </div>
+        <a href="Bookings.html" class="nav-item" data-nav="bookings">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg>
+          <span class="label">Bookings</span>
+        </a>
+        <a href="Calendar.html" class="nav-item" data-nav="calendar">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          <span class="label">Calendar</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item has-sub" data-nav="customers">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15 14c2.5.2 5 1.6 5.5 4.5"/></svg>
+          <span class="label">Customers</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav" id="subnav-customers">
+          <a href="Customers.html" class="sub-item" data-nav="all-customers">All Customers</a>
+          <a href="Add Customer.html" class="sub-item" data-nav="add-customer">Add Customer</a>
+        </div>
+        <a href="Users.html" class="nav-item" data-nav="team">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c.7-4 4-6 8-6s7.3 2 8 6"/></svg>
+          <span class="label">Team</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Finance</div>
+        <a href="Tax Profiles.html" class="nav-item has-sub" data-nav="tax-profiles">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15l-2-1.5L15 21l-2-1.5L11 21l-2-1.5L7 21l-2-1.5z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+          <span class="label">Tax Profiles</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav" id="subnav-tax-profiles">
+          <a href="Tax Profiles.html" class="sub-item" data-nav="all-tax">All Profiles</a>
+          <a href="Add Tax Profile.html" class="sub-item" data-nav="add-tax">New Profile</a>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Admin</div>
+        <a href="Locations.html" class="nav-item has-sub" data-nav="locations">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg>
+          <span class="label">Locations</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </a>
+        <div class="subnav" id="subnav-locations">
+          <a href="Locations.html" class="sub-item" data-nav="all-locations">All Locations</a>
+          <a href="Add Location.html" class="sub-item" data-nav="add-location">Add Location</a>
+        </div>
+        <a href="Integrations.html" class="nav-item" data-nav="integrations">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="13" x2="17.5" y2="22"/><line x1="13" y1="17.5" x2="22" y2="17.5"/></svg>
+          <span class="label">Integrations</span>
+        </a>
+        <a href="#" class="nav-item" data-nav="settings">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          <span class="label">Settings</span>
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <div style="min-width:0">
+    <header class="top">
+      <div class="crumbs">
+        <a href="Menu Experience.html" class="crumb-home">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        </a>
+        <svg class="crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        <span class="crumb-cur" id="crumbCur">Analytics — Utilization</span>
+      </div>
+      <div class="top-actions">
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <main class="page">
+      <!-- Toolbar -->
+      <div class="a-toolbar">
+        <div class="a-tabs" id="aTabs">
+          <button class="a-tab active" data-tab="utilization">Utilization</button>
+          <button class="a-tab" data-tab="revenue">Revenue</button>
+          <button class="a-tab" data-tab="operations">Operations</button>
+        </div>
+        <div class="a-right">
+          <div class="date-pills" id="datePills">
+            <button class="date-pill" data-d="7">7D</button>
+            <button class="date-pill active" data-d="30">30D</button>
+            <button class="date-pill" data-d="90">90D</button>
+            <button class="date-pill" data-d="ytd">YTD</button>
+          </div>
+          <div class="divider"></div>
+          <div class="src-seg" id="srcSeg">
+            <button class="src-btn active" data-src="all">All</button>
+            <button class="src-btn turo-btn" data-src="turo">
+              <span class="turo-mark">T</span>Turo
+            </button>
+            <button class="src-btn" data-src="direct">Direct</button>
+          </div>
+          <div class="divider"></div>
+          <button class="export-btn" onclick="exportCSV()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- ── UTILIZATION ────────────────────────────────── -->
+      <div class="tab-panel active" id="tab-utilization">
+        <div class="metrics" id="util-metrics"></div>
+        <div class="split-row">
+          <div class="chart-block">
+            <div class="chart-head">
+              <span class="chart-title">Fleet Utilization Rate</span>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:var(--ok)"></span>Utilization %</span>
+                <span class="legend-item" id="util-legend-2" style="display:none"><span class="legend-dot" style="background:var(--turo)"></span>Turo</span>
+              </div>
+            </div>
+            <div class="chart-svg-wrap">
+              <svg id="chart-util" viewBox="0 0 560 160" preserveAspectRatio="none" style="height:160px"></svg>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 16px 12px;background:var(--field-bg)" id="util-x-labels"></div>
+          </div>
+          <div class="breakdown-block">
+            <div class="breakdown-head">By Source</div>
+            <div id="util-breakdown"></div>
+          </div>
+        </div>
+        <div class="data-table" id="util-table"></div>
+      </div>
+
+      <!-- ── REVENUE ────────────────────────────────────── -->
+      <div class="tab-panel" id="tab-revenue">
+        <div class="metrics" id="rev-metrics"></div>
+        <div class="split-row">
+          <div class="chart-block">
+            <div class="chart-head">
+              <span class="chart-title">Weekly Revenue</span>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:var(--ok)"></span>Direct</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--turo)"></span>Turo</span>
+              </div>
+            </div>
+            <div class="chart-svg-wrap">
+              <svg id="chart-rev" viewBox="0 0 560 160" preserveAspectRatio="none" style="height:160px"></svg>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 16px 12px;background:var(--field-bg)" id="rev-x-labels"></div>
+          </div>
+          <div class="breakdown-block">
+            <div class="breakdown-head">By Source</div>
+            <div id="rev-breakdown"></div>
+          </div>
+        </div>
+        <div class="data-table" id="rev-table"></div>
+      </div>
+
+      <!-- ── OPERATIONS ─────────────────────────────────── -->
+      <div class="tab-panel" id="tab-operations">
+        <div class="metrics" id="ops-metrics"></div>
+        <div class="chart-block" style="margin-bottom:20px">
+          <div class="chart-head">
+            <span class="chart-title">Trips Completed</span>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-dot" style="background:var(--brand)"></span>Trips</span>
+            </div>
+          </div>
+          <div class="chart-svg-wrap">
+            <svg id="chart-ops" viewBox="0 0 560 160" preserveAspectRatio="none" style="height:160px"></svg>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 16px 12px;background:var(--field-bg)" id="ops-x-labels"></div>
+        </div>
+        <div class="data-table" id="ops-table"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast-stack" id="toasts"></div>
+<div class="chart-tip" id="chartTip"></div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────
+var D = {
+  all: {
+    util:  [72,75,68,78,82,85,79,74,76,80,83,77,72,68,71,75,78,82,86,84,79,75,77,80,83,81,78,76,79,82],
+    rev:   [28400,31200,29800,35600,38200,34100,32500,36800,41200,39400,37600,42100],
+    trips: [42,48,44,52,58,54,49,55,62,58,54,61]
+  },
+  turo: {
+    util:  [65,68,62,71,74,77,72,67,69,72,76,70,65,62,64,68,71,75,79,77,72,68,70,73,77,74,71,69,72,75],
+    rev:   [18200,20400,19100,23100,25000,22300,21100,24000,26800,25600,24400,27400],
+    trips: [24,28,26,30,34,32,28,32,36,34,32,36]
+  },
+  direct: {
+    util:  [79,82,74,85,90,93,86,81,83,88,90,84,79,74,78,82,85,89,93,91,86,82,84,87,89,88,85,83,86,89],
+    rev:   [10200,10800,10700,12500,13200,11800,11400,12800,14400,13800,13200,14700],
+    trips: [18,20,18,22,24,22,21,23,26,24,22,25]
+  }
+};
+
+var VEHICLES = [
+  { name:'Tesla Model 3 LR',  plate:'7TZL401', src:'turo',   util:{all:89,turo:89,direct:0},  rev:{all:3200,turo:3200,direct:0},  trips:{all:8,turo:8,direct:0},   avgDays:3.4 },
+  { name:'BMW X5 xDrive40i',  plate:'3XKW929', src:'direct', util:{all:82,turo:0,direct:82},  rev:{all:4800,turo:0,direct:4800},  trips:{all:6,turo:0,direct:6},   avgDays:4.1 },
+  { name:'Toyota Camry XSE',  plate:'8RQD112', src:'turo',   util:{all:76,turo:76,direct:0},  rev:{all:2100,turo:2100,direct:0},  trips:{all:7,turo:7,direct:0},   avgDays:3.1 },
+  { name:'Ford Mustang GT',   plate:'5PNB774', src:'direct', util:{all:71,turo:0,direct:71},  rev:{all:3600,turo:0,direct:3600},  trips:{all:5,turo:0,direct:5},   avgDays:4.3 },
+  { name:'Chevrolet Tahoe',   plate:'2MHK550', src:'turo',   util:{all:68,turo:68,direct:0},  rev:{all:2800,turo:2800,direct:0},  trips:{all:6,turo:6,direct:0},   avgDays:3.6 },
+  { name:'Honda Civic LX',    plate:'9ABK331', src:'direct', util:{all:63,turo:0,direct:63},  rev:{all:1900,turo:0,direct:1900},  trips:{all:5,turo:0,direct:5},   avgDays:3.8 }
+];
+
+var WEEK_LABELS = ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
+var DAY_LABELS  = ['Apr 1','','','','','Apr 6','','','','','Apr 11','','','','','Apr 16','','','','','Apr 21','','','','','Apr 26','','','','Apr 30'];
+
+var currentSrc = 'all';
+var currentTab = 'utilization';
+
+// ── Helpers ──────────────────────────────────────────────────
+function fmt$(n){ return n >= 1000 ? '$' + (n/1000).toFixed(0) + 'k' : '$' + n; }
+function avg(arr){ return Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length); }
+function sum(arr){ return arr.reduce(function(a,b){return a+b;},0); }
+function delta(cur, prev){ var d = Math.round((cur-prev)/prev*100); return (d>=0?'+':'')+d+'%'; }
+function deltaClass(cur, prev){ return cur >= prev ? 'delta-up' : 'delta-down'; }
+
+// ── SVG Charts ───────────────────────────────────────────────
+var PL=44, PR=16, PT=16, PB=32, VW=560, VH=160;
+var CW = VW-PL-PR, CH = VH-PT-PB;
+
+function lineChart(svgId, datasets, colors, yFmt) {
+  var svg = document.getElementById(svgId);
+  if (!svg) return;
+  var allVals = [].concat.apply([], datasets.map(function(d){ return d; }));
+  var minV = Math.floor(Math.min.apply(null, allVals) * 0.94);
+  var maxV = Math.ceil(Math.max.apply(null, allVals) * 1.04);
+  var range = maxV - minV || 1;
+  var n = datasets[0].length;
+
+  var html = '<defs>';
+  colors.forEach(function(c, ci) {
+    html += '<linearGradient id="lg'+svgId+ci+'" x1="0" y1="0" x2="0" y2="1">';
+    html += '<stop offset="0%" stop-color="'+c+'" stop-opacity="0.18"/>';
+    html += '<stop offset="100%" stop-color="'+c+'" stop-opacity="0.01"/>';
+    html += '</linearGradient>';
+  });
+  html += '</defs>';
+
+  // Grid
+  for (var g = 0; g <= 4; g++) {
+    var gy = PT + CH * g / 4;
+    var gv = yFmt ? yFmt(maxV - range * g / 4) : Math.round(maxV - range * g / 4);
+    html += '<line x1="'+PL+'" y1="'+gy+'" x2="'+(VW-PR)+'" y2="'+gy+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="'+(g===0?'0':'3 3')+'"/>';
+    html += '<text x="'+(PL-6)+'" y="'+(gy+4)+'" text-anchor="end" font-size="9.5" fill="var(--muted)" font-family="Inter,sans-serif">'+gv+'</text>';
+  }
+
+  datasets.forEach(function(data, di) {
+    var pts = data.map(function(v,i){
+      return [PL + i/(n-1)*CW, PT + (1-(v-minV)/range)*CH];
+    });
+    var pl = pts.map(function(p){ return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' ');
+    var ap = 'M '+pts[0][0].toFixed(1)+','+pts[0][1].toFixed(1);
+    pts.forEach(function(p){ ap += ' L '+p[0].toFixed(1)+','+p[1].toFixed(1); });
+    ap += ' L '+pts[n-1][0].toFixed(1)+','+(PT+CH)+' L '+PL+','+(PT+CH)+' Z';
+    html += '<path d="'+ap+'" fill="url(#lg'+svgId+di+')"/>';
+    html += '<polyline points="'+pl+'" fill="none" stroke="'+colors[di]+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    // Hover dots (invisible, for tooltip)
+    pts.forEach(function(p, i) {
+      html += '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="8" fill="transparent" data-val="'+data[i]+'" data-i="'+i+'" data-di="'+di+'" class="chart-dot" onmouseenter="showTip(event,this,\''+svgId+'\')" onmouseleave="hideTip()"/>';
+      html += '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="'+colors[di]+'" stroke="var(--canvas)" stroke-width="1.5" pointer-events="none" class="chart-vis-dot" style="opacity:0" data-ref="dot-'+svgId+'-'+di+'-'+i+'"/>';
+    });
+  });
+
+  svg.innerHTML = html;
+}
+
+function barChart(svgId, stackData, colors, yFmt) {
+  var svg = document.getElementById(svgId);
+  if (!svg) return;
+  var n = stackData[0].length;
+  var totals = stackData[0].map(function(_,i){ return stackData.reduce(function(s,d){ return s+d[i]; },0); });
+  var maxV = Math.max.apply(null, totals) * 1.1;
+  var barW = Math.floor(CW / n * 0.65);
+  var gap = CW / n;
+
+  var html = '';
+  // Grid
+  for (var g = 0; g <= 4; g++) {
+    var gy = PT + CH * g / 4;
+    var gv = yFmt ? yFmt(maxV*(1-g/4)) : Math.round(maxV*(1-g/4));
+    html += '<line x1="'+PL+'" y1="'+gy+'" x2="'+(VW-PR)+'" y2="'+gy+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="'+(g===0?'0':'3 3')+'"/>';
+    html += '<text x="'+(PL-6)+'" y="'+(gy+4)+'" text-anchor="end" font-size="9.5" fill="var(--muted)" font-family="Inter,sans-serif">'+gv+'</text>';
+  }
+
+  for (var i = 0; i < n; i++) {
+    var bx = PL + gap * i + (gap - barW) / 2;
+    var base = PT + CH;
+    stackData.forEach(function(layer, li) {
+      var bh = layer[i] / maxV * CH;
+      var by = base - bh;
+      html += '<rect x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+barW+'" height="'+bh.toFixed(1)+'" fill="'+colors[li]+'" rx="'+(li===stackData.length-1?'3':'0')+'" opacity="0.9" data-val="'+layer[i]+'" data-i="'+i+'" onmouseenter="showBarTip(event,this,\''+svgId+'\')" onmouseleave="hideTip()"/>';
+      base = by;
+    });
+  }
+  svg.innerHTML = html;
+}
+
+// ── Tooltip ──────────────────────────────────────────────────
+var TIP_LABELS = {
+  'chart-util': ['Util %'],
+  'chart-rev': ['Revenue'],
+  'chart-ops': ['Trips']
+};
+function showTip(e, el, svgId) {
+  var val = el.getAttribute('data-val');
+  var i = parseInt(el.getAttribute('data-i'));
+  var di = parseInt(el.getAttribute('data-di'));
+  var fmtVal = svgId === 'chart-rev' ? fmt$(parseInt(val)) : svgId === 'chart-util' ? val+'%' : val+' trips';
+  var tip = document.getElementById('chartTip');
+  tip.textContent = fmtVal;
+  tip.style.display = 'block';
+  var rect = e.target.closest('svg').getBoundingClientRect();
+  // Show dot
+  var dotEl = document.querySelector('[data-ref="dot-'+svgId+'-'+di+'-'+i+'"]');
+  if (dotEl) dotEl.style.opacity = '1';
+  window._lastDot = dotEl;
+  moveTip(e);
+}
+function showBarTip(e, el, svgId) {
+  var val = parseInt(el.getAttribute('data-val'));
+  var tip = document.getElementById('chartTip');
+  tip.textContent = svgId === 'chart-rev' ? fmt$(val) : val;
+  tip.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  var tip = document.getElementById('chartTip');
+  tip.style.left = e.clientX + 'px';
+  tip.style.top = (e.clientY - 8) + 'px';
+}
+function hideTip() {
+  document.getElementById('chartTip').style.display = 'none';
+  if (window._lastDot) { window._lastDot.style.opacity = '0'; window._lastDot = null; }
+}
+document.addEventListener('mousemove', function(e) {
+  if (document.getElementById('chartTip').style.display !== 'none') moveTip(e);
+});
+
+// ── Render helpers ───────────────────────────────────────────
+function metricCard(label, val, deltaStr, dClass, highlight) {
+  return '<div class="metric-card'+(highlight?' highlight':'')+'">'+
+    '<div class="metric-label">'+label+'</div>'+
+    '<div class="metric-val">'+val+'</div>'+
+    '<div class="metric-delta '+dClass+'">'+
+      (dClass==='delta-up'?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>':
+       dClass==='delta-down'?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>':'')+
+      deltaStr+' vs prev period'+
+    '</div>'+
+  '</div>';
+}
+
+function xLabels(containerId, labels, n) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  var step = Math.max(1, Math.floor(n / 6));
+  var html = '';
+  for (var i = 0; i < n; i++) {
+    if (i % step === 0 || i === n-1) {
+      html += '<span style="font-size:10.5px;color:var(--muted)">'+labels[i]+'</span>';
+    }
+  }
+  el.innerHTML = html;
+}
+
+function breakdownRows(containerId, rows) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = rows.map(function(r) {
+    return '<div class="breakdown-row">'+
+      '<span class="swatch" style="background:'+r.color+'"></span>'+
+      '<span class="breakdown-label">'+r.label+'</span>'+
+      '<span class="breakdown-val">'+r.val+'</span>'+
+      '<span class="breakdown-share">'+r.share+'</span>'+
+    '</div>';
+  }).join('');
+}
+
+// ── Render tabs ──────────────────────────────────────────────
+function renderUtilization(src) {
+  var data = D[src].util;
+  var prevData = D[src].util.slice(0, 15);
+  var curAvg = avg(data.slice(15));
+  var prevAvg = avg(prevData);
+  var activeVehicles = src === 'turo' ? 3 : src === 'direct' ? 3 : 6;
+  var filtered = VEHICLES.filter(function(v){ return src === 'all' || v.src === src; });
+
+  document.getElementById('util-metrics').innerHTML =
+    metricCard('Fleet Utilization', curAvg+'%', delta(curAvg, prevAvg), deltaClass(curAvg, prevAvg)) +
+    metricCard('Active Vehicles', activeVehicles, src==='turo'?'+1 this month':'+0 this month', 'delta-flat') +
+    metricCard('Avg Trip Duration', '3.6 days', '+0.3 days', 'delta-up') +
+    metricCard('Peak Day', 'Friday', '—', 'delta-flat', src==='turo');
+
+  lineChart('chart-util', [data], [src==='turo'?'var(--turo)':'var(--ok)'], function(v){ return Math.round(v)+'%'; });
+  xLabels('util-x-labels', DAY_LABELS, data.length);
+
+  var turoUtil = avg(D.turo.util);
+  var directUtil = avg(D.direct.util);
+  var totalUtil = avg(D.all.util);
+  breakdownRows('util-breakdown', [
+    { label:'Turo', color:'var(--turo)', val: turoUtil+'%', share: Math.round(turoUtil/totalUtil*100)+'%' },
+    { label:'Direct', color:'var(--ok)', val: directUtil+'%', share: Math.round(directUtil/totalUtil*100)+'%' }
+  ]);
+
+  var cols = '2.2fr 0.8fr 0.8fr 1.2fr 0.8fr';
+  var head = '<div class="dt-head" style="grid-template-columns:'+cols+'"><div>Vehicle</div><div>Source</div><div>Utilization</div><div>Utilization Rate</div><div>Trips</div></div>';
+  var rows = filtered.sort(function(a,b){ return b.util[src]-a.util[src]; }).map(function(v) {
+    var u = v.util[src]; if (!u) return '';
+    return '<div class="dt-row" style="grid-template-columns:'+cols+'">'+
+      '<div><div class="dt-name">'+v.name+'</div><div class="dt-plate">CA·'+v.plate+'</div></div>'+
+      '<div><span class="src-badge '+v.src+'">'+v.src.charAt(0).toUpperCase()+v.src.slice(1)+'</span></div>'+
+      '<div class="util-bar-wrap"><div class="util-bar-track"><div class="util-bar-fill" style="width:'+u+'%;background:'+(v.src==='turo'?'var(--turo)':'var(--ok)')+'"></div></div><span class="util-bar-val" style="color:'+(v.src==='turo'?'var(--turo)':'var(--ok)')+'">'+u+'%</span></div>'+
+      '<div style="font-size:12.5px;color:var(--muted)">'+v.avgDays+' days avg</div>'+
+      '<div style="font-size:13px;font-weight:600">'+v.trips[src]+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('util-table').innerHTML = head + rows;
+}
+
+function renderRevenue(src) {
+  var turoRev = D.turo.rev, directRev = D.direct.rev;
+  var showTuro = (src !== 'direct'), showDirect = (src !== 'turo');
+  var curTotal = src === 'turo' ? sum(turoRev) : src === 'direct' ? sum(directRev) : sum(D.all.rev);
+  var prevTotal = Math.round(curTotal * 0.91);
+  var filtered = VEHICLES.filter(function(v){ return src === 'all' || v.src === src; });
+  var totalRevFiltered = filtered.reduce(function(s,v){ return s+v.rev[src]; }, 0);
+  var avgPerBooking = Math.round(totalRevFiltered / filtered.reduce(function(s,v){ return s+v.trips[src]; }, 0));
+
+  document.getElementById('rev-metrics').innerHTML =
+    metricCard('Total Revenue', fmt$(curTotal), delta(curTotal, prevTotal), deltaClass(curTotal, prevTotal)) +
+    metricCard('Avg per Booking', fmt$(avgPerBooking), '+$42', 'delta-up') +
+    metricCard('Revenue / Vehicle', fmt$(Math.round(totalRevFiltered / Math.max(filtered.length,1))), '+8%', 'delta-up') +
+    (src === 'turo' ? metricCard('Turo Share', Math.round(sum(turoRev)/(sum(D.all.rev))*100)+'%', '+3%', 'delta-up', true) :
+     src === 'direct' ? metricCard('Direct Share', Math.round(sum(directRev)/(sum(D.all.rev))*100)+'%', '-3%', 'delta-down') :
+     metricCard('MoM Growth', '+9%', '+2pp', 'delta-up'));
+
+  var datasets = [], colors = [];
+  if (showDirect) { datasets.push(directRev); colors.push('var(--ok)'); }
+  if (showTuro)   { datasets.push(turoRev);   colors.push('var(--turo)'); }
+  if (src !== 'all') {
+    barChart('chart-rev', [src === 'turo' ? turoRev : directRev], [src === 'turo' ? 'var(--turo)' : 'var(--ok)'], fmt$);
+  } else {
+    barChart('chart-rev', [directRev, turoRev], ['var(--ok)', 'var(--turo)'], fmt$);
+  }
+  xLabels('rev-x-labels', WEEK_LABELS, 12);
+
+  var totTuro = sum(turoRev), totDirect = sum(directRev), totAll = sum(D.all.rev);
+  breakdownRows('rev-breakdown', [
+    { label:'Turo', color:'var(--turo)', val: fmt$(totTuro), share: Math.round(totTuro/totAll*100)+'%' },
+    { label:'Direct', color:'var(--ok)', val: fmt$(totDirect), share: Math.round(totDirect/totAll*100)+'%' }
+  ]);
+
+  var cols = '2fr 0.8fr 1fr 1fr 0.8fr';
+  var head = '<div class="dt-head" style="grid-template-columns:'+cols+'"><div>Vehicle</div><div>Source</div><div>Revenue</div><div>Avg / Booking</div><div>Trips</div></div>';
+  var rows = filtered.sort(function(a,b){ return b.rev[src]-a.rev[src]; }).map(function(v) {
+    var r = v.rev[src]; if (!r) return '';
+    return '<div class="dt-row" style="grid-template-columns:'+cols+'">'+
+      '<div><div class="dt-name">'+v.name+'</div><div class="dt-plate">CA·'+v.plate+'</div></div>'+
+      '<div><span class="src-badge '+v.src+'">'+v.src.charAt(0).toUpperCase()+v.src.slice(1)+'</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:var(--ok)">'+fmt$(r)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--ink-2)">'+fmt$(Math.round(r/v.trips[src]))+'</div>'+
+      '<div style="font-size:13px;font-weight:600">'+v.trips[src]+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('rev-table').innerHTML = head + rows;
+}
+
+function renderOperations(src) {
+  var data = D[src].trips;
+  var curTotal = sum(data);
+  var prevTotal = Math.round(curTotal * 0.92);
+  var cancelled = Math.round(curTotal * 0.043);
+  var filtered = VEHICLES.filter(function(v){ return src === 'all' || v.src === src; });
+
+  document.getElementById('ops-metrics').innerHTML =
+    metricCard('Total Trips', curTotal, delta(curTotal, prevTotal), deltaClass(curTotal, prevTotal)) +
+    metricCard('Completed', (curTotal - cancelled)+'', '+'+Math.round((curTotal-cancelled-prevTotal*0.957)), 'delta-up') +
+    metricCard('Cancellations', cancelled+'', cancelled <= 9 ? '-2 vs prior' : '+1 vs prior', cancelled <= 9 ? 'delta-up' : 'delta-down') +
+    metricCard('Cancel Rate', '4.3%', '-0.8pp', 'delta-up', src==='turo');
+
+  lineChart('chart-ops', [data], ['var(--brand)'], null);
+  xLabels('ops-x-labels', WEEK_LABELS, data.length);
+
+  var OPS_DATA = [
+    { vehicle:'Tesla Model 3 LR', plate:'7TZL401', src:'turo',   trips:src==='direct'?0:8,  cancels:1, issues:0, avgRating:4.9 },
+    { vehicle:'BMW X5 xDrive40i', plate:'3XKW929', src:'direct', trips:src==='turo'?0:6,   cancels:0, issues:1, avgRating:4.7 },
+    { vehicle:'Toyota Camry XSE', plate:'8RQD112', src:'turo',   trips:src==='direct'?0:7,  cancels:1, issues:0, avgRating:4.8 },
+    { vehicle:'Ford Mustang GT',  plate:'5PNB774', src:'direct', trips:src==='turo'?0:5,   cancels:2, issues:0, avgRating:4.6 },
+    { vehicle:'Chevrolet Tahoe',  plate:'2MHK550', src:'turo',   trips:src==='direct'?0:6,  cancels:0, issues:1, avgRating:4.8 },
+    { vehicle:'Honda Civic LX',   plate:'9ABK331', src:'direct', trips:src==='turo'?0:5,   cancels:0, issues:0, avgRating:4.9 }
+  ].filter(function(r){ return (src==='all' || r.src===src) && r.trips>0; });
+
+  var cols = '2fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr';
+  var head = '<div class="dt-head" style="grid-template-columns:'+cols+'"><div>Vehicle</div><div>Source</div><div>Trips</div><div>Cancelled</div><div>Issues</div><div>Avg Rating</div></div>';
+  var rows = OPS_DATA.map(function(r) {
+    return '<div class="dt-row" style="grid-template-columns:'+cols+'">'+
+      '<div><div class="dt-name">'+r.vehicle+'</div><div class="dt-plate">CA·'+r.plate+'</div></div>'+
+      '<div><span class="src-badge '+r.src+'">'+r.src.charAt(0).toUpperCase()+r.src.slice(1)+'</span></div>'+
+      '<div style="font-size:13px;font-weight:600">'+r.trips+'</div>'+
+      '<div style="font-size:13px;color:'+(r.cancels?'var(--warn)':'var(--muted)')+'">'+r.cancels+'</div>'+
+      '<div style="font-size:13px;color:'+(r.issues?'var(--brand)':'var(--muted)')+'">'+r.issues+'</div>'+
+      '<div style="font-size:13px;font-weight:600;color:var(--ok)">★ '+r.avgRating+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('ops-table').innerHTML = head + rows;
+}
+
+function renderAll() {
+  renderUtilization(currentSrc);
+  renderRevenue(currentSrc);
+  renderOperations(currentSrc);
+}
+
+// ── Tab switching ────────────────────────────────────────────
+document.getElementById('aTabs').addEventListener('click', function(e) {
+  var btn = e.target.closest('.a-tab');
+  if (!btn) return;
+  var tab = btn.getAttribute('data-tab');
+  currentTab = tab;
+  document.querySelectorAll('.a-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('tab-'+tab).classList.add('active');
+  var labels = { utilization:'Utilization', revenue:'Revenue', operations:'Operations' };
+  document.getElementById('crumbCur').textContent = 'Analytics — '+labels[tab];
+});
+
+// ── Source filter ────────────────────────────────────────────
+document.getElementById('srcSeg').addEventListener('click', function(e) {
+  var btn = e.target.closest('.src-btn');
+  if (!btn) return;
+  currentSrc = btn.getAttribute('data-src');
+  document.querySelectorAll('.src-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderAll();
+});
+
+// ── Date pills (visual only) ─────────────────────────────────
+document.getElementById('datePills').addEventListener('click', function(e) {
+  var btn = e.target.closest('.date-pill');
+  if (!btn) return;
+  document.querySelectorAll('.date-pill').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  toast('Showing '+btn.textContent+' view', 'ok');
+});
+
+// ── CSV export ───────────────────────────────────────────────
+function exportCSV() {
+  var rows, filename;
+  if (currentTab === 'utilization') {
+    rows = [['Vehicle','Plate','Source','Utilization %','Trips','Avg Duration']];
+    VEHICLES.filter(function(v){ return currentSrc==='all'||v.src===currentSrc; }).forEach(function(v){
+      var u = v.util[currentSrc];
+      if (u) rows.push([v.name,'CA·'+v.plate,v.src,u,v.trips[currentSrc],v.avgDays+' days']);
+    });
+    filename = 'fleetly-utilization.csv';
+  } else if (currentTab === 'revenue') {
+    rows = [['Week','Turo Revenue','Direct Revenue','Total']];
+    D.turo.rev.forEach(function(t,i){
+      rows.push([WEEK_LABELS[i], t, D.direct.rev[i], t+D.direct.rev[i]]);
+    });
+    filename = 'fleetly-revenue.csv';
+  } else {
+    rows = [['Week','Trips ('+currentSrc+')']];
+    D[currentSrc].trips.forEach(function(t,i){ rows.push([WEEK_LABELS[i], t]); });
+    filename = 'fleetly-operations.csv';
+  }
+  var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+  var blob = new Blob([csv], { type:'text/csv' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  toast('Exported '+filename, 'ok');
+}
+
+// ── Toast ────────────────────────────────────────────────────
+function toast(msg, type) {
+  var stack = document.getElementById('toasts');
+  var el = document.createElement('div');
+  el.className = 'toast'+(type==='ok'?' ok-toast':'');
+  el.innerHTML = (type==='ok'?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'') + msg;
+  stack.appendChild(el);
+  setTimeout(function(){ el.style.cssText='opacity:0;transition:opacity .3s'; setTimeout(function(){ el.remove(); },300); }, 2500);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+renderAll();
+</script>
+
+<script>
+(function(){
+  ['btnToggle','btnExpand','btnTheme'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.parentNode){var c=el.cloneNode(true);el.parentNode.replaceChild(c,el);}
+  });
+  var app=document.getElementById('app'),btnT=document.getElementById('btnToggle'),btnE=document.getElementById('btnExpand');
+  if(app&&localStorage.getItem('side-collapsed')==='1')app.dataset.collapsed='true';
+  function setC(v){if(!app)return;app.dataset.collapsed=v?'true':'false';localStorage.setItem('side-collapsed',v?'1':'0');if(v){document.querySelectorAll('.subnav.is-open').forEach(function(s){s.classList.remove('is-open');});document.querySelectorAll('.nav-item.is-open').forEach(function(i){i.classList.remove('is-open');});}}
+  if(btnT)btnT.addEventListener('click',function(){setC(true);});
+  if(btnE)btnE.addEventListener('click',function(){setC(false);});
+  window.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='\\'){e.preventDefault();setC(app&&app.dataset.collapsed!=='true');}});
+  var btnTh=document.getElementById('btnTheme');
+  function applyTheme(t){document.documentElement.setAttribute('data-theme',t);var s=document.querySelector('.theme-sun'),m=document.querySelector('.theme-moon');if(s)s.style.display=t==='dark'?'none':'';if(m)m.style.display=t==='dark'?'':'none';localStorage.setItem('theme',t);}
+  applyTheme(localStorage.getItem('theme')||'light');
+  if(btnTh)btnTh.addEventListener('click',function(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');});
+  document.querySelectorAll('.nav-item.has-sub').forEach(function(item){
+    item.addEventListener('click',function(e){
+      if(app&&app.dataset.collapsed==='true')return;
+      var nk=item.getAttribute('data-nav');var sub=nk?document.getElementById('subnav-'+nk):null;if(!sub)return;
+      var isOpen=sub.classList.contains('is-open');
+      document.querySelectorAll('.subnav.is-open').forEach(function(s){s.classList.remove('is-open');});
+      document.querySelectorAll('.nav-item.is-open').forEach(function(i){i.classList.remove('is-open');});
+      if(!isOpen){sub.classList.add('is-open');item.classList.add('is-open');}
+      var href=item.getAttribute('href');if(!href||href==='#')e.preventDefault();
+    });
+  });
+})();
+</script>
+</body>
+</html>

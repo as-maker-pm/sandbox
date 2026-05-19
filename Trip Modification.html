@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Trip Modification — Fleetly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--side-bg:#f4f4f5;--canvas:#fff;--bg:#f7f7f8;--ink:#15171a;--ink-2:#4a4f57;--muted:#8a9099;--muted-2:#b6bcc4;--line:#e8e8ea;--line-2:#ededef;--hover:#ebebed;--active:#e0e0e3;--field:#fff;--field-bg:#fafafa;--brand:#ef3a3a;--brand-tint:#fde8e8;--brand-tint-2:#fbe7e7;--ok:#1f8a5b;--ok-tint:#e7f4ee;--warn:#c97c0d;--warn-tint:#fdf2e0;--shadow:0 1px 3px rgba(15,18,22,.06),0 4px 16px rgba(15,18,22,.05);--t-fast:140ms cubic-bezier(.2,.7,.2,1);--t-med:220ms cubic-bezier(.2,.7,.2,1);--t-slow:320ms cubic-bezier(.22,.8,.18,1)}
+  [data-theme="dark"]{--side-bg:#18191c;--canvas:#1c1e21;--bg:#131416;--ink:#f3f4f6;--ink-2:#c7cbd1;--muted:#8b9098;--muted-2:#5b6068;--line:#2c2e33;--line-2:#232529;--hover:#25272b;--active:#2f3137;--field:#1c1e21;--field-bg:#18191c;--brand:#ff5757;--brand-tint:#3a1f20;--brand-tint-2:#2a1718;--ok:#4cc38a;--ok-tint:#173025;--warn:#e0a64a;--warn-tint:#2e2418;--shadow:0 1px 3px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.15)}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{background:none;border:0;cursor:pointer;padding:0}
+  a{text-decoration:none;color:inherit}
+  input,select,textarea{outline:none}
+
+  /* ── Shell ── */
+  .app{display:grid;grid-template-columns:var(--side-w,232px) 1fr;min-height:100vh;transition:grid-template-columns var(--t-slow)}
+  .app[data-collapsed="true"]{--side-w:56px}
+  .side{position:sticky;top:0;border-right:1px solid var(--line);background:var(--side-bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .side-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .logo{display:inline-flex;align-items:center;gap:8px;color:var(--brand);height:32px;padding:0 6px;border-radius:8px}
+  .logo-mark{width:22px;height:22px}.logo-word{font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+  .app[data-collapsed="true"] .logo-word,.app[data-collapsed="true"] .top-buttons{display:none}
+  .app[data-collapsed="true"] .side-top{justify-content:center;padding:0}
+  .top-buttons{display:flex;gap:2px}
+  .toggle{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:6px;color:var(--muted);transition:all var(--t-fast)}
+  .toggle:hover{background:var(--hover);color:var(--ink)}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px 8px}
+  .nav-section{margin-bottom:8px}
+  .nav-section-label{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);padding:12px 10px 4px;white-space:nowrap}
+  .app[data-collapsed="true"] .nav-section-label{opacity:0;height:0;padding:6px 0 0;border-top:1px solid var(--line-2);margin:0 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;margin:1px 0;border-radius:7px;color:var(--ink-2);font-weight:500;font-size:13px;transition:all var(--t-fast)}
+  .nav-item .icon{width:16px;height:16px;color:var(--muted)}
+  .nav-item .label{flex:1;white-space:nowrap;overflow:hidden}
+  .nav-item .chev{width:12px;height:12px;color:var(--muted-2);transition:transform var(--t-med)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}.nav-item:hover .icon{color:var(--ink)}
+  .nav-item.is-active{background:var(--canvas);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,18,22,.05)}
+  .nav-item.is-active .icon{color:var(--ink)}
+  .nav-item.is-open .chev{transform:rotate(90deg)}
+  .app[data-collapsed="true"] .nav-item{justify-content:center;padding:0;width:40px;height:32px;margin:2px auto;gap:0}
+  .app[data-collapsed="true"] .nav-item .label,.app[data-collapsed="true"] .nav-item .chev{display:none}
+  .subnav{overflow:hidden;max-height:0;transition:max-height var(--t-med);padding-left:26px;position:relative}
+  .subnav.is-open{max-height:240px}
+  .subnav::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+  .sub-item{display:flex;align-items:center;height:28px;padding:0 10px;color:var(--muted);font-size:12.5px;border-radius:6px}
+  .sub-item:hover{color:var(--ink);background:var(--hover)}
+  .app[data-collapsed="true"] .subnav{display:none}
+  .side-foot{padding:6px 8px 10px;border-top:1px solid var(--line-2)}
+
+  /* ── Topbar ── */
+  .top{position:sticky;top:0;background:var(--canvas);border-bottom:1px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:6}
+  .crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .crumb-home{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line)}
+  .crumb-sep{color:var(--muted-2)}.crumb-cur{color:var(--ink);font-weight:500}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;border:1px solid var(--line);color:var(--ink);background:var(--canvas);cursor:pointer;transition:all var(--t-fast)}
+  .btn:hover{background:var(--hover)}
+  .btn-primary{background:var(--ink);color:var(--canvas);border-color:var(--ink)}.btn-primary:hover{opacity:.88}
+  .icon-btn{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2)}.icon-btn:hover{background:var(--hover)}
+  .avatar{width:30px;height:30px;border-radius:999px;background:#8a9099;color:#fff;display:grid;place-items:center;font-weight:600;font-size:11px}
+
+  /* ── Page ── */
+  .page{padding:24px 28px 80px}
+  .page-head{margin-bottom:20px}
+  .page-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 3px}
+  .page-sub{color:var(--muted);font-size:13px;margin:0}
+
+  /* ── Switch ── */
+  .switch{width:36px;height:20px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);flex:0 0 36px}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch.is-on{background:var(--ink)}
+  .switch.is-on::after{transform:translateX(16px)}
+  .switch-sm{width:30px;height:17px;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background var(--t-fast);flex:0 0 30px}
+  .switch-sm::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;background:#fff;border-radius:99px;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--t-fast)}
+  .switch-sm.is-on{background:var(--ink)}
+  .switch-sm.is-on::after{transform:translateX(13px)}
+
+  /* ── Chip ── */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px}
+  .chip .dot{width:6px;height:6px;border-radius:99px}
+  .chip-ok{background:var(--ok-tint);color:var(--ok)}.chip-ok .dot{background:var(--ok)}
+  .chip-off{background:var(--field-bg);color:var(--muted);border:1px solid var(--line-2)}
+
+  /* ── Two-panel layout ── */
+  .tm-wrap{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start}
+
+  /* ── Policy nav (left) ── */
+  .pol-nav{background:var(--canvas);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;position:sticky;top:72px}
+  .pol-nav-hd{padding:12px 16px;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);border-bottom:1px solid var(--line-2)}
+  .pol-nav-item{display:flex;align-items:center;gap:11px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--line-2);position:relative;transition:background var(--t-fast)}
+  .pol-nav-item:last-child{border-bottom:0}
+  .pol-nav-item:hover{background:var(--hover)}
+  .pol-nav-item.is-sel{background:var(--field-bg)}
+  .pol-nav-item.is-sel::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;background:var(--ink);border-radius:0 3px 3px 0}
+  .pni-icon{width:30px;height:30px;border-radius:8px;background:var(--hover);border:1px solid var(--line-2);display:grid;place-items:center;flex:0 0 30px;transition:all var(--t-fast)}
+  .pni-icon svg{width:13px;height:13px;color:var(--muted)}
+  .pol-nav-item.pni-on .pni-icon{background:var(--brand-tint-2);border-color:transparent}
+  .pol-nav-item.pni-on .pni-icon svg{color:var(--brand)}
+  .pni-body{flex:1;min-width:0}
+  .pni-name{font-size:12.5px;font-weight:600}
+  .pni-sub{font-size:10.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ── Policy panel (right) ── */
+  .pol-panels .pol-panel{display:none}
+  .pol-panels .pol-panel.is-vis{display:block}
+
+  /* Panel card */
+  .panel-card{background:var(--canvas);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+
+  /* Panel header */
+  .panel-hd{display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid var(--line)}
+  .panel-hd-icon{width:42px;height:42px;border-radius:12px;background:var(--hover);border:1px solid var(--line-2);display:grid;place-items:center;flex:0 0 42px;transition:all var(--t-fast)}
+  .panel-hd-icon svg{width:19px;height:19px;color:var(--muted);transition:color var(--t-fast)}
+  .pol-panel.is-on .panel-hd-icon{background:var(--brand-tint-2);border-color:transparent}
+  .pol-panel.is-on .panel-hd-icon svg{color:var(--brand)}
+  .panel-hd-info{flex:1;min-width:0}
+  .panel-hd-title{font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .panel-hd-desc{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .panel-hd-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+  /* Disabled overlay */
+  .panel-off{padding:32px 24px;color:var(--muted);font-size:13px;display:none}
+  .pol-panel:not(.is-on) .panel-off{display:block}
+  .pol-panel:not(.is-on) .panel-cols{display:none}
+
+  /* ── Two column content ── */
+  .panel-cols{display:grid;grid-template-columns:1fr 1fr}
+  .panel-col{padding:20px 24px}
+  .panel-col+.panel-col{border-left:1px solid var(--line)}
+  .col-hd{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted-2);margin-bottom:14px}
+
+  /* ── Approval ── */
+  .appr-opts{display:flex;gap:6px;margin-bottom:18px}
+  .appr-opt{flex:1;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;cursor:pointer;transition:all var(--t-fast)}
+  .appr-opt:hover{border-color:var(--muted-2)}
+  .appr-opt.is-on{border-color:var(--ink);background:var(--field-bg)}
+  .appr-radio{width:13px;height:13px;border-radius:99px;border:2px solid var(--muted-2);flex:0 0 13px;display:grid;place-items:center;transition:all var(--t-fast)}
+  .appr-opt.is-on .appr-radio{border-color:var(--ink);background:var(--ink)}
+  .appr-opt.is-on .appr-radio::after{content:"";width:4px;height:4px;border-radius:99px;background:#fff}
+  .appr-name{font-size:12px;font-weight:600}
+
+  /* ── Phase sections ── */
+  .phase-sec{padding-top:12px;margin-top:12px;border-top:1px solid var(--line-2)}
+  .phase-sec:first-of-type{border-top:none;margin-top:0;padding-top:0}
+  .phase-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+  .phase-name{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-2)}
+  .phase-name svg{color:var(--muted-2)}
+  .phase-body{margin-top:10px;display:none}
+  .phase-sec.is-on .phase-body{display:block}
+
+  /* Notice */
+  .notice-row{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+  .notice-row input[type=number]{width:50px;height:28px;padding:0 6px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;text-align:right;background:var(--field);color:var(--ink)}
+  .notice-row input[type=number]:focus{border-color:var(--ink)}
+  .notice-row select{height:28px;padding:0 5px;border:1px solid var(--line);border-radius:7px;font-size:12px;background:var(--field);color:var(--ink-2)}
+  .notice-lbl{font-size:11.5px;color:var(--muted)}
+
+  /* Fees */
+  .fee-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);margin-bottom:5px}
+  .fee-list{display:flex;flex-direction:column;gap:4px;margin-bottom:5px}
+  .fee-row{display:flex;align-items:center;gap:4px}
+  .fee-row input[type=text]{flex:1;min-width:0;height:27px;padding:0 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:var(--field);color:var(--ink)}
+  .fee-row input[type=text]::placeholder{color:var(--muted-2)}
+  .fee-row input[type=text]:focus{border-color:var(--ink)}
+  .fee-row select{height:27px;padding:0 4px;border:1px solid var(--line);border-radius:6px;font-size:11.5px;background:var(--field);color:var(--ink-2)}
+  .fee-row .fee-pre{font-size:11.5px;color:var(--muted);width:8px;text-align:right;flex:0 0 auto}
+  .fee-row input[type=number]{width:44px;height:27px;padding:0 5px;border:1px solid var(--line);border-radius:6px;font-size:12px;text-align:right;background:var(--field);color:var(--ink)}
+  .fee-row input[type=number]:focus{border-color:var(--ink)}
+  .fee-del{width:18px;height:18px;display:grid;place-items:center;border-radius:4px;color:var(--muted-2);flex:0 0 18px}
+  .fee-del:hover{background:var(--hover);color:var(--brand)}
+  .add-fee-btn{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted);padding:3px 0;cursor:pointer}
+  .add-fee-btn:hover{color:var(--ink)}
+
+  /* Processing */
+  .proc-list{margin-top:10px;padding-top:10px;border-top:1px solid var(--line-2);display:flex;flex-direction:column;gap:0}
+  .proc-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-2)}
+  .proc-item:last-child{border-bottom:none;padding-bottom:0}
+  .proc-name{font-size:12px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:5px}
+  .proc-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
+  /* ── Save bar ── */
+  .save-bar{position:fixed;bottom:20px;right:28px;display:flex;gap:8px;align-items:center;background:var(--canvas);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 4px 24px rgba(0,0,0,.1);z-index:20;opacity:0;transform:translateY(8px);transition:opacity var(--t-med),transform var(--t-med);pointer-events:none}
+  .save-bar.show{opacity:1;transform:translateY(0);pointer-events:all}
+  .save-hint{font-size:12.5px;color:var(--muted)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--canvas);border-radius:10px;padding:10px 16px;font-size:12.5px;font-weight:600;z-index:30;opacity:0;transition:opacity var(--t-med),transform var(--t-med);pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side">
+    <div class="side-top">
+      <a href="#" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="6" r="3" fill="currentColor"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/></svg>
+        <span class="logo-word">Fleetly</span>
+      </a>
+      <div class="top-buttons">
+        <button class="toggle" id="btnTheme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></button>
+        <button class="toggle" id="btnToggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <a href="Menu Experience.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg><span class="label">Dashboard</span></a>
+        <a href="Analytics.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="label">Analytics</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Fleet</div>
+        <a href="Fleet.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="10" width="22" height="10" rx="2"/><path d="M6 10V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg><span class="label">Fleet</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></a>
+        <div class="subnav"><a href="Fleet.html" class="sub-item">Vehicles</a><a href="Add Vehicle.html" class="sub-item">Add Vehicle</a></div>
+        <a href="Bookings.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v15l-4-2-4 2-4-2-4 2V5a1 1 0 0 1 1-1z"/></svg><span class="label">Bookings</span></a>
+        <a href="Calendar.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg><span class="label">Calendar</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">People</div>
+        <a href="Customers.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15 14c2.5.2 5 1.6 5.5 4.5"/></svg><span class="label">Customers</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></a>
+        <div class="subnav"><a href="Customers.html" class="sub-item">All Customers</a></div>
+        <a href="Users.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c.7-4 4-6 8-6s7.3 2 8 6"/></svg><span class="label">Team</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Finance</div>
+        <a href="Tax Profiles.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15l-2-1.5L15 21l-2-1.5L11 21l-2-1.5L7 21l-2-1.5z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg><span class="label">Tax Profiles</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Admin</div>
+        <a href="Locations.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z"/><circle cx="12" cy="9" r="2.6"/></svg><span class="label">Locations</span></a>
+        <a href="Integrations.html" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="13" x2="17.5" y2="22"/><line x1="13" y1="17.5" x2="22" y2="17.5"/></svg><span class="label">Integrations</span></a>
+        <a href="Trip Modification.html" class="nav-item is-active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="label">Trip Modification</span></a>
+        <a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">Settings</span></a>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <a href="#" class="nav-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c.7-4 4-6 8-6s7.3 2 8 6"/></svg><span class="label">John Doe</span></a>
+    </div>
+  </aside>
+
+  <div>
+    <header class="top">
+      <div class="crumbs">
+        <span class="crumb-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+        <span class="crumb-sep">/</span><span style="color:var(--muted)">Admin</span>
+        <span class="crumb-sep">/</span><span class="crumb-cur">Trip Modification</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="page-head">
+        <h1 class="page-title">Trip Modification</h1>
+        <p class="page-sub">Set rules for how guests can change bookings — configured separately for hourly and daily rate trips.</p>
+      </div>
+
+      <div class="tm-wrap">
+        <!-- Left nav -->
+        <div class="pol-nav" id="polNav"></div>
+        <!-- Right panels -->
+        <div class="pol-panels" id="polPanels"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="save-bar" id="saveBar">
+  <span class="save-hint">Unsaved changes</span>
+  <button class="btn" id="btnDiscard">Discard</button>
+  <button class="btn btn-primary" id="btnSave">Save changes</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+
+/* ── Shell ── */
+var app=document.getElementById('app');
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);}
+applyTheme(localStorage.getItem('theme')||'light');
+document.getElementById('btnTheme').addEventListener('click',function(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');});
+if(localStorage.getItem('side-collapsed')==='1') app.dataset.collapsed='true';
+document.getElementById('btnToggle').addEventListener('click',function(){
+  var c=app.dataset.collapsed==='true';
+  app.dataset.collapsed=c?'false':'true';
+  localStorage.setItem('side-collapsed',c?'0':'1');
+});
+
+/* ── Save ── */
+var dirty=false,saveBar=document.getElementById('saveBar');
+window.markDirty=function(){if(!dirty){dirty=true;saveBar.classList.add('show');}};
+document.getElementById('btnSave').addEventListener('click',function(){dirty=false;saveBar.classList.remove('show');showToast('Policies saved');});
+document.getElementById('btnDiscard').addEventListener('click',function(){dirty=false;saveBar.classList.remove('show');location.reload();});
+
+/* ── State ── */
+var ST={
+  ext:{enabled:true, h:{approval:'auto',before:true,during:true}, d:{approval:'auto',before:true,during:true}},
+  red:{enabled:true, h:{approval:'auto',before:true,during:false}, d:{approval:'auto',before:true,during:false}},
+  canc:{enabled:true, h:{approval:'auto',before:true}, d:{approval:'auto',before:true}},
+  swap:{enabled:false, h:{approval:'auto',before:true,during:false}, d:{approval:'auto',before:true,during:false}}
+};
+
+/* ── Icons ── */
+var IC={
+  ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>',
+  red:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>',
+  canc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  swap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>',
+  cal:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>',
+  clk:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  plus:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  x:'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  refund:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-6.16"/></svg>',
+  shield:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4.5 8-10V5l-8-3-8 3v7c0 5.5 8 10 8 10z"/></svg>'
+};
+
+var PMETA={
+  ext:{title:'Trip Extension',desc:'Allow guests to request additional time on their booking',phases:['before','during'],hasRefund:false},
+  red:{title:'Trip Reduction',desc:'Allow guests to shorten their booking and return early',phases:['before','during'],hasRefund:true},
+  canc:{title:'Cancellation',desc:'Allow guests to cancel before the trip starts',phases:['before'],hasRefund:true,fixedPhase:true},
+  swap:{title:'Vehicle Swap',desc:'Allow guests to switch to a different vehicle',phases:['before','during'],hasRefund:false}
+};
+
+var PHASE_NAME={before:'Before the trip starts',during:'During an active trip'};
+var PHASE_DESC={
+  'ext-before':'Guest requests before the booking begins',
+  'ext-during':'Guest extends while in progress',
+  'red-before':'Guest shortens the booking before it starts',
+  'red-during':'Guest ends the trip early',
+  'canc-before':'Cancellations only before the trip starts',
+  'swap-before':'Guest swaps before the trip begins',
+  'swap-during':'Guest swaps mid-trip'
+};
+var NOTICE_DEF={ext:24,red:48,canc:24};
+var fc=0;
+
+/* ── Builders ── */
+function feeRow(id,name,type,amt){
+  var pre=type==='pct'?'%':'$';
+  return '<div class="fee-row" id="'+id+'">'
+    +'<input type="text" value="'+name+'" placeholder="Fee name" onchange="markDirty()">'
+    +'<select onchange="updPre(\''+id+'\',this)">'
+    +'<option value="flat"'+(type==='flat'?' selected':'')+'>Flat</option>'
+    +'<option value="pct"'+(type==='pct'?' selected':'')+'>%</option>'
+    +'<option value="per_day"'+(type==='per_day'?' selected':'')+'>Per day</option>'
+    +'<option value="per_hr"'+(type==='per_hr'?' selected':'')+'>Per hr</option>'
+    +'</select>'
+    +'<span class="fee-pre">'+pre+'</span>'
+    +'<input type="number" value="'+amt+'" min="0" step="0.01" onchange="markDirty()">'
+    +'<button class="fee-del" onclick="delFee(\''+id+'\')">'+IC.x+'</button>'
+    +'</div>';
+}
+window.addFee=function(lid){var list=document.getElementById(lid);if(!list)return;var id='fee-'+(++fc);list.insertAdjacentHTML('beforeend',feeRow(id,'','flat',0));list.querySelector('#'+id+' input[type=text]').focus();markDirty();};
+window.delFee=function(id){var el=document.getElementById(id);if(el){el.remove();markDirty();}};
+window.updPre=function(rid,sel){var el=document.getElementById(rid);if(el)el.querySelector('.fee-pre').textContent=sel.value==='pct'?'%':'$';markDirty();};
+function seedFee(lid,name,type,amt){var list=document.getElementById(lid);if(!list)return;var id='fee-'+(++fc);list.insertAdjacentHTML('beforeend',feeRow(id,name,type,amt));}
+
+function buildPhase(polId,bt,phase,pm){
+  var stBt=ST[polId][bt];
+  var wid='pw-'+polId+'-'+bt+'-'+phase;
+  var isOn=!!stBt[phase];
+  var isFixed=pm.fixedPhase;
+  var fid='fees-'+polId+'-'+bt+'-'+phase;
+  var wc='phase-sec'+(isOn?' is-on':'');
+  var swClass='switch-sm'+(isOn?' is-on':'');
+  var oc=isFixed?'':' onclick="togglePhase(\''+wid+'\',\''+polId+'\',\''+bt+'\',\''+phase+'\')"';
+
+  var h='<div class="'+wc+'" id="'+wid+'">';
+  h+='<div class="phase-hd">';
+  h+='<div class="phase-name">'+(phase==='before'?IC.cal:IC.clk)+' '+PHASE_NAME[phase]+'</div>';
+  if(!isFixed) h+='<div class="'+swClass+'"'+oc+'></div>';
+  h+='</div>';
+  h+='<div class="phase-body">';
+
+  if(phase==='before'&&polId!=='swap'){
+    var ns=polId==='canc'?'before trip starts':'before trip start';
+    h+='<div class="notice-row"><input type="number" value="'+(NOTICE_DEF[polId]||24)+'" min="1" onchange="markDirty()"><select onchange="markDirty()"><option value="hours" selected>hrs</option><option value="days">days</option></select><span class="notice-lbl">'+ns+'</span></div>';
+  }
+
+  h+='<div class="fee-lbl">Fees</div><div class="fee-list" id="'+fid+'"></div>';
+  h+='<button class="add-fee-btn" onclick="addFee(\''+fid+'\')">'+IC.plus+' Add fee</button>';
+
+  if(pm.hasRefund){
+    h+='<div class="proc-list">';
+    h+='<div class="proc-item"><div><div class="proc-name">'+IC.refund+' Process refund</div><div class="proc-sub">Send refund to guest\'s payment method</div></div><div class="switch-sm is-on" onclick="this.classList.toggle(\'is-on\');markDirty()"></div></div>';
+    h+='<div class="proc-item"><div><div class="proc-name">'+IC.shield+' Insurance refund</div><div class="proc-sub">Trigger insurance claim for unused time</div></div><div class="switch-sm is-on" onclick="this.classList.toggle(\'is-on\');markDirty()"></div></div>';
+    h+='</div>';
+  }
+
+  h+='</div></div>';
+  return h;
+}
+
+function buildCol(polId,bt,pm){
+  var stBt=ST[polId][bt];
+  var btLabel=bt==='h'?'Hourly':'Daily Rate';
+  var h='<div class="panel-col">';
+  h+='<div class="col-hd">'+btLabel+'</div>';
+  h+='<div class="appr-opts" id="appr-'+polId+'-'+bt+'">';
+  h+='<div class="appr-opt'+(stBt.approval==='auto'?' is-on':'')+'" onclick="setApproval(\''+polId+'\',\''+bt+'\',\'auto\',this)"><div class="appr-radio"></div><div class="appr-name">Auto-apply</div></div>';
+  h+='<div class="appr-opt'+(stBt.approval==='manual'?' is-on':'')+'" onclick="setApproval(\''+polId+'\',\''+bt+'\',\'manual\',this)"><div class="appr-radio"></div><div class="appr-name">Require approval</div></div>';
+  h+='</div>';
+  pm.phases.forEach(function(phase){h+=buildPhase(polId,bt,phase,pm);});
+  h+='</div>';
+  return h;
+}
+
+function buildPanel(polId){
+  var pm=PMETA[polId];
+  var on=ST[polId].enabled;
+  var chip=on?'<span class="chip chip-ok" id="chip-'+polId+'"><span class="dot"></span>Active</span>':'<span class="chip chip-off" id="chip-'+polId+'">Disabled</span>';
+  var swClass='switch'+(on?' is-on':'');
+  var panelClass='pol-panel'+(on?' is-on':'');
+
+  var h='<div class="'+panelClass+'" id="panel-'+polId+'">';
+  h+='<div class="panel-card">';
+
+  // Header
+  h+='<div class="panel-hd">';
+  h+='<div class="panel-hd-icon">'+IC[polId]+'</div>';
+  h+='<div class="panel-hd-info"><div class="panel-hd-title">'+pm.title+'</div><div class="panel-hd-desc">'+pm.desc+'</div></div>';
+  h+='<div class="panel-hd-right">'+chip+'<div class="'+swClass+'" id="sw-'+polId+'" onclick="togglePanel(\''+polId+'\',this)"></div></div>';
+  h+='</div>';
+
+  // Disabled
+  h+='<div class="panel-off">'+pm.title+' is turned off. Enable it to configure rules for your guests.</div>';
+
+  // Columns
+  h+='<div class="panel-cols">';
+  h+=buildCol(polId,'h',pm);
+  h+=buildCol(polId,'d',pm);
+  h+='</div>';
+
+  h+='</div></div>';
+  return h;
+}
+
+function buildNavItem(polId,isSel){
+  var pm=PMETA[polId];
+  var on=ST[polId].enabled;
+  var cc='pol-nav-item'+(on?' pni-on':'')+(isSel?' is-sel':'');
+  var chip=on?'<span class="chip chip-ok" id="navchip-'+polId+'" style="font-size:10.5px;padding:2px 7px"><span class="dot"></span>Active</span>':'<span class="chip chip-off" id="navchip-'+polId+'" style="font-size:10.5px;padding:2px 7px">Off</span>';
+  return '<div class="'+cc+'" id="nav-'+polId+'" onclick="selectPol(\''+polId+'\')">'
+    +'<div class="pni-icon">'+IC[polId]+'</div>'
+    +'<div class="pni-body"><div class="pni-name">'+pm.title+'</div></div>'
+    +chip+'</div>';
+}
+
+/* ── Render ── */
+var polNav=document.getElementById('polNav');
+var polPanels=document.getElementById('polPanels');
+var POLS=['ext','red','canc','swap'];
+
+polNav.innerHTML='<div class="pol-nav-hd">Policies</div>';
+POLS.forEach(function(pid,i){
+  polNav.insertAdjacentHTML('beforeend',buildNavItem(pid,i===0));
+  polPanels.insertAdjacentHTML('beforeend',buildPanel(pid));
+});
+document.getElementById('panel-ext').classList.add('is-vis');
+
+// Seed fees
+seedFee('fees-ext-h-before','Extension fee','per_hr',8);
+seedFee('fees-ext-h-during','During-trip fee','per_hr',10);
+seedFee('fees-ext-d-before','Extension fee','per_day',25);
+seedFee('fees-ext-d-during','During-trip fee','per_day',35);
+seedFee('fees-red-h-before','Early return fee','per_hr',5);
+seedFee('fees-red-d-before','Early return fee','flat',15);
+seedFee('fees-canc-h-before','Cancellation fee','flat',20);
+seedFee('fees-canc-d-before','Cancellation fee','flat',30);
+
+/* ── Interactions ── */
+window.selectPol=function(polId){
+  document.querySelectorAll('.pol-nav-item').forEach(function(el){el.classList.remove('is-sel');});
+  document.querySelectorAll('.pol-panel').forEach(function(el){el.classList.remove('is-vis');});
+  document.getElementById('nav-'+polId).classList.add('is-sel');
+  document.getElementById('panel-'+polId).classList.add('is-vis');
+};
+
+window.togglePanel=function(polId,sw){
+  var on=sw.classList.toggle('is-on');
+  ST[polId].enabled=on;
+  var panel=document.getElementById('panel-'+polId);
+  panel.classList.toggle('is-on',on);
+  var nav=document.getElementById('nav-'+polId);
+  nav.classList.toggle('pni-on',on);
+  ['chip-'+polId,'navchip-'+polId].forEach(function(cid){
+    var c=document.getElementById(cid);if(!c)return;
+    if(on){c.className='chip chip-ok';c.style.cssText='font-size:10.5px;padding:2px 7px';c.innerHTML='<span class="dot"></span>Active';}
+    else{c.className='chip chip-off';c.style.cssText='font-size:10.5px;padding:2px 7px';c.textContent='Off';}
+  });
+  markDirty();
+};
+
+window.setApproval=function(polId,bt,mode,el){
+  ST[polId][bt].approval=mode;
+  var c=document.getElementById('appr-'+polId+'-'+bt);
+  c.querySelectorAll('.appr-opt').forEach(function(o){o.classList.remove('is-on');});
+  el.classList.add('is-on');
+  markDirty();
+};
+
+window.togglePhase=function(wid,polId,bt,phase){
+  var wrap=document.getElementById(wid);
+  var on=wrap.classList.toggle('is-on');
+  var sw=wrap.querySelector('.switch-sm');
+  if(sw)sw.classList.toggle('is-on',on);
+  ST[polId][bt][phase]=on;
+  markDirty();
+};
+
+/* ── Toast ── */
+var tt;
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
+
+dirty=false;saveBar.classList.remove('show');
+})();
+</script>
+</body>
+</html>
