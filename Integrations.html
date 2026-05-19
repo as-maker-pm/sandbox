@@ -150,31 +150,44 @@
   .connected-block .conn-name{font-size:13px;font-weight:600;color:var(--ok)}
   .connected-block .conn-sub{font-size:12px;color:var(--muted);margin-top:1px}
 
-  /* ── Credits meter ────────────────────────────────────── */
-  .credits-meter{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px}
-  .credits-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--line-2)}
-  .credits-stat{padding:14px 16px;display:flex;flex-direction:column;gap:3px}
-  .credits-stat+.credits-stat{border-left:1px solid var(--line-2)}
-  .credits-stat .cs-val{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
-  .credits-stat .cs-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-  .credits-stat.cs-available .cs-val{color:var(--ok)}
-  .credits-stat.cs-used .cs-val{color:var(--ink)}
-  .credits-stat.cs-total .cs-val{color:var(--muted)}
-  .credits-bar-wrap{padding:12px 16px;background:var(--field-bg);display:flex;align-items:center;gap:10px}
-  .credits-bar-track{flex:1;height:7px;border-radius:99px;background:var(--line);overflow:hidden}
-  .credits-bar-fill{height:100%;border-radius:99px;background:var(--ok);transition:width .4s ease}
-  .credits-bar-fill.warn{background:var(--warn)}
-  .credits-bar-fill.empty{background:var(--muted-2)}
-  .credits-bar-pct{font-size:11.5px;font-weight:600;color:var(--muted);min-width:32px;text-align:right}
-  .pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-  .credit-pkg{border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;transition:all var(--t-fast);text-align:center;position:relative}
-  .credit-pkg:hover{border-color:var(--ink);box-shadow:0 2px 8px rgba(15,18,22,.06)}
-  .credit-pkg.selected{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-tint)}
-  .pkg-amt{font-size:26px;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
-  .pkg-unit{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
-  .pkg-price{font-size:13px;font-weight:600;color:var(--ink-2)}
-  .pkg-per{font-size:11px;color:var(--muted)}
-  .pkg-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+  /* ── Credits split panel ───────────────────────────────── */
+  .credits-split{display:grid;grid-template-columns:1fr 1px 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:6px}
+  .credits-half{padding:14px 16px}
+  .credits-half.avail{background:#f0faf5}
+  .credits-half.used{background:var(--field-bg)}
+  .credits-divline{background:var(--line-2)}
+  .cr-chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:99px;margin-bottom:7px}
+  .cr-chip.avail{background:#c8e9d8;color:var(--ok)}
+  .cr-chip.used{background:#e5e6e8;color:var(--muted)}
+  .cr-chip .dot{width:5px;height:5px;border-radius:99px}
+  .cr-chip.avail .dot{background:var(--ok)}
+  .cr-chip.used .dot{background:var(--muted-2)}
+  .cr-num{font-size:32px;font-weight:800;letter-spacing:-.04em;line-height:1}
+  .cr-num.avail{color:var(--ok)}
+  .cr-num.used{color:var(--ink-2)}
+  .cr-unit{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+  .cr-unit.avail{color:var(--ok);opacity:.7}
+  .cr-unit.used{color:var(--muted)}
+  .cr-segs{display:flex;gap:3px;margin-top:10px;flex-wrap:wrap}
+  .cr-seg{width:10px;height:10px;border-radius:2px}
+  .cr-seg.avail{background:var(--ok);opacity:.8}
+  .cr-seg.used{background:#d4d6da}
+  .credits-total{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;padding-top:8px}
+
+  /* ── Purchase rows ─────────────────────────────────────── */
+  .pkg-rows{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+  .pkg-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:all var(--t-fast)}
+  .pkg-row:hover{border-color:var(--muted-2);background:var(--hover)}
+  .pkg-row.selected{border-color:var(--brand);background:var(--brand-tint);box-shadow:0 0 0 3px var(--brand-tint)}
+  .pkg-row .pr-radio{width:15px;height:15px;border-radius:99px;border:2px solid var(--muted-2);flex-shrink:0;display:grid;place-items:center;transition:all var(--t-fast)}
+  .pkg-row.selected .pr-radio{border-color:var(--brand);background:var(--brand)}
+  .pkg-row.selected .pr-radio::after{content:"";width:5px;height:5px;border-radius:99px;background:#fff}
+  .pkg-row .pr-qty{font-size:15px;font-weight:800;letter-spacing:-.02em;min-width:32px}
+  .pkg-row .pr-label{flex:1;font-size:12.5px;color:var(--muted)}
+  .pkg-row .pr-badge{font-size:10px;font-weight:700;color:var(--brand);background:rgba(239,58,58,.12);padding:2px 7px;border-radius:99px;white-space:nowrap}
+  .pkg-row .pr-right{text-align:right}
+  .pkg-row .pr-price{font-size:14px;font-weight:700}
+  .pkg-row .pr-per{font-size:11px;color:var(--muted);margin-top:1px}
   .buy-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .buy-row span{font-size:12px;color:var(--muted)}
 
@@ -659,49 +672,54 @@ function drawerCredits(provider, name, unit, pkgs) {
   var used = total - available;
   var selected = provider === 'modives' ? ST.modivesSelected : ST.checkrSelected;
   var html = '';
+
   if (!connected) {
     html += '<div class="info-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
       '<span>Link your ' + name + ' account first. You\'ll be redirected to complete OAuth authorisation and then returned here to purchase credits.</span></div>';
     return html;
   }
 
-  var pct = total > 0 ? Math.round(available / total * 100) : 100;
-  var fillClass = pct <= 20 ? 'warn' : pct === 0 ? 'empty' : '';
+  // ── Split panel balance ──
+  var availSegs = '';
+  for (var a = 0; a < Math.min(available, 60); a++) availSegs += '<span class="cr-seg avail"></span>';
+  var usedSegs = '';
+  for (var u = 0; u < Math.min(used, 60); u++) usedSegs += '<span class="cr-seg used"></span>';
 
-  html += '<div class="credits-meter">' +
-    '<div class="credits-stats">' +
-      '<div class="credits-stat cs-available">' +
-        '<span class="cs-val" id="' + provider + '-credits">' + available + '</span>' +
-        '<span class="cs-lbl">Available</span>' +
-      '</div>' +
-      '<div class="credits-stat cs-used">' +
-        '<span class="cs-val" id="' + provider + '-used">' + used + '</span>' +
-        '<span class="cs-lbl">Used</span>' +
-      '</div>' +
-      '<div class="credits-stat cs-total">' +
-        '<span class="cs-val" id="' + provider + '-total">' + total + '</span>' +
-        '<span class="cs-lbl">Total Purchased</span>' +
-      '</div>' +
+  html += '<div class="credits-split">' +
+    '<div class="credits-half avail">' +
+      '<div class="cr-chip avail"><span class="dot"></span>Available</div>' +
+      '<div class="cr-num avail" id="' + provider + '-credits">' + available + '</div>' +
+      '<div class="cr-unit avail">credits</div>' +
+      '<div class="cr-segs">' + availSegs + '</div>' +
     '</div>' +
-    '<div class="credits-bar-wrap">' +
-      '<div class="credits-bar-track"><div class="credits-bar-fill ' + fillClass + '" id="' + provider + '-bar" style="width:' + pct + '%"></div></div>' +
-      '<span class="credits-bar-pct" id="' + provider + '-pct">' + pct + '%</span>' +
-      '<button class="btn btn-sm" onclick="void(0)" style="flex-shrink:0">Buy More</button>' +
+    '<div class="credits-divline"></div>' +
+    '<div class="credits-half used">' +
+      '<div class="cr-chip used"><span class="dot"></span>Used</div>' +
+      '<div class="cr-num used" id="' + provider + '-used">' + used + '</div>' +
+      '<div class="cr-unit used">credits</div>' +
+      '<div class="cr-segs">' + usedSegs + '</div>' +
     '</div>' +
-  '</div>';
+  '</div>' +
+  '<div class="credits-total" id="' + provider + '-total">' + total + ' total purchased</div>';
 
+  // ── Selectable rows ──
   html += '<div class="section-label">Purchase Credits</div>';
-  html += '<div class="pkg-grid" id="' + provider + '-pkgs">';
+  html += '<div class="pkg-rows" id="' + provider + '-pkgs">';
   pkgs.forEach(function(p, i) {
     var isSelected = (p[0] === selected.qty);
-    html += '<div class="credit-pkg' + (isSelected ? ' selected' : '') + '" onclick="selectPkg(this,\'' + provider + '\',' + p[0] + ',' + p[1] + ')">' +
-      (i === 1 ? '<div class="pkg-badge">Most Popular</div>' : '') +
-      '<div class="pkg-unit">Credits</div><div class="pkg-amt">' + p[0] + '</div>' +
-      '<div class="pkg-price">$' + p[1] + '</div><div class="pkg-per">' + p[2] + ' per check</div>' +
+    html += '<div class="pkg-row' + (isSelected ? ' selected' : '') + '" onclick="selectPkg(this,\'' + provider + '\',' + p[0] + ',' + p[1] + ')">' +
+      '<div class="pr-radio"></div>' +
+      '<div class="pr-qty">' + p[0] + '</div>' +
+      '<div class="pr-label">' + unit + '</div>' +
+      (i === 1 ? '<div class="pr-badge">Best value</div>' : '') +
+      '<div class="pr-right">' +
+        '<div class="pr-price">$' + p[1] + '</div>' +
+        '<div class="pr-per">' + p[2] + ' per check</div>' +
+      '</div>' +
     '</div>';
   });
   html += '</div>';
-  html += '<div class="buy-row"><span style="font-size:12px;color:var(--muted)">Billed securely via Stripe</span>' +
+  html += '<div class="buy-row"><span>Billed securely via Stripe</span>' +
     '<button class="btn btn-brand" id="' + provider + '-buy-btn" onclick="buyCredits(\'' + provider + '\')">' +
       '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' +
       'Purchase — $' + selected.price +
@@ -789,7 +807,7 @@ function connectOAuth(provider, name) {
 
 function selectPkg(el, provider, qty, price) {
   var container = document.getElementById(provider + '-pkgs');
-  container.querySelectorAll('.credit-pkg').forEach(function(p){ p.classList.remove('selected'); });
+  container.querySelectorAll('.pkg-row').forEach(function(p){ p.classList.remove('selected'); });
   el.classList.add('selected');
   var s = provider === 'modives' ? ST.modivesSelected : ST.checkrSelected;
   s.qty = qty; s.price = price;
@@ -806,13 +824,25 @@ function buyCredits(provider) {
     var available = provider === 'modives' ? ST.modivesCredits : ST.checkrCredits;
     var total = provider === 'modives' ? ST.modivesTotalPurchased : ST.checkrTotalPurchased;
     var used = total - available;
-    var pct = total > 0 ? Math.round(available / total * 100) : 100;
-    var el = document.getElementById(provider + '-credits'); if (el) el.textContent = available;
+    // Update numbers
+    var ec = document.getElementById(provider + '-credits'); if (ec) ec.textContent = available;
     var eu = document.getElementById(provider + '-used'); if (eu) eu.textContent = used;
-    var et = document.getElementById(provider + '-total'); if (et) et.textContent = total;
-    var bar = document.getElementById(provider + '-bar');
-    if (bar) { bar.style.width = pct + '%'; bar.className = 'credits-bar-fill' + (pct <= 20 ? ' warn' : ''); }
-    var ep = document.getElementById(provider + '-pct'); if (ep) ep.textContent = pct + '%';
+    var et = document.getElementById(provider + '-total'); if (et) et.textContent = total + ' total purchased';
+    // Rebuild segments
+    function rebuildSegs(id, count, cls) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var parent = el.closest('.credits-half');
+      if (!parent) return;
+      var segsEl = parent.querySelector('.cr-segs');
+      if (!segsEl) return;
+      segsEl.innerHTML = '';
+      for (var i = 0; i < Math.min(count, 60); i++) {
+        var s = document.createElement('span'); s.className = 'cr-seg ' + cls; segsEl.appendChild(s);
+      }
+    }
+    rebuildSegs(provider + '-credits', available, 'avail');
+    rebuildSegs(provider + '-used', used, 'used');
     toast(sel.qty + ' credits added', 'ok');
   }, 1800);
 }
